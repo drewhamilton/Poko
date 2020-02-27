@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="Safe.redacted-compiler-plugin-annotations.main" target="1.8" />
+      <module name="Safe.redacted-compiler-plugin-annotations.test" target="1.8" />
+      <module name="Safe.redacted-compiler-plugin.main" target="1.8" />
+      <module name="Safe.redacted-compiler-plugin.test" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

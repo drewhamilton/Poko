@@ -1,0 +1,8 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+
+dependencies {
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  
+  testImplementation "junit:junit:4.13"
+  testImplementation "com.google.truth:truth:1.0.1"
+}
