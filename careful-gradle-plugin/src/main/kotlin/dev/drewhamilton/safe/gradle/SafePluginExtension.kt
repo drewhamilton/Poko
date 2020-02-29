@@ -1,8 +1,8 @@
-package dev.drewhamilton.safe.gradle
+package dev.drewhamilton.careful.gradle
 
 import org.gradle.api.Action
 
-open class SafePluginExtension {
+open class CarefulPluginExtension {
     var enabled: Boolean = true
     internal var variantFilter: Action<VariantFilter>? = null
 

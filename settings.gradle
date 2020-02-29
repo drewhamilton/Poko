@@ -1,15 +1,15 @@
-rootProject.name = 'Safe'
-include ':safe-compiler-plugin'
-include ':safe-compiler-plugin-annotations'
+rootProject.name = 'Careful'
+include ':careful-compiler-plugin'
+include ':careful-compiler-plugin-annotations'
 include ':sample'
 
-// Only enable android project on JDK 8 until android tools catch up
+// Only enable Android project on JDK 8 until Android tools catch up
 if (!JavaVersion.current().isJava9Compatible() && System.getenv("ANDROID_HOME") != null) {
   include ':sample-android'
 }
 
-includeBuild('safe-gradle-plugin') {
+includeBuild('careful-gradle-plugin') {
   dependencySubstitution {
-    substitute module('dev.drewhamilton.safe:safe-plugin-gradle') with project(':')
+    substitute module('dev.drewhamilton.careful:careful-plugin-gradle') with project(':')
   }
 }

@@ -1,4 +1,4 @@
-package dev.drewhamilton.safe.gradle
+package dev.drewhamilton.careful.gradle
 
 import com.android.builder.model.BuildType
 import com.android.builder.model.ProductFlavor

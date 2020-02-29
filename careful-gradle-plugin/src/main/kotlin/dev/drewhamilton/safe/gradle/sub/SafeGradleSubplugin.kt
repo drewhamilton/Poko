@@ -1,4 +1,4 @@
-package dev.drewhamilton.safe.gradle.sub
+package dev.drewhamilton.careful.gradle.sub
 
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.TestVariant
@@ -6,10 +6,10 @@ import com.android.build.gradle.api.UnitTestVariant
 import com.android.builder.model.BuildType
 import com.android.builder.model.ProductFlavor
 import com.google.auto.service.AutoService
-import dev.drewhamilton.safe.gradle.SafeGradlePlugin
-import dev.drewhamilton.safe.gradle.SafePluginExtension
-import dev.drewhamilton.safe.gradle.VERSION
-import dev.drewhamilton.safe.gradle.VariantFilter
+import dev.drewhamilton.careful.gradle.CarefulGradlePlugin
+import dev.drewhamilton.careful.gradle.CarefulPluginExtension
+import dev.drewhamilton.careful.gradle.VERSION
+import dev.drewhamilton.careful.gradle.VariantFilter
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
@@ -20,20 +20,20 @@ import org.jetbrains.kotlin.gradle.plugin.SubpluginArtifact
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
 @AutoService(KotlinGradleSubplugin::class)
-class SafeGradleSubplugin : KotlinGradleSubplugin<AbstractCompile> {
+class CarefulGradleSubplugin : KotlinGradleSubplugin<AbstractCompile> {
 
-    private val annotation = "dev.drewhamilton.safe.Safe"
+    private val annotation = "dev.drewhamilton.careful.Careful"
 
     override fun isApplicable(project: Project, task: AbstractCompile): Boolean =
-        project.plugins.hasPlugin(SafeGradlePlugin::class.java)
+        project.plugins.hasPlugin(CarefulGradlePlugin::class.java)
 
-    override fun getCompilerPluginId(): String = "safe-compiler-plugin"
+    override fun getCompilerPluginId(): String = "careful-compiler-plugin"
 
     override fun getPluginArtifact(): SubpluginArtifact =
         SubpluginArtifact(
             // TODO? Centralize and figure out the version
-            groupId = "dev.drewhamilton.safe",
-            artifactId = "safe-compiler-plugin",
+            groupId = "dev.drewhamilton.careful",
+            artifactId = "careful-compiler-plugin",
             version = VERSION
         )
 
@@ -45,10 +45,10 @@ class SafeGradleSubplugin : KotlinGradleSubplugin<AbstractCompile> {
         androidProjectHandler: Any?,
         kotlinCompilation: KotlinCompilation<KotlinCommonOptions>?
     ): List<SubpluginOption> {
-        val extension = project.extensions.findByType(SafePluginExtension::class.java) ?: SafePluginExtension()
+        val extension = project.extensions.findByType(CarefulPluginExtension::class.java) ?: CarefulPluginExtension()
 
         // Add annotation as a dependency
-        project.dependencies.add("implementation", "dev.drewhamilton.safe:safe-compiler-plugin-annotations:$VERSION")
+        project.dependencies.add("implementation", "dev.drewhamilton.careful:careful-compiler-plugin-annotations:$VERSION")
 
         val extensionFilter = extension.variantFilter
         var enabled = extension.enabled

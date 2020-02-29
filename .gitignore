@@ -17,6 +17,8 @@
 .idea/**/dictionaries
 .idea/**/shelf
 .idea/**/jarRepositories.xml
+.idea/.name
+.idea/**/compiler.xml
 
 # Generated files
 .idea/**/contentModel.xml

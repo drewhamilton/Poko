@@ -6,4 +6,4 @@ pluginManagement {
   }
 }
 
-rootProject.name = "safe-gradle-plugin"
+rootProject.name = "careful-gradle-plugin"

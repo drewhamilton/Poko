@@ -1,4 +1,4 @@
-group 'dev.drewhamilton.safe'
+group 'dev.drewhamilton.careful'
 version '0.1.0'
 
 buildscript {

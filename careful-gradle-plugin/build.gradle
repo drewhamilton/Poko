@@ -38,9 +38,9 @@ compileKotlin {
 
 gradlePlugin {
     plugins {
-        safePlugin {
-            id = 'dev.drewhamilton.safe.safe-gradle-plugin'
-            implementationClass = 'dev.drewhamilton.safe.gradle.SafeGradlePlugin'
+        carefulPlugin {
+            id = 'dev.drewhamilton.careful.careful-gradle-plugin'
+            implementationClass = 'dev.drewhamilton.careful.gradle.CarefulGradlePlugin'
         }
     }
 }
