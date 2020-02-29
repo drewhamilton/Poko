@@ -6,8 +6,10 @@ import com.android.build.gradle.api.UnitTestVariant
 import com.android.builder.model.BuildType
 import com.android.builder.model.ProductFlavor
 import com.google.auto.service.AutoService
+import dev.drewhamilton.careful.gradle.ANNOTATIONS_ARTIFACT
 import dev.drewhamilton.careful.gradle.CarefulGradlePlugin
 import dev.drewhamilton.careful.gradle.CarefulPluginExtension
+import dev.drewhamilton.careful.gradle.GROUP
 import dev.drewhamilton.careful.gradle.VERSION
 import dev.drewhamilton.careful.gradle.VariantFilter
 import org.gradle.api.Project
@@ -21,8 +23,6 @@ import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
 @AutoService(KotlinGradleSubplugin::class)
 class CarefulGradleSubplugin : KotlinGradleSubplugin<AbstractCompile> {
-
-    private val annotation = "dev.drewhamilton.careful.Careful"
 
     override fun isApplicable(project: Project, task: AbstractCompile): Boolean =
         project.plugins.hasPlugin(CarefulGradlePlugin::class.java)
@@ -48,7 +48,7 @@ class CarefulGradleSubplugin : KotlinGradleSubplugin<AbstractCompile> {
         val extension = project.extensions.findByType(CarefulPluginExtension::class.java) ?: CarefulPluginExtension()
 
         // Add annotation as a dependency
-        project.dependencies.add("implementation", "dev.drewhamilton.careful:careful-compiler-plugin-annotations:$VERSION")
+        project.dependencies.add("implementation", "$GROUP:$ANNOTATIONS_ARTIFACT:$VERSION")
 
         val extensionFilter = extension.variantFilter
         var enabled = extension.enabled
