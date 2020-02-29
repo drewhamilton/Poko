@@ -31,6 +31,6 @@ class CarefulCommandLineProcessor : CommandLineProcessor {
     }
 
     companion object {
-        private val KEY_ENABLED = CompilerConfigurationKey<Boolean>(Options.ENABLED)
+        internal val KEY_ENABLED = CompilerConfigurationKey<Boolean>(Options.ENABLED)
     }
 }
