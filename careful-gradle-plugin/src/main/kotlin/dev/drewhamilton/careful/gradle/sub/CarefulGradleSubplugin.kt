@@ -60,8 +60,8 @@ class CarefulGradleSubplugin : KotlinGradleSubplugin<AbstractCompile> {
                 project.logger.debug("Resolving enabled status for Android variant ${variant.name}")
                 val filter = VariantFilterImpl(variant, enabled)
                 extensionFilter.execute(filter)
-                project.logger.debug("Variant '${variant.name}' redacted flag set to ${filter._enabled}")
-                enabled = filter._enabled
+                project.logger.debug("Variant '${variant.name}' redacted flag set to ${filter.enabled}")
+                enabled = filter.enabled
             } else {
                 project.logger.lifecycle(
                     "Unable to resolve variant type for $variantData. Falling back to default behavior of '$enabled'"
@@ -73,32 +73,30 @@ class CarefulGradleSubplugin : KotlinGradleSubplugin<AbstractCompile> {
             SubpluginOption(key = "enabled", value = enabled.toString())
         )
     }
-}
 
-// TODO: Clean up from here
-
-private fun unwrapVariant(variantData: Any?): BaseVariant? {
-    return when (variantData) {
-        is BaseVariant -> {
-            when (variantData) {
-                is TestVariant -> variantData.testedVariant
-                is UnitTestVariant -> variantData.testedVariant as? BaseVariant
-                else -> variantData
+    private fun unwrapVariant(variantData: Any?): BaseVariant? {
+        return when (variantData) {
+            is BaseVariant -> {
+                when (variantData) {
+                    is TestVariant -> variantData.testedVariant
+                    is UnitTestVariant -> variantData.testedVariant as? BaseVariant
+                    else -> variantData
+                }
             }
+            is KaptVariantData<*> -> unwrapVariant(variantData.variantData)
+            else -> null
         }
-        is KaptVariantData<*> -> unwrapVariant(variantData.variantData)
-        else -> null
-    }
-}
-
-private class VariantFilterImpl(variant: BaseVariant, enableDefault: Boolean) : VariantFilter {
-    var _enabled: Boolean = enableDefault
-
-    override fun overrideEnabled(enabled: Boolean) {
-        this._enabled = enabled
     }
 
-    override val buildType: BuildType = variant.buildType
-    override val flavors: List<ProductFlavor> = variant.productFlavors
-    override val name: String = variant.name
+    private class VariantFilterImpl(variant: BaseVariant, enableDefault: Boolean) : VariantFilter {
+        var enabled: Boolean = enableDefault
+
+        override fun overrideEnabled(enabled: Boolean) {
+            this.enabled = enabled
+        }
+
+        override val buildType: BuildType = variant.buildType
+        override val flavors: List<ProductFlavor> = variant.productFlavors
+        override val name: String = variant.name
+    }
 }
