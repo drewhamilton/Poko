@@ -32,7 +32,7 @@ class CarefulGradleSubplugin : KotlinGradleSubplugin<AbstractCompile> {
     override fun getPluginArtifact(): SubpluginArtifact =
         SubpluginArtifact(
             // TODO? Centralize and figure out the version
-            groupId = "dev.drewhamilton.careful",
+            groupId = GROUP,
             artifactId = "careful-compiler-plugin",
             version = VERSION
         )
