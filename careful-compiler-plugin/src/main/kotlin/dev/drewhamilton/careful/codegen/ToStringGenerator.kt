@@ -94,24 +94,37 @@ internal class ToStringGenerator(
         }
 
         val instructionAdapter = InstructionAdapter(methodVisitor)
-
         methodVisitor.visitCode()
-        AsmUtil.genStringBuilderConstructor(instructionAdapter)
 
-        instructionAdapter.aconst("${classDescriptor.name}(")
+        // Bytecode: Create a StringBuilder to build the instance's string
+        //  NEW java/lang/StringBuilder
+        //  DUP
+        //  INVOKESPECIAL java/lang/StringBuilder.<init> ()V
+        AsmUtil.genStringBuilderConstructor(instructionAdapter)
 
         var first = true
         for (property in properties) {
             val propertyName = property.name.asString()
-            val prefix = if (first) "" else ", "
+            val prefix = if (first) "${classDescriptor.name}(" else ", "
+            // Bytecode: Create static text
+            //  LDC "ClassName(property1="
+            // or
+            //  LDC ", property2="
             instructionAdapter.aconst("$prefix$propertyName=")
             first = false
+
+            // Bytecode: Append previously created static text to the StringBuilder
+            //  INVOKEVIRTUAL java/lang/StringBuilder.append (Ljava/lang/String;)Ljava/lang/StringBuilder;
             AsmUtil.genInvokeAppendMethod(instructionAdapter, AsmTypes.JAVA_STRING_TYPE, null)
 
+            // Bytecode: Load the property's value
+            //  ALOAD 0
+            //  GETFIELD package/name/ClassName.propertyName : <type>
             val type = genOrLoadOnStack(instructionAdapter, context, property, 0)
             var asmType = type.type
             var kotlinType = type.kotlinType
 
+            // Arrays require special handling
             if (asmType.sort == Type.ARRAY) {
                 val elementType = AsmUtil.correctElementType(asmType)
                 if (elementType.sort == Type.OBJECT || elementType.sort == Type.ARRAY) {
@@ -133,13 +146,24 @@ internal class ToStringGenerator(
                         .stringType
                 }
             }
+
+            // Bytecode: Append the property's value to the StringBuilder
+            //  INVOKEVIRTUAL java/lang/StringBuilder.append (<type>)Ljava/lang/StringBuilder;
             AsmUtil.genInvokeAppendMethod(instructionAdapter, asmType, kotlinType, typeMapper)
         }
 
+        // Bytecode: Create static text (a single character in this case)
+        //  BIPUSH 41
         instructionAdapter.aconst(")")
+        // Bytecode: Append character to StringBuilder
+        //  INVOKEVIRTUAL java/lang/StringBuilder.append (C)Ljava/lang/StringBuilder;
         AsmUtil.genInvokeAppendMethod(instructionAdapter, AsmTypes.JAVA_STRING_TYPE, null)
 
+        // Bytecode: Build the string
+        //  INVOKEVIRTUAL java/lang/StringBuilder.toString ()Ljava/lang/String;
         instructionAdapter.invokevirtual("java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false)
+        // Bytecode: return
+        //  ARETURN
         instructionAdapter.areturn(AsmTypes.JAVA_STRING_TYPE)
 
         FunctionCodegen.endVisit(methodVisitor, toStringMethodName, declaration)
