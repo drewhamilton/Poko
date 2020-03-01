@@ -59,10 +59,10 @@ class CarefulCodegenExtension(
             targetClass.findToStringFunction(),
             properties
         )
-        TODO("Generate equals")
-        TODO("Generate hashCode")
-        TODO("Generate Builder")
-        TODO("Generate top-level DSL constructor")
+        // TODO("Generate equals")
+        // TODO("Generate hashCode")
+        // TODO("Generate Builder")
+        // TODO("Generate top-level DSL constructor")
     }
 
     private fun ClassDescriptor.findToStringFunction(): SimpleFunctionDescriptor? =

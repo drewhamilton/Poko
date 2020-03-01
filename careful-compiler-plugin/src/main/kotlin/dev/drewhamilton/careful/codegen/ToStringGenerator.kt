@@ -24,7 +24,6 @@ import org.jetbrains.org.objectweb.asm.Opcodes
 import org.jetbrains.org.objectweb.asm.Type
 import org.jetbrains.org.objectweb.asm.commons.InstructionAdapter
 
-// TODO: Understand and update
 internal class ToStringGenerator(
     private val declaration: KtClassOrObject,
     private val classDescriptor: ClassDescriptor,
