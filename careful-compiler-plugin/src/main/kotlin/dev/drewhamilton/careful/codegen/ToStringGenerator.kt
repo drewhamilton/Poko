@@ -1,6 +1,5 @@
 package dev.drewhamilton.careful.codegen
 
-import dev.drewhamilton.careful.isCareful
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.kotlin.codegen.AsmUtil
 import org.jetbrains.kotlin.codegen.ClassBuilder
@@ -32,8 +31,7 @@ internal class ToStringGenerator(
     private val classAsmType: Type,
     private val fieldOwnerContext: FieldOwnerContext<*>,
     private val v: ClassBuilder,
-    private val generationState: GenerationState,
-    private val replacementString: String
+    private val generationState: GenerationState
 ) {
     private val typeMapper: KotlinTypeMapper = generationState.typeMapper
     private val underlyingType: JvmKotlinType
@@ -43,12 +41,10 @@ internal class ToStringGenerator(
 
     private val firstParameterDesc: String
         get() {
-            return if (fieldOwnerContext.contextKind == OwnerKind.ERASED_INLINE_CLASS) {
-                underlyingType.type
-                    .descriptor
-            } else {
+            return if (fieldOwnerContext.contextKind == OwnerKind.ERASED_INLINE_CLASS)
+                underlyingType.type.descriptor
+            else
                 ""
-            }
         }
 
     private val access: Int
@@ -62,107 +58,91 @@ internal class ToStringGenerator(
         }
 
     init {
-        this.underlyingType = JvmKotlinType(
+        underlyingType = JvmKotlinType(
             typeMapper.mapType(classDescriptor),
             classDescriptor.defaultType.substitutedUnderlyingType()
         )
     }
 
-    fun generateToStringMethod(function: FunctionDescriptor, properties: List<PropertyDescriptor>) {
+    fun generateToStringMethod(function: FunctionDescriptor?, properties: List<PropertyDescriptor>) {
+        // TODO: Figure out null case, which is probably the typical case
+        function!!
+
         val context = fieldOwnerContext.intoFunction(function)
         val methodOrigin = OtherOrigin(function)
         val toStringMethodName = mapFunctionName(function)
-        val mv = v.newMethod(methodOrigin, access, toStringMethodName, toStringDesc, null, null)
+        val methodVisitor = v.newMethod(methodOrigin, access, toStringMethodName, toStringDesc, null, null)
 
         if (fieldOwnerContext.contextKind != OwnerKind.ERASED_INLINE_CLASS && classDescriptor.isInline) {
             FunctionCodegen.generateMethodInsideInlineClassWrapper(
                 methodOrigin,
                 function,
                 classDescriptor,
-                mv,
+                methodVisitor,
                 typeMapper
             )
             return
         }
 
         visitEndForAnnotationVisitor(
-            mv.visitAnnotation(Type.getDescriptor(NotNull::class.java), false)
+            methodVisitor.visitAnnotation(Type.getDescriptor(NotNull::class.java), false)
         )
 
         if (!generationState.classBuilderMode.generateBodies) {
-            FunctionCodegen.endVisit(mv, toStringMethodName, declaration)
+            FunctionCodegen.endVisit(methodVisitor, toStringMethodName, declaration)
             return
         }
 
-        val iv = InstructionAdapter(mv)
+        val instructionAdapter = InstructionAdapter(methodVisitor)
 
-        mv.visitCode()
-        AsmUtil.genStringBuilderConstructor(iv)
+        methodVisitor.visitCode()
+        AsmUtil.genStringBuilderConstructor(instructionAdapter)
 
-        if (properties.isEmpty()) {
-            // This is a redacted class, so just emit a single replacementString
-            iv.aconst(classDescriptor.name.toString() + "(" + replacementString)
-            AsmUtil.genInvokeAppendMethod(iv, AsmTypes.JAVA_STRING_TYPE, null)
-        } else {
-            var first = true
-            for (propertyDescriptor in properties) {
-                val isRedacted = propertyDescriptor.isCareful
-                val possibleValue = if (isRedacted) replacementString else ""
-                if (first) {
-                    iv.aconst(
-                        classDescriptor.name.toString() + "(" + propertyDescriptor.name
-                            .asString() + "=$possibleValue"
+        instructionAdapter.aconst("${classDescriptor.name}(")
+
+        var first = true
+        for (property in properties) {
+            val propertyName = property.name.asString()
+            val prefix = if (first) "" else ", "
+            instructionAdapter.aconst("$prefix$propertyName=")
+            first = false
+            AsmUtil.genInvokeAppendMethod(instructionAdapter, AsmTypes.JAVA_STRING_TYPE, null)
+
+            val type = genOrLoadOnStack(instructionAdapter, context, property, 0)
+            var asmType = type.type
+            var kotlinType = type.kotlinType
+
+            if (asmType.sort == Type.ARRAY) {
+                val elementType = AsmUtil.correctElementType(asmType)
+                if (elementType.sort == Type.OBJECT || elementType.sort == Type.ARRAY) {
+                    instructionAdapter.invokestatic(
+                        "java/util/Arrays", "toString",
+                        "([Ljava/lang/Object;)Ljava/lang/String;",
+                        false
                     )
-                    first = false
-                } else {
-                    iv.aconst(
-                        ", " + propertyDescriptor.name
-                            .asString() + "=$possibleValue"
+                    asmType = AsmTypes.JAVA_STRING_TYPE
+                    kotlinType = function.builtIns.stringType
+                } else if (elementType.sort != Type.CHAR) {
+                    instructionAdapter.invokestatic(
+                        "java/util/Arrays", "toString",
+                        "(${asmType.descriptor})Ljava/lang/String;",
+                        false
                     )
-                }
-                AsmUtil.genInvokeAppendMethod(iv, AsmTypes.JAVA_STRING_TYPE, null)
-
-                if (!isRedacted) {
-                    val type = genOrLoadOnStack(iv, context, propertyDescriptor, 0)
-                    var asmType = type.type
-                    var kotlinType = type.kotlinType
-
-                    if (asmType.sort == Type.ARRAY) {
-                        val elementType = AsmUtil.correctElementType(asmType)
-                        if (elementType.sort == Type.OBJECT || elementType.sort == Type.ARRAY) {
-                            iv.invokestatic(
-                                "java/util/Arrays",
-                                "toString",
-                                "([Ljava/lang/Object;)Ljava/lang/String;",
-                                false
-                            )
-                            asmType = AsmTypes.JAVA_STRING_TYPE
-                            kotlinType = function.builtIns
-                                .stringType
-                        } else if (elementType.sort != Type.CHAR) {
-                            iv.invokestatic(
-                                "java/util/Arrays",
-                                "toString",
-                                "(" + asmType.descriptor + ")Ljava/lang/String;",
-                                false
-                            )
-                            asmType = AsmTypes.JAVA_STRING_TYPE
-                            kotlinType = function.builtIns
-                                .stringType
-                        }
-                    }
-                    AsmUtil.genInvokeAppendMethod(iv, asmType, kotlinType, typeMapper)
+                    asmType = AsmTypes.JAVA_STRING_TYPE
+                    kotlinType = function.builtIns
+                        .stringType
                 }
             }
+            AsmUtil.genInvokeAppendMethod(instructionAdapter, asmType, kotlinType, typeMapper)
         }
 
-        iv.aconst(")")
-        AsmUtil.genInvokeAppendMethod(iv, AsmTypes.JAVA_STRING_TYPE, null)
+        instructionAdapter.aconst(")")
+        AsmUtil.genInvokeAppendMethod(instructionAdapter, AsmTypes.JAVA_STRING_TYPE, null)
 
-        iv.invokevirtual("java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false)
-        iv.areturn(AsmTypes.JAVA_STRING_TYPE)
+        instructionAdapter.invokevirtual("java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false)
+        instructionAdapter.areturn(AsmTypes.JAVA_STRING_TYPE)
 
-        FunctionCodegen.endVisit(mv, toStringMethodName, declaration)
+        FunctionCodegen.endVisit(methodVisitor, toStringMethodName, declaration)
     }
 
     private fun mapFunctionName(functionDescriptor: FunctionDescriptor): String {
