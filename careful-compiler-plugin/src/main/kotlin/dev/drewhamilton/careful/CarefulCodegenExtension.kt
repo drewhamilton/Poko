@@ -53,7 +53,7 @@ class CarefulCodegenExtension(
             v = codegen.v,
             generationState = codegen.state
         ).generateToStringMethod(
-            targetClass.findToStringFunction(),
+            targetClass.findFunction("toString")!!,
             properties
         )
         // TODO("Generate equals")
@@ -62,9 +62,9 @@ class CarefulCodegenExtension(
         // TODO("Generate top-level DSL constructor")
     }
 
-    private fun ClassDescriptor.findToStringFunction(): SimpleFunctionDescriptor? =
+    private fun ClassDescriptor.findFunction(name: String): SimpleFunctionDescriptor? =
         unsubstitutedMemberScope.getContributedFunctions(
-            Name.identifier("toString"),
+            Name.identifier(name),
             NoLookupLocation.WHEN_GET_ALL_DESCRIPTORS
         ).first()
 

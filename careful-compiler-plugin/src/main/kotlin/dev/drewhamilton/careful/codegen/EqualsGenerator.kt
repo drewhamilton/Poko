@@ -1,12 +1,13 @@
 package dev.drewhamilton.careful.codegen
 
-import org.jetbrains.annotations.NotNull
+import org.jetbrains.annotations.Nullable
 import org.jetbrains.kotlin.codegen.AsmUtil
 import org.jetbrains.kotlin.codegen.ClassBuilder
 import org.jetbrains.kotlin.codegen.FunctionCodegen
 import org.jetbrains.kotlin.codegen.ImplementationBodyCodegen
 import org.jetbrains.kotlin.codegen.JvmKotlinType
 import org.jetbrains.kotlin.codegen.OwnerKind
+import org.jetbrains.kotlin.codegen.StackValue
 import org.jetbrains.kotlin.codegen.context.FieldOwnerContext
 import org.jetbrains.kotlin.codegen.context.MethodContext
 import org.jetbrains.kotlin.codegen.state.GenerationState
@@ -15,16 +16,16 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.kotlin.resolve.descriptorUtil.builtIns
 import org.jetbrains.kotlin.resolve.jvm.AsmTypes
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.OtherOrigin
 import org.jetbrains.kotlin.resolve.substitutedUnderlyingType
 import org.jetbrains.org.objectweb.asm.AnnotationVisitor
+import org.jetbrains.org.objectweb.asm.Label
 import org.jetbrains.org.objectweb.asm.Opcodes
 import org.jetbrains.org.objectweb.asm.Type
 import org.jetbrains.org.objectweb.asm.commons.InstructionAdapter
 
-internal class ToStringGenerator(
+internal class EqualsGenerator(
     private val declaration: KtClassOrObject,
     private val classDescriptor: ClassDescriptor,
     private val classAsmType: Type,
@@ -35,13 +36,14 @@ internal class ToStringGenerator(
     private val typeMapper: KotlinTypeMapper = generationState.typeMapper
     private val underlyingType: JvmKotlinType
 
-    private val toStringDesc: String
-        get() = "($firstParameterDesc)Ljava/lang/String;"
+    // TODO: Not sure about this?
+    private val equalsDesc: String
+        get() = "(${firstParameterDesc}Ljava/lang/Object;)Z"
 
     private val firstParameterDesc: String
         get() {
             return if (fieldOwnerContext.contextKind == OwnerKind.ERASED_INLINE_CLASS)
-                underlyingType.type.descriptor
+                "${underlyingType.type.descriptor}, "
             else
                 ""
         }
@@ -63,11 +65,11 @@ internal class ToStringGenerator(
         )
     }
 
-    fun generateToStringMethod(function: FunctionDescriptor, properties: List<PropertyDescriptor>) {
+    fun generateEqualsMethod(function: FunctionDescriptor, properties: List<PropertyDescriptor>) {
         val context = fieldOwnerContext.intoFunction(function)
         val methodOrigin = OtherOrigin(function)
-        val toStringMethodName = mapFunctionName(function)
-        val methodVisitor = v.newMethod(methodOrigin, access, toStringMethodName, toStringDesc, null, null)
+        val equalsMethodName = mapFunctionName(function)
+        val methodVisitor = v.newMethod(methodOrigin, access, equalsMethodName, equalsDesc, null, null)
 
         if (fieldOwnerContext.contextKind != OwnerKind.ERASED_INLINE_CLASS && classDescriptor.isInline) {
             FunctionCodegen.generateMethodInsideInlineClassWrapper(
@@ -81,76 +83,66 @@ internal class ToStringGenerator(
         }
 
         // Bytecode:
-        //  @Lorg/jetbrains/annotations/NotNull;()
+        //  @Lorg/jetbrains/annotations/Nullable;()
         visitEndForAnnotationVisitor(
-            methodVisitor.visitAnnotation(Type.getDescriptor(NotNull::class.java), false)
+            methodVisitor.visitAnnotation(Type.getDescriptor(Nullable::class.java), false)
         )
 
         if (!generationState.classBuilderMode.generateBodies) {
-            FunctionCodegen.endVisit(methodVisitor, toStringMethodName, declaration)
+            FunctionCodegen.endVisit(methodVisitor, equalsMethodName, declaration)
             return
         }
 
         val instructionAdapter = InstructionAdapter(methodVisitor)
         methodVisitor.visitCode()
 
-        // Bytecode: Create a StringBuilder to build the instance's string
-        //  NEW java/lang/StringBuilder
-        //  DUP
-        //  INVOKESPECIAL java/lang/StringBuilder.<init> ()V
-        AsmUtil.genStringBuilderConstructor(instructionAdapter)
+        // TODO: I probably need to use context more?
 
-        var first = true
+        // Bytecode: Load the receiver and the argument onto the stack
+        //  ALOAD 0
+        //  ALOAD 1
+        instructionAdapter.load(0, classAsmType)
+        instructionAdapter.load(1, classAsmType)
+
+        // Bytecode: jump to L0 if the references are the same
+        //  IF_ACMPEQ L0
+        // FIXME: Need to do the label properly
+        instructionAdapter.ifacmpeq(Label())
+
+        // Bytecode: Load the argument back onto the stack
+        //  ALOAD 1
+        instructionAdapter.load(1, classAsmType)
+
+        // Bytecode: Check that the argument is an instance of the same class
+        //  INSTANCEOF <path/ClassName>
+        instructionAdapter.instanceOf(classAsmType)
+
+        // Bytecode: jump to L1 if the argument is the wrong class
+        //  IFEQ L1
+        // FIXME: Need to do the label properly
+        instructionAdapter.ifeq(Label())
+
+        // Bytecode: Load the argument back onto the stack
+        //  ALOAD 1
+        instructionAdapter.load(1, classAsmType)
+
+        // Bytecode: Cast the argument to the known class and clear the stack
+        //  CHECKCAST dev/drewhamilton/careful/sample/alt/DataSimple
+        //  ASTORE 2
+        instructionAdapter.checkcast(classAsmType)
+        instructionAdapter.store(2, classAsmType)
+
         for (property in properties) {
-            val propertyName = property.name.asString()
-            val prefix = if (first) "${classDescriptor.name}(" else ", "
-            // Bytecode: Create static text
-            //  LDC "ClassName(property1="
-            // or
-            //  LDC ", property2="
-            instructionAdapter.aconst("$prefix$propertyName=")
-            first = false
-
-            // Bytecode: Append previously created static text to the StringBuilder
-            //  INVOKEVIRTUAL java/lang/StringBuilder.append (Ljava/lang/String;)Ljava/lang/StringBuilder;
-            AsmUtil.genInvokeAppendMethod(instructionAdapter, AsmTypes.JAVA_STRING_TYPE, null)
-
-            // Bytecode: Load the property's value
+            // Load the property from the receiver and the argument
             //  ALOAD 0
-            //  GETFIELD package/name/ClassName.propertyName : <type>
+            //  GETFIELD path/Class.property : <type>
+            //  ALOAD 2
+            //  GETFIELD path/Class.property : <type>
             val type = genOrLoadOnStack(instructionAdapter, context, property, 0)
-            var asmType = type.type
-            var kotlinType = type.kotlinType
+            genOrLoadOnStack(instructionAdapter, context, property, 2)
 
-            // Arrays require special handling
-            if (asmType.sort == Type.ARRAY) {
-                val elementType = AsmUtil.correctElementType(asmType)
-                if (elementType.sort == Type.OBJECT || elementType.sort == Type.ARRAY) {
-                    // Bytecode: Resolve special toString for arrays
-                    //  INVOKESTATIC java/util/Arrays.toString ([Ljava/lang/Object;)Ljava/lang/String;
-                    instructionAdapter.invokestatic(
-                        "java/util/Arrays", "toString",
-                        "([Ljava/lang/Object;)Ljava/lang/String;",
-                        false
-                    )
-                    asmType = AsmTypes.JAVA_STRING_TYPE
-                    kotlinType = function.builtIns.stringType
-                } else if (elementType.sort != Type.CHAR) {
-                    // Bytecode: Resolve special toString for arrays
-                    //  INVOKESTATIC java/util/Arrays.toString ([<type>)Ljava/lang/String;
-                    instructionAdapter.invokestatic(
-                        "java/util/Arrays", "toString",
-                        "(${asmType.descriptor})Ljava/lang/String;",
-                        false
-                    )
-                    asmType = AsmTypes.JAVA_STRING_TYPE
-                    kotlinType = function.builtIns.stringType
-                }
-            }
-
-            // Bytecode: Append the property's value to the StringBuilder
-            //  INVOKEVIRTUAL java/lang/StringBuilder.append (<type>)Ljava/lang/StringBuilder;
-            AsmUtil.genInvokeAppendMethod(instructionAdapter, asmType, kotlinType, typeMapper)
+            // TODO: Now I need to do IF branches to L1 based on the type of the property
+            AsmUtil.genEqualsForExpressionsOnStack(TODO(), TODO(), TODO())
         }
 
         // Bytecode: Create static text (a single character in this case)
@@ -167,7 +159,7 @@ internal class ToStringGenerator(
         //  ARETURN
         instructionAdapter.areturn(AsmTypes.JAVA_STRING_TYPE)
 
-        FunctionCodegen.endVisit(methodVisitor, toStringMethodName, declaration)
+        FunctionCodegen.endVisit(methodVisitor, equalsMethodName, declaration)
     }
 
     private fun mapFunctionName(functionDescriptor: FunctionDescriptor): String {
