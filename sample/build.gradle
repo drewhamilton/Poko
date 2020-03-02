@@ -1,4 +1,5 @@
 apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'dev.drewhamilton.careful.careful-gradle-plugin'
 
 dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

@@ -1,17 +1,20 @@
-package dev.drewhamilton.careful
+package dev.drewhamilton.careful.sample.alt
 
 import java.util.Objects
 
-class HandwrittenCarefulClass private constructor(
+/**
+ * Source code equivalent to the desired end state of [Sample], useful for comparing bytecode.
+ */
+class HandwrittenSample private constructor(
     val int: Int,
     val requiredString: String,
     val optionalString: String?
 ) {
 
     override fun toString() =
-        "HandwrittenCarefulClass(int=$int, requiredString=$requiredString, optionalString=$optionalString)"
+        "HandwrittenSample(int=$int, requiredString=$requiredString, optionalString=$optionalString)"
 
-    override fun equals(other: Any?) = other is HandwrittenCarefulClass &&
+    override fun equals(other: Any?) = other is HandwrittenSample &&
             int == other.int &&
             requiredString == other.requiredString &&
             optionalString == other.optionalString
@@ -27,16 +30,20 @@ class HandwrittenCarefulClass private constructor(
         fun setRequiredString(requiredString: String?) = apply { this.requiredString = requiredString }
         fun setOptionalString(optionalString: String?) = apply { this.optionalString = optionalString }
 
-        fun build(): HandwrittenCarefulClass {
+        fun build(): HandwrittenSample {
             val requiredString = requiredString
             checkNotNull(requiredString) { "Required value requiredString was null" }
 
-            return HandwrittenCarefulClass(int, requiredString, optionalString)
+            return HandwrittenSample(
+                int,
+                requiredString,
+                optionalString
+            )
         }
     }
 }
 
-@Suppress("TestFunctionName")
+@Suppress("FunctionName", "unused")
 @JvmSynthetic
-fun HandwrittenCarefulClass(initializer: HandwrittenCarefulClass.Builder.() -> Unit) =
-    HandwrittenCarefulClass.Builder().apply(initializer).build()
+fun HandwrittenSample(initializer: HandwrittenSample.Builder.() -> Unit) =
+    HandwrittenSample.Builder().apply(initializer).build()

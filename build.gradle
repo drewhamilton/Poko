@@ -10,6 +10,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'dev.drewhamilton.careful:careful-plugin-gradle'
     }
 }
 
@@ -25,6 +26,19 @@ allprojects {
             kotlinOptions {
                 jvmTarget = '1.8'
                 freeCompilerArgs += ['-progressive']
+            }
+        }
+    }
+}
+
+subprojects {
+    configurations.all {
+        resolutionStrategy {
+            dependencySubstitution {
+                // The Kotlin plugin will try to add the careful-compiler-plugin to dependencies with a version
+                // We have it local to this project, so we want it to just substitute that with the local project
+                substitute module('dev.drewhamilton.careful:careful-compiler-plugin') with project(':careful-compiler-plugin')
+                substitute module('dev.drewhamilton.careful:careful-compiler-plugin-annotations') with project(':careful-compiler-plugin-annotations')
             }
         }
     }
