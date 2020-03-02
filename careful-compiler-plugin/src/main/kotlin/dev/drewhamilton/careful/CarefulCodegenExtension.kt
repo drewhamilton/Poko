@@ -29,17 +29,14 @@ class CarefulCodegenExtension(
             return
         } else if (targetClass.isData) {
             log("Data class")
-            messageCollector.report(CompilerMessageSeverity.ERROR, "@Careful does not support data classes", codegen)
+            reportError("@Careful does not support data classes", codegen)
             return
         }
 
         val primaryConstructor = targetClass.constructors.firstOrNull { it.isPrimary }
         if (primaryConstructor == null) {
             log("No primary constructor")
-            messageCollector.report(
-                CompilerMessageSeverity.ERROR, "@Careful classes must have a primary constructor",
-                codegen
-            )
+            reportError("@Careful classes must have a primary constructor", codegen)
             return
         }
 
@@ -79,13 +76,9 @@ class CarefulCodegenExtension(
         )
     }
 
-    private fun MessageCollector.report(
-        severity: CompilerMessageSeverity,
-        message: String,
-        codegen: ImplementationBodyCodegen
-    ) {
+    private fun reportError(message: String, codegen: ImplementationBodyCodegen) {
         val psi = codegen.descriptor.source.getPsi()
         val location = MessageUtil.psiElementToMessageLocation(psi)
-        report(severity, message, location)
+        messageCollector.report(CompilerMessageSeverity.ERROR, message, location)
     }
 }

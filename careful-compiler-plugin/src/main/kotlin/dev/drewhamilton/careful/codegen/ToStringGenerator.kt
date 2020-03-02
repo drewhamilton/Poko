@@ -127,6 +127,8 @@ internal class ToStringGenerator(
             if (asmType.sort == Type.ARRAY) {
                 val elementType = AsmUtil.correctElementType(asmType)
                 if (elementType.sort == Type.OBJECT || elementType.sort == Type.ARRAY) {
+                    // Bytecode: Resolve special toString for arrays
+                    //  INVOKESTATIC java/util/Arrays.toString ([Ljava/lang/Object;)Ljava/lang/String;
                     instructionAdapter.invokestatic(
                         "java/util/Arrays", "toString",
                         "([Ljava/lang/Object;)Ljava/lang/String;",
@@ -135,14 +137,15 @@ internal class ToStringGenerator(
                     asmType = AsmTypes.JAVA_STRING_TYPE
                     kotlinType = function.builtIns.stringType
                 } else if (elementType.sort != Type.CHAR) {
+                    // Bytecode: Resolve special toString for arrays
+                    //  INVOKESTATIC java/util/Arrays.toString ([<type>)Ljava/lang/String;
                     instructionAdapter.invokestatic(
                         "java/util/Arrays", "toString",
                         "(${asmType.descriptor})Ljava/lang/String;",
                         false
                     )
                     asmType = AsmTypes.JAVA_STRING_TYPE
-                    kotlinType = function.builtIns
-                        .stringType
+                    kotlinType = function.builtIns.stringType
                 }
             }
 
