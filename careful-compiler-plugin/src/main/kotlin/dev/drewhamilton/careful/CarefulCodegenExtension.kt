@@ -1,5 +1,6 @@
 package dev.drewhamilton.careful
 
+import dev.drewhamilton.careful.codegen.EqualsGenerator
 import dev.drewhamilton.careful.codegen.ToStringGenerator
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
@@ -52,11 +53,23 @@ class CarefulCodegenExtension(
             fieldOwnerContext = codegen.context,
             v = codegen.v,
             generationState = codegen.state
-        ).generateToStringMethod(
+        ).generate(
             targetClass.findFunction("toString")!!,
             properties
         )
-        // TODO("Generate equals")
+
+        EqualsGenerator(
+            declaration = codegen.myClass as KtClassOrObject,
+            classDescriptor = targetClass,
+            classAsmType = codegen.typeMapper.mapType(targetClass),
+            fieldOwnerContext = codegen.context,
+            v = codegen.v,
+            generationState = codegen.state
+        ).generate(
+            targetClass.findFunction("equals")!!,
+            properties
+        )
+
         // TODO("Generate hashCode")
         // TODO("Generate Builder")
         // TODO("Generate top-level DSL constructor")

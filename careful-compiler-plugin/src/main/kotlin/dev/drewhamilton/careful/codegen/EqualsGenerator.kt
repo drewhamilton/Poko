@@ -4,38 +4,30 @@ import org.jetbrains.annotations.Nullable
 import org.jetbrains.kotlin.codegen.AsmUtil
 import org.jetbrains.kotlin.codegen.ClassBuilder
 import org.jetbrains.kotlin.codegen.FunctionCodegen
-import org.jetbrains.kotlin.codegen.ImplementationBodyCodegen
-import org.jetbrains.kotlin.codegen.JvmKotlinType
 import org.jetbrains.kotlin.codegen.OwnerKind
 import org.jetbrains.kotlin.codegen.context.FieldOwnerContext
 import org.jetbrains.kotlin.codegen.context.MethodContext
 import org.jetbrains.kotlin.codegen.state.GenerationState
-import org.jetbrains.kotlin.codegen.state.KotlinTypeMapper
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.kotlin.resolve.jvm.diagnostics.OtherOrigin
-import org.jetbrains.kotlin.resolve.substitutedUnderlyingType
-import org.jetbrains.org.objectweb.asm.AnnotationVisitor
 import org.jetbrains.org.objectweb.asm.Label
-import org.jetbrains.org.objectweb.asm.Opcodes
+import org.jetbrains.org.objectweb.asm.MethodVisitor
 import org.jetbrains.org.objectweb.asm.Type
 import org.jetbrains.org.objectweb.asm.commons.InstructionAdapter
 
 internal class EqualsGenerator(
-    private val declaration: KtClassOrObject,
-    private val classDescriptor: ClassDescriptor,
-    private val classAsmType: Type,
-    private val fieldOwnerContext: FieldOwnerContext<*>,
-    private val v: ClassBuilder,
-    private val generationState: GenerationState
-) {
-    private val typeMapper: KotlinTypeMapper = generationState.typeMapper
-    private val underlyingType: JvmKotlinType
+    declaration: KtClassOrObject,
+    classDescriptor: ClassDescriptor,
+    classAsmType: Type,
+    fieldOwnerContext: FieldOwnerContext<*>,
+    v: ClassBuilder,
+    generationState: GenerationState
+) : FunctionGenerator(declaration, classDescriptor, classAsmType, fieldOwnerContext, v, generationState) {
 
     // TODO: Not sure about this?
-    private val equalsDesc: String
+    override val methodDesc: String
         get() = "(${firstParameterDesc}Ljava/lang/Object;)Z"
 
     private val firstParameterDesc: String
@@ -46,40 +38,13 @@ internal class EqualsGenerator(
                 ""
         }
 
-    private val access: Int
-        get() {
-            var access = Opcodes.ACC_PUBLIC
-            if (fieldOwnerContext.contextKind == OwnerKind.ERASED_INLINE_CLASS) {
-                access = access or Opcodes.ACC_STATIC
-            }
-
-            return access
-        }
-
-    init {
-        underlyingType = JvmKotlinType(
-            typeMapper.mapType(classDescriptor),
-            classDescriptor.defaultType.substitutedUnderlyingType()
-        )
-    }
-
-    fun generateEqualsMethod(function: FunctionDescriptor, properties: List<PropertyDescriptor>) {
-        val context = fieldOwnerContext.intoFunction(function)
-        val methodOrigin = OtherOrigin(function)
-        val equalsMethodName = mapFunctionName(function)
-        val methodVisitor = v.newMethod(methodOrigin, access, equalsMethodName, equalsDesc, null, null)
-
-        if (fieldOwnerContext.contextKind != OwnerKind.ERASED_INLINE_CLASS && classDescriptor.isInline) {
-            FunctionCodegen.generateMethodInsideInlineClassWrapper(
-                methodOrigin,
-                function,
-                classDescriptor,
-                methodVisitor,
-                typeMapper
-            )
-            return
-        }
-
+    override fun generateBytecode(
+        function: FunctionDescriptor,
+        properties: List<PropertyDescriptor>,
+        context: MethodContext,
+        methodName: String,
+        methodVisitor: MethodVisitor
+    ) {
         // Bytecode:
         //  @Lorg/jetbrains/annotations/Nullable;()
         visitEndForAnnotationVisitor(
@@ -87,7 +52,7 @@ internal class EqualsGenerator(
         )
 
         if (!generationState.classBuilderMode.generateBodies) {
-            FunctionCodegen.endVisit(methodVisitor, equalsMethodName, declaration)
+            FunctionCodegen.endVisit(methodVisitor, methodName, declaration)
             return
         }
 
@@ -167,36 +132,6 @@ internal class EqualsGenerator(
         // TODO: IRETURN
         instructionAdapter.areturn(Type.INT_TYPE)
 
-        FunctionCodegen.endVisit(methodVisitor, equalsMethodName, declaration)
-    }
-
-    private fun mapFunctionName(functionDescriptor: FunctionDescriptor): String {
-        return typeMapper.mapFunctionName(functionDescriptor, fieldOwnerContext.contextKind)
-    }
-
-    private fun visitEndForAnnotationVisitor(annotation: AnnotationVisitor?) {
-        annotation?.visitEnd()
-    }
-
-    @Suppress("SameParameterValue")
-    private fun genOrLoadOnStack(
-        iv: InstructionAdapter,
-        context: MethodContext,
-        propertyDescriptor: PropertyDescriptor,
-        index: Int
-    ): JvmKotlinType {
-        return if (fieldOwnerContext.contextKind == OwnerKind.ERASED_INLINE_CLASS) {
-            iv.load(index, underlyingType.type)
-            underlyingType
-        } else {
-            ImplementationBodyCodegen.genPropertyOnStack(
-                iv,
-                context,
-                propertyDescriptor,
-                classAsmType,
-                index,
-                generationState
-            )
-        }
+        FunctionCodegen.endVisit(methodVisitor, methodName, declaration)
     }
 }
