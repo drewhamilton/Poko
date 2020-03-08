@@ -7,7 +7,6 @@ import org.jetbrains.kotlin.codegen.FunctionCodegen
 import org.jetbrains.kotlin.codegen.ImplementationBodyCodegen
 import org.jetbrains.kotlin.codegen.JvmKotlinType
 import org.jetbrains.kotlin.codegen.OwnerKind
-import org.jetbrains.kotlin.codegen.StackValue
 import org.jetbrains.kotlin.codegen.context.FieldOwnerContext
 import org.jetbrains.kotlin.codegen.context.MethodContext
 import org.jetbrains.kotlin.codegen.state.GenerationState
@@ -16,7 +15,6 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.kotlin.resolve.jvm.AsmTypes
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.OtherOrigin
 import org.jetbrains.kotlin.resolve.substitutedUnderlyingType
 import org.jetbrains.org.objectweb.asm.AnnotationVisitor
@@ -96,7 +94,8 @@ internal class EqualsGenerator(
         val instructionAdapter = InstructionAdapter(methodVisitor)
         methodVisitor.visitCode()
 
-        // TODO: I probably need to use context more?
+        val l0 = Label()
+        val l1 = Label()
 
         // Bytecode: Load the receiver and the argument onto the stack
         //  ALOAD 0
@@ -106,8 +105,7 @@ internal class EqualsGenerator(
 
         // Bytecode: jump to L0 if the references are the same
         //  IF_ACMPEQ L0
-        // FIXME: Need to do the label properly
-        instructionAdapter.ifacmpeq(Label())
+        instructionAdapter.ifacmpeq(l0)
 
         // Bytecode: Load the argument back onto the stack
         //  ALOAD 1
@@ -119,8 +117,7 @@ internal class EqualsGenerator(
 
         // Bytecode: jump to L1 if the argument is the wrong class
         //  IFEQ L1
-        // FIXME: Need to do the label properly
-        instructionAdapter.ifeq(Label())
+        instructionAdapter.ifeq(l1)
 
         // Bytecode: Load the argument back onto the stack
         //  ALOAD 1
@@ -138,26 +135,37 @@ internal class EqualsGenerator(
             //  GETFIELD path/Class.property : <type>
             //  ALOAD 2
             //  GETFIELD path/Class.property : <type>
-            val type = genOrLoadOnStack(instructionAdapter, context, property, 0)
-            genOrLoadOnStack(instructionAdapter, context, property, 2)
+            val leftType = genOrLoadOnStack(instructionAdapter, context, property, 0)
+            val rightType = genOrLoadOnStack(instructionAdapter, context, property, 2)
 
-            // TODO: Now I need to do IF branches to L1 based on the type of the property
-            AsmUtil.genEqualsForExpressionsOnStack(TODO(), TODO(), TODO())
+            if (AsmUtil.isPrimitive(leftType.type) && leftType == rightType) {
+                // Bytecode: If ints are not equals, branch to L1
+                //  IF_ICMPNE L1
+                instructionAdapter.ificmpne(l1)
+            } else {
+                // Bytecode: If objects are not equals, branch to L1
+                //  INVOKESTATIC kotlin/jvm/internal/Intrinsics.areEqual (Ljava/lang/Object;Ljava/lang/Object;)Z
+                //  IFEQ L1
+                AsmUtil.genAreEqualCall(instructionAdapter)
+                instructionAdapter.ifeq(l1)
+            }
         }
 
-        // Bytecode: Create static text (a single character in this case)
-        //  BIPUSH 41
-        instructionAdapter.aconst(")")
-        // Bytecode: Append character to StringBuilder
-        //  INVOKEVIRTUAL java/lang/StringBuilder.append (C)Ljava/lang/StringBuilder;
-        AsmUtil.genInvokeAppendMethod(instructionAdapter, AsmTypes.JAVA_STRING_TYPE, null)
+        // Bytecode: L0 (return true)
+        //  ICONST_1
+        //  IRETURN
+        instructionAdapter.visitLabel(l0)
+        instructionAdapter.iconst(1)
+        // TODO: IRETURN
+        instructionAdapter.areturn(Type.INT_TYPE)
 
-        // Bytecode: Build the string
-        //  INVOKEVIRTUAL java/lang/StringBuilder.toString ()Ljava/lang/String;
-        instructionAdapter.invokevirtual("java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false)
-        // Bytecode: return
-        //  ARETURN
-        instructionAdapter.areturn(AsmTypes.JAVA_STRING_TYPE)
+        // Bytecode: L1 (return false)
+        //  ICONST_0
+        //  IRETURN
+        instructionAdapter.visitLabel(l1)
+        instructionAdapter.iconst(0)
+        // TODO: IRETURN
+        instructionAdapter.areturn(Type.INT_TYPE)
 
         FunctionCodegen.endVisit(methodVisitor, equalsMethodName, declaration)
     }
