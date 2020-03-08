@@ -57,4 +57,20 @@ class SimpleTest {
         val simple = Simple(3, "sample", null)
         assertThat(simple.toString()).isEqualTo("Simple(int=3, requiredString=sample, optionalString=null)")
     }
+
+    @Test fun `toString is equivalent to data class toString`() {
+        val careful = Simple(
+            int = 99,
+            requiredString = "test",
+            optionalString = null
+        )
+
+        val data = DataSimple(
+            int = 99,
+            requiredString = "test",
+            optionalString = null
+        )
+
+        assertThat(careful.toString()).isEqualTo(data.toString().removePrefix("Data"))
+    }
 }

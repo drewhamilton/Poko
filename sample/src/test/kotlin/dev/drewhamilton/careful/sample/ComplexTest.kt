@@ -111,5 +111,70 @@ class ComplexTest {
         assertThat(careful.hashCode()).isEqualTo(data.hashCode())
     }
 
-    // TODO MISSING: toString test
+    @Test fun `toString includes class name and each property`() {
+        val complex = Complex(
+            referenceType = "sample",
+            nullableReferenceType = null,
+            primitiveType = 19,
+            nullablePrimitiveType = null,
+            arrayReferenceType = arrayOf("one", "two"),
+            nullableArrayReferenceType = null,
+            arrayPrimitiveType = intArrayOf(1234, 5678),
+            nullableArrayPrimitiveType = null,
+            genericCollectionType = listOf(true, false, true),
+            nullableGenericCollectionType = null,
+            genericType = false,
+            nullableGenericType = null
+        )
+        assertThat(complex.toString()).isEqualTo(
+            "Complex(" +
+                    "referenceType=sample, " +
+                    "nullableReferenceType=null, " +
+                    "primitiveType=19, " +
+                    "nullablePrimitiveType=null, " +
+                    "arrayReferenceType=[one, two], " +
+                    "nullableArrayReferenceType=null, " +
+                    "arrayPrimitiveType=[1234, 5678], " +
+                    "nullableArrayPrimitiveType=null, " +
+                    "genericCollectionType=[true, false, true], " +
+                    "nullableGenericCollectionType=null, " +
+                    "genericType=false, " +
+                    "nullableGenericType=null" +
+                    ")"
+        )
+    }
+
+    @Test fun `toString is equivalent to data class toString`() {
+        val careful = Complex(
+            referenceType = "string",
+            nullableReferenceType = null,
+            primitiveType = 19,
+            nullablePrimitiveType = null,
+            arrayReferenceType = arrayOf("one", "two"),
+            nullableArrayReferenceType = null,
+            arrayPrimitiveType = intArrayOf(1234, 5678),
+            nullableArrayPrimitiveType = null,
+            genericCollectionType = listOf(true, false, true),
+            nullableGenericCollectionType = null,
+            genericType = false,
+            nullableGenericType = null
+        )
+
+        val data = DataComplex(
+            referenceType = "string",
+            nullableReferenceType = null,
+            primitiveType = 19,
+            nullablePrimitiveType = null,
+            arrayReferenceType = arrayOf("one", "two"),
+            nullableArrayReferenceType = null,
+            arrayPrimitiveType = intArrayOf(1234, 5678),
+            nullableArrayPrimitiveType = null,
+            genericCollectionType = listOf(true, false, true),
+            nullableGenericCollectionType = null,
+            genericType = false,
+            nullableGenericType = null
+        )
+
+        assertThat(careful.toString()).isEqualTo(data.toString().removePrefix("Data"))
+    }
 }
