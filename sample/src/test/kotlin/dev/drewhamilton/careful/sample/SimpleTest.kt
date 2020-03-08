@@ -1,6 +1,8 @@
 package dev.drewhamilton.careful.sample
 
 import com.google.common.truth.Truth.assertThat
+import dev.drewhamilton.careful.sample.alt.DataSimple
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SimpleTest {
@@ -17,8 +19,40 @@ class SimpleTest {
             optionalString = null
         )
 
+        assertTrue(a.equals(b))
         assertThat(a).isEqualTo(b)
         assertThat(b).isEqualTo(a)
+    }
+
+    @Test fun `hashCode is consistent`() {
+        val a = Simple(
+            int = 1,
+            requiredString = "String",
+            optionalString = null
+        )
+        val b = Simple(
+            int = 1,
+            requiredString = "String",
+            optionalString = null
+        )
+
+        assertThat(a.hashCode()).isEqualTo(b.hashCode())
+    }
+
+    @Test fun `hashCode is equivalent to data class hashCode`() {
+        val careful = Simple(
+            int = 1,
+            requiredString = "String",
+            optionalString = null
+        )
+
+        val data = DataSimple(
+            int = 1,
+            requiredString = "String",
+            optionalString = null
+        )
+
+        assertThat(careful.hashCode()).isEqualTo(data.hashCode())
     }
 
     @Test fun `toString includes class name and each property`() {

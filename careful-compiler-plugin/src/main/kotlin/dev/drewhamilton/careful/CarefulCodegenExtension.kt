@@ -1,6 +1,7 @@
 package dev.drewhamilton.careful
 
 import dev.drewhamilton.careful.codegen.EqualsGenerator
+import dev.drewhamilton.careful.codegen.HashCodeGenerator
 import dev.drewhamilton.careful.codegen.ToStringGenerator
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
@@ -69,7 +70,18 @@ class CarefulCodegenExtension(
             properties
         )
 
-        // TODO("Generate hashCode")
+        HashCodeGenerator(
+            declaration = codegen.myClass as KtClassOrObject,
+            classDescriptor = targetClass,
+            classAsmType = codegen.typeMapper.mapType(targetClass),
+            fieldOwnerContext = codegen.context,
+            v = codegen.v,
+            generationState = codegen.state
+        ).generate(
+            targetClass.findFunction("hashCode")!!,
+            properties
+        )
+
         // TODO("Generate Builder")
         // TODO("Generate top-level DSL constructor")
     }
