@@ -34,6 +34,14 @@ abstract class FunctionGenerator(
 
     protected abstract val methodDesc: String
 
+    protected val firstParameterDesc: String
+        get() {
+            return if (fieldOwnerContext.contextKind == OwnerKind.ERASED_INLINE_CLASS)
+                underlyingType.type.descriptor
+            else
+                ""
+        }
+
     private val access: Int
         get() {
             var access = Opcodes.ACC_PUBLIC
@@ -66,16 +74,28 @@ abstract class FunctionGenerator(
                 typeMapper
             )
         } else {
-            generateBytecode(function, properties, context, methodName, methodVisitor)
+            generateAnnotations(methodVisitor)
+
+            if (!generationState.classBuilderMode.generateBodies) {
+                FunctionCodegen.endVisit(methodVisitor, methodName, declaration)
+                return
+            }
+
+            val instructionAdapter = InstructionAdapter(methodVisitor)
+            methodVisitor.visitCode()
+            generateBytecode(instructionAdapter, function, properties, context, methodName)
+            FunctionCodegen.endVisit(methodVisitor, methodName, declaration)
         }
     }
 
+    protected open fun generateAnnotations(methodVisitor: MethodVisitor) = Unit
+
     protected abstract fun generateBytecode(
+        instructionAdapter: InstructionAdapter,
         function: FunctionDescriptor,
         properties: List<PropertyDescriptor>,
         context: MethodContext,
-        methodName: String,
-        methodVisitor: MethodVisitor
+        methodName: String
     )
 
     private fun mapFunctionName(functionDescriptor: FunctionDescriptor): String {

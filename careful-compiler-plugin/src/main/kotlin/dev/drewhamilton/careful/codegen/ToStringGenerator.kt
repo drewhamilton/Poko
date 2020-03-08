@@ -3,8 +3,6 @@ package dev.drewhamilton.careful.codegen
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.kotlin.codegen.AsmUtil
 import org.jetbrains.kotlin.codegen.ClassBuilder
-import org.jetbrains.kotlin.codegen.FunctionCodegen
-import org.jetbrains.kotlin.codegen.OwnerKind
 import org.jetbrains.kotlin.codegen.context.FieldOwnerContext
 import org.jetbrains.kotlin.codegen.context.MethodContext
 import org.jetbrains.kotlin.codegen.state.GenerationState
@@ -30,35 +28,21 @@ internal class ToStringGenerator(
     override val methodDesc: String
         get() = "($firstParameterDesc)Ljava/lang/String;"
 
-    private val firstParameterDesc: String
-        get() {
-            return if (fieldOwnerContext.contextKind == OwnerKind.ERASED_INLINE_CLASS)
-                underlyingType.type.descriptor
-            else
-                ""
-        }
-
-    override fun generateBytecode(
-        function: FunctionDescriptor,
-        properties: List<PropertyDescriptor>,
-        context: MethodContext,
-        methodName: String,
-        methodVisitor: MethodVisitor
-    ) {
+    override fun generateAnnotations(methodVisitor: MethodVisitor) {
         // Bytecode:
         //  @Lorg/jetbrains/annotations/NotNull;()
         visitEndForAnnotationVisitor(
             methodVisitor.visitAnnotation(Type.getDescriptor(NotNull::class.java), false)
         )
+    }
 
-        if (!generationState.classBuilderMode.generateBodies) {
-            FunctionCodegen.endVisit(methodVisitor, methodName, declaration)
-            return
-        }
-
-        val instructionAdapter = InstructionAdapter(methodVisitor)
-        methodVisitor.visitCode()
-
+    override fun generateBytecode(
+        instructionAdapter: InstructionAdapter,
+        function: FunctionDescriptor,
+        properties: List<PropertyDescriptor>,
+        context: MethodContext,
+        methodName: String
+    ) {
         // Bytecode: Create a StringBuilder to build the instance's string
         //  NEW java/lang/StringBuilder
         //  DUP
@@ -131,7 +115,5 @@ internal class ToStringGenerator(
         // Bytecode: return
         //  ARETURN
         instructionAdapter.areturn(AsmTypes.JAVA_STRING_TYPE)
-
-        FunctionCodegen.endVisit(methodVisitor, methodName, declaration)
     }
 }

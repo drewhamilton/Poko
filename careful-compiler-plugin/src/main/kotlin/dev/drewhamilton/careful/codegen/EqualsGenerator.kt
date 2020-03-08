@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Nullable
 import org.jetbrains.kotlin.codegen.AsmUtil
 import org.jetbrains.kotlin.codegen.ClassBuilder
 import org.jetbrains.kotlin.codegen.FunctionCodegen
-import org.jetbrains.kotlin.codegen.OwnerKind
 import org.jetbrains.kotlin.codegen.context.FieldOwnerContext
 import org.jetbrains.kotlin.codegen.context.MethodContext
 import org.jetbrains.kotlin.codegen.state.GenerationState
@@ -26,38 +25,28 @@ internal class EqualsGenerator(
     generationState: GenerationState
 ) : FunctionGenerator(declaration, classDescriptor, classAsmType, fieldOwnerContext, v, generationState) {
 
-    // TODO: Not sure about this?
     override val methodDesc: String
         get() = "(${firstParameterDesc}Ljava/lang/Object;)Z"
 
-    private val firstParameterDesc: String
-        get() {
-            return if (fieldOwnerContext.contextKind == OwnerKind.ERASED_INLINE_CLASS)
-                "${underlyingType.type.descriptor}, "
-            else
-                ""
-        }
-
-    override fun generateBytecode(
-        function: FunctionDescriptor,
-        properties: List<PropertyDescriptor>,
-        context: MethodContext,
-        methodName: String,
-        methodVisitor: MethodVisitor
-    ) {
+    override fun generateAnnotations(methodVisitor: MethodVisitor) {
         // Bytecode:
         //  @Lorg/jetbrains/annotations/Nullable;()
         visitEndForAnnotationVisitor(
             methodVisitor.visitAnnotation(Type.getDescriptor(Nullable::class.java), false)
         )
+    }
 
+    override fun generateBytecode(
+        instructionAdapter: InstructionAdapter,
+        function: FunctionDescriptor,
+        properties: List<PropertyDescriptor>,
+        context: MethodContext,
+        methodName: String
+    ) {
         if (!generationState.classBuilderMode.generateBodies) {
-            FunctionCodegen.endVisit(methodVisitor, methodName, declaration)
+            FunctionCodegen.endVisit(instructionAdapter, methodName, declaration)
             return
         }
-
-        val instructionAdapter = InstructionAdapter(methodVisitor)
-        methodVisitor.visitCode()
 
         val l0 = Label()
         val l1 = Label()
@@ -131,7 +120,5 @@ internal class EqualsGenerator(
         instructionAdapter.iconst(0)
         // TODO: IRETURN
         instructionAdapter.areturn(Type.INT_TYPE)
-
-        FunctionCodegen.endVisit(methodVisitor, methodName, declaration)
     }
 }

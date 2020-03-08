@@ -45,7 +45,6 @@ class CarefulCodegenExtension(
             codegen.bindingContext.get(BindingContext.VALUE_PARAMETER_AS_PROPERTY, parameter)
         }
 
-
         ToStringGenerator(
             declaration = codegen.myClass as KtClassOrObject,
             classDescriptor = targetClass,
