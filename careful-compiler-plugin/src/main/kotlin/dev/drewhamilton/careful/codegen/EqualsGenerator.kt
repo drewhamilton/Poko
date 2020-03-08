@@ -92,7 +92,7 @@ internal class EqualsGenerator(
             val leftType = genOrLoadOnStack(instructionAdapter, context, property, 0)
             val rightType = genOrLoadOnStack(instructionAdapter, context, property, 2)
 
-            if (AsmUtil.isPrimitive(leftType.type) && leftType == rightType) {
+            if (AsmUtil.isPrimitive(leftType.type) && leftType.type == rightType.type) {
                 // Bytecode: If ints are not equals, branch to L1
                 //  IF_ICMPNE L1
                 instructionAdapter.ificmpne(l1)
