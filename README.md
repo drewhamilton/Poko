@@ -27,16 +27,20 @@ And enjoy the benefits of a readable `toString` and working `equals` and `hashCo
 classes, no `copy` or `componentN` functions are generated.
 
 ## To-do
+* Add CI
 * Publish to Maven Central
 * Make the repo public
 * Handle arrays in `equals`?
 * Generate the inner Builder class
+* Propagate the constructor default values to the Builder 
 * Mark the constructor as private
 * Generate the top-level DSL initializer
 * Add robust testing
 * Add robust compiler messages for unsupported cases
 * Write an IDE plugin?
 * Multiplatform support?
+* Support builders with a parameter, and default values of a different type, so I can write a class
+  with `R.string` defaults for Strings and resolve them with a `Context` in the builder
 
 ## License
 ```
