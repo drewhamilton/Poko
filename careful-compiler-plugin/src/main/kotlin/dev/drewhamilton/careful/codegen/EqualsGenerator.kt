@@ -97,6 +97,8 @@ internal class EqualsGenerator(
                 //  IF_ICMPNE L1
                 instructionAdapter.ificmpne(l1)
             } else {
+                // TODO? Support arrays
+
                 // Bytecode: If objects are not equals, branch to L1
                 //  INVOKESTATIC kotlin/jvm/internal/Intrinsics.areEqual (Ljava/lang/Object;Ljava/lang/Object;)Z
                 //  IFEQ L1

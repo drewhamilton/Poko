@@ -7,7 +7,6 @@ import org.junit.Test
 class ComplexTest {
 
     @Test fun `equals works with same array instances`() {
-        // TODO: Document that array members are not supported, or support them
         val arrayReferenceType = arrayOf("B", "C")
         val arrayPrimitiveType = intArrayOf(324, 23423)
         val genericCollectionType = listOf(false, true, true)
