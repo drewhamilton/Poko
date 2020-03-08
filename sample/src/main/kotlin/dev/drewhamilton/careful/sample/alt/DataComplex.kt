@@ -8,7 +8,7 @@ data class DataComplex<T>(
     val arrayReferenceType: Array<String>,
     val nullableArrayReferenceType: Array<String>?,
     val arrayPrimitiveType: IntArray,
-    val nullableArrayGenericType: IntArray?,
+    val nullableArrayPrimitiveType: IntArray?,
     val genericCollectionType: List<T>,
     val nullableGenericCollectionType: List<T>?,
     val genericType: T,
