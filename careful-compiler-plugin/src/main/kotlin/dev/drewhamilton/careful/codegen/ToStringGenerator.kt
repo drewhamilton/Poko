@@ -85,6 +85,8 @@ internal class ToStringGenerator(
                     asmType = AsmTypes.JAVA_STRING_TYPE
                     kotlinType = function.builtIns.stringType
                 } else if (elementType.sort != Type.CHAR) {
+                    // TODO: Why are char arrays skipped?
+
                     // Bytecode: Resolve special toString for arrays
                     //  INVOKESTATIC java/util/Arrays.toString ([<type>)Ljava/lang/String;
                     instructionAdapter.invokestatic(

@@ -40,32 +40,65 @@ internal class HashCodeGenerator(
             //  ALOAD 0
             //  GETFIELD path/ClassName.property : <type>
             val type = genOrLoadOnStack(instructionAdapter, context, property, 0)
-            if (AsmUtil.isPrimitive(type.type)) {
-                // Bytecode: Add the primitive
-                //  IADD
-                instructionAdapter.add(Type.INT_TYPE)
 
-                // TODO: Long, Array
-            } else {
+            if (!AsmUtil.isPrimitive(type.type)) {
                 // Bytecode: Duplicate the property value and jump to L0 if it's null
                 //  DUP
                 //  IFNULL L0
                 instructionAdapter.dup()
                 instructionAdapter.ifnull(l0)
 
-                // Bytecode: Call hashCode() and jump to L1
-                instructionAdapter.invokevirtual("java/lang/Object", "hashCode", "()I", false)
+                val asmType = type.type
+                if (asmType.sort == Type.ARRAY) {
+                    val elementType = AsmUtil.correctElementType(asmType)
+                    val elementDescriptor = if (AsmUtil.isPrimitive(elementType))
+                        asmType.descriptor
+                    else
+                        "[Ljava/lang/Object;"
+                    // Bytecode: Call Arrays.hashCode
+                    //  INVOKESTATIC java/util/Arrays.hashCode (<element type>)I
+                    instructionAdapter.invokestatic(
+                        "java/util/Arrays", "hashCode",
+                        "($elementDescriptor)I",
+                        false
+                    )
+                } else {
+                    // Bytecode: Call property.hashCode
+                    //  INVOKEVIRTUAL java/lang/Object.hashCode ()I
+                    instructionAdapter.invokevirtual("java/lang/Object", "hashCode", "()I", false)
+                }
+                // Bytecode: Go to L1
+                //  GOTO L1
                 instructionAdapter.goTo(l1)
 
                 // Bytecode L0: property is null, load 0 onto the stack
+                //  POP
+                //  ICONST_0
                 instructionAdapter.visitLabel(l0)
                 instructionAdapter.pop()
                 instructionAdapter.iconst(0)
+
+                // Bytecode L1
+                instructionAdapter.visitLabel(l1)
             }
 
-            // Bytecode L1: push 31 to the stack and multiply the property's hashCode by that
-            instructionAdapter.iconst(31)
-            instructionAdapter.mul(Type.INT_TYPE)
+            if (property !== properties.first()) {
+                // Bytecode: Add this to the hashCode so far
+                //  IADD
+                instructionAdapter.add(Type.INT_TYPE)
+            }
+
+            if (property == properties.last()) {
+                // Bytecode: Return
+                //  IRETURN
+                instructionAdapter.areturn(Type.INT_TYPE)
+            } else {
+                // Bytecode L1: push 31 to the stack and multiply the property's hashCode by that
+                //  BIPUSH 31
+                //  IMUL
+                instructionAdapter.iconst(31)
+                instructionAdapter.mul(Type.INT_TYPE)
+            }
         }
     }
 }

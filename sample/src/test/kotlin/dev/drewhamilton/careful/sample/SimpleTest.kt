@@ -2,7 +2,6 @@ package dev.drewhamilton.careful.sample
 
 import com.google.common.truth.Truth.assertThat
 import dev.drewhamilton.careful.sample.alt.DataSimple
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SimpleTest {
@@ -19,7 +18,6 @@ class SimpleTest {
             optionalString = null
         )
 
-        assertTrue(a.equals(b))
         assertThat(a).isEqualTo(b)
         assertThat(b).isEqualTo(a)
     }
