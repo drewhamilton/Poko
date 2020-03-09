@@ -9,7 +9,8 @@
 Extra Care is a Kotlin compiler plugin that makes writing and maintaining data classes for public
 APIs easy. Like with normal Kotlin data classes, all you have to do is provide members in your
 class's constructor. Then give it the `@DataApi` annotation and enjoy the generated `toString`,
-`equals`, `hashCode`, builder class for Java consumers, and DSL initializer for Kotlin consumers.
+`equals`, and `hashCode`. (Builder class for Java consumers and DSL initializer for Kotlin consumers
+to be added.)
 
 Extra Care is a work in progress. It's not published as an artifact yet.
 
