@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 group 'dev.drewhamilton.extracare'
 version '0.1.0'
 
@@ -11,6 +13,7 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'dev.drewhamilton.extracare:extracare-plugin-gradle'
+        classpath "com.android.tools.build:gradle:3.6.1"
     }
 }
 
@@ -22,7 +25,7 @@ allprojects {
     }
 
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
-        project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        project.tasks.withType(KotlinCompile).configureEach {
             kotlinOptions {
                 jvmTarget = '1.8'
                 freeCompilerArgs += ['-progressive']
