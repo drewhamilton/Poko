@@ -1,4 +1,5 @@
 # Extra Care
+![](https://github.com/drewhamilton/ExtraCare/workflows/CI/badge.svg?branch=master)
 
 > Using Kotlin types whose properties will change over time in public API requires extra care to
 > maintain source and binary compatibility as well as an idiomatic API for each language.
@@ -28,7 +29,6 @@ And enjoy the benefits of a readable `toString` and working `equals` and `hashCo
 data classes, no `copy` or `componentN` functions are generated.
 
 ## To-do
-* Add CI
 * Publish to Maven Central
 * Make the repo public
 * Handle arrays in `equals`?
