@@ -1,0 +1,56 @@
+// Yank properties from shared file
+Properties props = new Properties()
+file("../gradle.properties").withInputStream { props.load(it) }
+props.each { key, val ->
+    ext.set(key, val)
+}
+buildscript {
+    Properties buildScriptProps = new Properties()
+    file("../gradle.properties").withInputStream { buildScriptProps.load(it) }
+    buildScriptProps.each { key, val ->
+        ext.set(key, val)
+    }
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
+    }
+}
+
+apply plugin: "java-gradle-plugin"
+apply plugin: "org.jetbrains.kotlin.jvm"
+apply plugin: "org.jetbrains.kotlin.kapt"
+
+repositories {
+    google()
+    jcenter()
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = System.getenv().getOrDefault("ci_java_version", "1.8")
+        freeCompilerArgs += ['-progressive']
+    }
+}
+
+gradlePlugin {
+    plugins {
+        extraCarePlugin {
+            id = 'dev.drewhamilton.extracare.extracare-gradle-plugin'
+            implementationClass = 'dev.drewhamilton.extracare.gradle.ExtraCareGradlePlugin'
+        }
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-gradle-plugin-api:$kotlin_version"
+    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    compileOnly "com.android.tools.build:gradle:3.5.3"
+
+    compileOnly "com.google.auto.service:auto-service-annotations:$autoservice_version"
+    kapt "com.google.auto.service:auto-service:$autoservice_version"
+}

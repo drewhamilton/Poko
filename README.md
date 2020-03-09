@@ -1,4 +1,4 @@
-# Careful
+# Extra Care
 
 > Using Kotlin types whose properties will change over time in public API requires extra care to
 > maintain source and binary compatibility as well as an idiomatic API for each language.
@@ -6,25 +6,25 @@
 — Jake Wharton,
   [Public API challenges in Kotlin](https://jakewharton.com/public-api-challenges-in-kotlin/)
 
-Careful is a Kotlin compiler plugin that makes writing data classes for public APIs easy. Like with
-actual data classes, all you have to do is provide members in your class's constructor. Then give it
-the `@Careful` annotation and enjoy the generated `toString`, `equals`, `hashCode`, builder class
-for Java consumers, and DSL initializer for Kotlin consumers.
+Extra Care is a Kotlin compiler plugin that makes writing and maintaining data classes for public
+APIs easy. Like with normal Kotlin data classes, all you have to do is provide members in your
+class's constructor. Then give it the `@DataApi` annotation and enjoy the generated `toString`,
+`equals`, `hashCode`, builder class for Java consumers, and DSL initializer for Kotlin consumers.
 
-Careful is a work in progress. It's not published as an artifact yet.
+Extra Care is a work in progress. It's not published as an artifact yet.
 
 ## Use
-Write a simple class:
+Mark your class as a `@DataApi class` instead of a `data class`:
 ```kotlin
-@Careful class Simple(
+@DataApi class Simple(
     val int: Int,
     val requiredString: String,
     val optionalString: String?
 )
 ```
 
-And enjoy the benefits of a readable `toString` and working `equals` and `hashCode`. Unlike data
-classes, no `copy` or `componentN` functions are generated.
+And enjoy the benefits of a readable `toString` and working `equals` and `hashCode`. Unlike normal
+data classes, no `copy` or `componentN` functions are generated.
 
 ## To-do
 * Add CI

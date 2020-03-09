@@ -1,9 +1,0 @@
-pluginManagement {
-  repositories {
-    gradlePluginPortal()
-    mavenCentral()
-    jcenter()
-  }
-}
-
-rootProject.name = "careful-gradle-plugin"

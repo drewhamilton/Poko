@@ -1,14 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
-//apply plugin: 'dev.drewhamilton.careful.careful-gradle-plugin'
+//apply plugin: 'dev.drewhamilton.extracare.extracare-gradle-plugin'
 
-careful {
-  androidVariantFilter {
-    if (buildType.name == "debug") {
-      overrideEnabled(false)
-    }
-  }
-}
+extraCare {}
 
 android {
   compileSdkVersion 29

@@ -1,6 +1,6 @@
-rootProject.name = 'Careful'
-include ':careful-compiler-plugin'
-include ':careful-compiler-plugin-annotations'
+rootProject.name = 'Extra Care'
+include ':extracare-compiler-plugin'
+include ':data-api-annotations'
 include ':sample'
 
 // Only enable Android project on JDK 8 until Android tools catch up
@@ -8,8 +8,8 @@ if (!JavaVersion.current().isJava9Compatible() && System.getenv("ANDROID_HOME") 
   include ':sample-android'
 }
 
-includeBuild('careful-gradle-plugin') {
+includeBuild('extracare-gradle-plugin') {
   dependencySubstitution {
-    substitute module('dev.drewhamilton.careful:careful-plugin-gradle') with project(':')
+    substitute module('dev.drewhamilton.extracare:extracare-plugin-gradle') with project(':')
   }
 }
