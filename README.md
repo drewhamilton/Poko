@@ -29,7 +29,6 @@ And enjoy the benefits of a readable `toString` and working `equals` and `hashCo
 data classes, no `copy` or `componentN` functions are generated.
 
 ## To-do
-* Add CI
 * Publish to Maven Central
 * Make the repo public
 * Handle arrays in `equals`?
