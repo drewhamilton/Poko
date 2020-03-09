@@ -10,6 +10,7 @@ if (!JavaVersion.current().isJava9Compatible() && System.getenv("ANDROID_HOME") 
 
 includeBuild('extracare-gradle-plugin') {
   dependencySubstitution {
-    substitute module('dev.drewhamilton.extracare:extracare-plugin-gradle') with project(':')
+    substitute module('dev.drewhamilton.extracare:extracare-gradle-plugin') with project(':')
   }
 }
+

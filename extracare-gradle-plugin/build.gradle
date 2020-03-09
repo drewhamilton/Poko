@@ -37,6 +37,7 @@ compileKotlin {
 }
 
 gradlePlugin {
+    //noinspection GroovyAssignabilityCheck (it works fine)
     plugins {
         extraCarePlugin {
             id = 'dev.drewhamilton.extracare.extracare-gradle-plugin'
