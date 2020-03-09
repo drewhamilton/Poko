@@ -1,4 +1,4 @@
-group 'dev.drewhamilton.careful'
+group 'dev.drewhamilton.extracare'
 version '0.1.0'
 
 buildscript {
@@ -10,7 +10,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'dev.drewhamilton.careful:careful-plugin-gradle'
+        classpath 'dev.drewhamilton.extracare:extracare-plugin-gradle'
     }
 }
 
@@ -35,10 +35,10 @@ subprojects {
     configurations.all {
         resolutionStrategy {
             dependencySubstitution {
-                // The Kotlin plugin will try to add the careful-compiler-plugin to dependencies with a version
+                // The Kotlin plugin will try to add the extracare-compiler-plugin to dependencies with a version
                 // We have it local to this project, so we want it to just substitute that with the local project
-                substitute module('dev.drewhamilton.careful:careful-compiler-plugin') with project(':careful-compiler-plugin')
-                substitute module('dev.drewhamilton.careful:careful-compiler-plugin-annotations') with project(':careful-compiler-plugin-annotations')
+                substitute module('dev.drewhamilton.extracare:extracare-compiler-plugin') with project(':extracare-compiler-plugin')
+                substitute module('dev.drewhamilton.extracare:data-api-annotations') with project(':data-api-annotations')
             }
         }
     }
