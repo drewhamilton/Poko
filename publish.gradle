@@ -1,0 +1,2 @@
+group = rootProject.publish_group
+version = rootProject.publish_version

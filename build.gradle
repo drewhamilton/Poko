@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-group 'dev.drewhamilton.extracare'
-version '0.1.0'
+group publish_group
+version publish_version
 
 buildscript {
     repositories {
@@ -12,7 +12,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'dev.drewhamilton.extracare:extracare-gradle-plugin'
+        classpath "$publish_group:$publish_gradle_plugin_artifact"
         classpath "com.android.tools.build:gradle:3.6.1"
     }
 }
@@ -38,10 +38,13 @@ subprojects {
     configurations.all {
         resolutionStrategy {
             dependencySubstitution {
-                // The Kotlin plugin will try to add the extracare-compiler-plugin to dependencies with a version
-                // We have it local to this project, so we want it to just substitute that with the local project
-                substitute module('dev.drewhamilton.extracare:extracare-compiler-plugin') with project(':extracare-compiler-plugin')
-                substitute module('dev.drewhamilton.extracare:data-api-annotations') with project(':data-api-annotations')
+                substitute module(
+                    "$publish_group:$publish_compiler_plugin_artifact"
+                ) with project(':extracare-compiler-plugin')
+
+                substitute module(
+                    "$publish_group:$publish_annotations_artifact"
+                ) with project(':data-api-annotations')
             }
         }
     }

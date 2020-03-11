@@ -112,7 +112,6 @@ internal class EqualsGenerator(
         //  IRETURN
         instructionAdapter.visitLabel(l0)
         instructionAdapter.iconst(1)
-        // TODO: IRETURN
         instructionAdapter.areturn(Type.INT_TYPE)
 
         // Bytecode: L1 (return false)
@@ -120,7 +119,6 @@ internal class EqualsGenerator(
         //  IRETURN
         instructionAdapter.visitLabel(l1)
         instructionAdapter.iconst(0)
-        // TODO: IRETURN
         instructionAdapter.areturn(Type.INT_TYPE)
     }
 }

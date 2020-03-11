@@ -1,6 +1,12 @@
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.kotlin.kapt'
 
+ext {
+  artifactName = publish_compiler_plugin_artifact
+  pomName = 'Extra Care Compiler Plugin'
+}
+apply from: "../publish.gradle"
+
 dependencies {
   compileOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
