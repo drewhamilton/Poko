@@ -18,7 +18,6 @@ publishing {
             artifactId artifactName
             version version
 
-            // FIXME
             artifact artifact("$buildDir/libs/$project.name-${version}.jar")
             artifact sourcesJar
 
