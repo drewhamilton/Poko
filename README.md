@@ -13,7 +13,7 @@ class's constructor. Then give it the `@DataApi` annotation and enjoy the genera
 `equals`, and `hashCode`. (Builder class for Java consumers and DSL initializer for Kotlin consumers
 to be added.)
 
-Extra Care is a work in progress. It's not published as an artifact yet.
+Extra Care is a work in progress.
 
 ## Use
 Mark your class as a `@DataApi class` instead of a `data class`:
@@ -28,20 +28,37 @@ Mark your class as a `@DataApi class` instead of a `data class`:
 And enjoy the benefits of a readable `toString` and working `equals` and `hashCode`. Unlike normal
 data classes, no `copy` or `componentN` functions are generated.
 
+### Download
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/dev.drewhamilton.inlinedimens/inlinedimens/badge.svg)](https://maven-badges.herokuapp.com/maven-central/dev.drewhamilton.inlinedimens/inlinedimens)
+
+Extra Care is available on Maven Central. It is experimental, and the API may undergo breaking
+changes before version 1.0.0. Kotlin Compiler plugins in general are experimental and new versions
+of Kotlin might break something in this compiler plugin.
+
+To use Extra Care, include the following in your Gradle dependencies:
+```groovy
+// Usually top-level:
+buildscript {
+    dependencies {
+        classpath "dev.drewhamilton.extracare:extracare-gradle-plugin:$version"
+    }
+}
+
+// Per module:
+apply plugin: 'dev.drewhamilton.extracare.extracare-gradle-plugin'
+```
+
 ## To-do
-* Publish to Maven Central
-* Make the repo public
-* Handle arrays in `equals`?
 * Generate the inner Builder class
 * Propagate the constructor default values to the Builder 
 * Mark the constructor as private
 * Generate the top-level DSL initializer
 * Add robust testing
 * Add robust compiler messages for unsupported cases
+* Handle arrays in `equals`?
 * Write an IDE plugin?
 * Multiplatform support?
-* Support builders with a parameter, and default values of a different type, so I can write a class
-  with `R.string` defaults for Strings and resolve them with a `Context` in the builder
 
 ## License
 ```
