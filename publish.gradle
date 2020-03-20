@@ -6,8 +6,22 @@ task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
 }
 
+apply plugin: 'org.jetbrains.dokka'
+def javadocDestinationDir = "$buildDir/docs/javadoc"
+task dokkaJavadoc(type: dokka.class) {
+    outputFormat = 'javadoc'
+    outputDirectory = javadocDestinationDir
+    inputs.dir 'src/main/kotlin'
+}
+
+task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    archiveClassifier.set 'javadoc'
+    from javadocDestinationDir
+}
+
 artifacts {
     archives sourcesJar
+    archives javadocJar
 }
 
 apply plugin: 'maven-publish'
@@ -20,6 +34,7 @@ publishing {
 
             artifact artifact("$buildDir/libs/$project.name-${version}.jar")
             artifact sourcesJar
+            artifact javadocJar
 
             pom {
                 name = pomName
