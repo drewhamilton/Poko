@@ -24,6 +24,11 @@ artifacts {
     archives javadocJar
 }
 
+assemble {
+    dependsOn sourcesJar
+    dependsOn javadocJar
+}
+
 apply plugin: 'maven-publish'
 publishing {
     publications {
