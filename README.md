@@ -30,7 +30,7 @@ data classes, no `copy` or `componentN` functions are generated.
 
 ### Download
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/dev.drewhamilton.inlinedimens/inlinedimens/badge.svg)](https://maven-badges.herokuapp.com/maven-central/dev.drewhamilton.inlinedimens/inlinedimens)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/dev.drewhamilton.extracare/extracare-compiler-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/dev.drewhamilton.extracare/extracare-compiler-plugin)
 
 Extra Care is available on Maven Central. It is experimental, and the API may undergo breaking
 changes before version 1.0.0. Kotlin Compiler plugins in general are experimental and new versions
