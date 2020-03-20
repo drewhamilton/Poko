@@ -23,6 +23,7 @@ publishing {
 
             pom {
                 name = pomName
+                description = "A Kotlin compiler plugin for applying extra care to data classes in public APIs."
 
                 url = 'https://github.com/drewhamilton/ExtraCare'
                 licenses {
