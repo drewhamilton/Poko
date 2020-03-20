@@ -1,11 +1,9 @@
 package dev.drewhamilton.extracare.gradle.sub
 
 import com.google.auto.service.AutoService
-import dev.drewhamilton.extracare.gradle.ANNOTATIONS_ARTIFACT
 import dev.drewhamilton.extracare.gradle.ExtraCareGradlePlugin
 import dev.drewhamilton.extracare.gradle.ExtraCarePluginExtension
-import dev.drewhamilton.extracare.gradle.GROUP
-import dev.drewhamilton.extracare.gradle.VERSION
+import dev.drewhamilton.extracare.info.ArtifactInfo
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
@@ -20,14 +18,13 @@ class ExtraCareGradleSubplugin : KotlinGradleSubplugin<AbstractCompile> {
     override fun isApplicable(project: Project, task: AbstractCompile): Boolean =
         project.plugins.hasPlugin(ExtraCareGradlePlugin::class.java)
 
-    override fun getCompilerPluginId(): String = "extracare-compiler-plugin"
+    override fun getCompilerPluginId(): String = ArtifactInfo.COMPILER_PLUGIN_ARTIFACT
 
-    override fun getPluginArtifact(): SubpluginArtifact =
-        SubpluginArtifact(
-            groupId = GROUP,
-            artifactId = getCompilerPluginId(),
-            version = VERSION
-        )
+    override fun getPluginArtifact() = SubpluginArtifact(
+        groupId = ArtifactInfo.GROUP,
+        artifactId = getCompilerPluginId(),
+        version = ArtifactInfo.VERSION
+    )
 
     override fun apply(
         project: Project,
@@ -40,8 +37,11 @@ class ExtraCareGradleSubplugin : KotlinGradleSubplugin<AbstractCompile> {
         val extension =
             project.extensions.findByType(ExtraCarePluginExtension::class.java) ?: ExtraCarePluginExtension()
 
-        // Add annotation as a dependency
-        project.dependencies.add("implementation", "$GROUP:$ANNOTATIONS_ARTIFACT:$VERSION")
+        // Add annotations as a dependency
+        project.dependencies.add(
+            "implementation",
+            "${ArtifactInfo.GROUP}:${ArtifactInfo.ANNOTATIONS_ARTIFACT}:${ArtifactInfo.VERSION}"
+        )
 
         return listOf(
             SubpluginOption(key = "enabled", value = extension.enabled.toString())

@@ -4,6 +4,7 @@ file("../gradle.properties").withInputStream { props.load(it) }
 props.each { key, val ->
     ext.set(key, val)
 }
+
 buildscript {
     Properties buildScriptProps = new Properties()
     file("../gradle.properties").withInputStream { buildScriptProps.load(it) }
@@ -16,27 +17,57 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 apply plugin: "java-gradle-plugin"
 apply plugin: "org.jetbrains.kotlin.jvm"
 apply plugin: "org.jetbrains.kotlin.kapt"
+apply plugin: 'org.jetbrains.dokka'
+
+ext {
+    artifactName = publish_gradle_plugin_artifact
+    pomName = 'Extra Care Gradle Plugin'
+}
+apply from: "../publish.gradle"
 
 repositories {
     google()
     jcenter()
 }
 
+//region ArtifactInfo.kt template for setting the artifact info in the build
+def generatedInfoTemplatesSrcDir = "generated/sources/artifact-info-template/kotlin/main"
+sourceSets {
+    main.java.srcDirs += "$buildDir/$generatedInfoTemplatesSrcDir"
+}
+
+TaskProvider copyInfoTemplateProvider = tasks.register("copyInfoTemplate", Copy) {
+    from rootProject.layout.projectDirectory.dir("artifact-info-template")
+    into project.layout.buildDirectory.dir(generatedInfoTemplatesSrcDir)
+    expand(
+        'publishGroup': "${project.group}",
+        'publishVersion': "${project.version}",
+        'annotationsArtifact': "${project.publish_annotations_artifact}",
+        'compilerPluginArtifact': "${project.publish_compiler_plugin_artifact}",
+        'gradlePluginArtifact': "${project.publish_gradle_plugin_artifact}"
+    )
+    filteringCharset = 'UTF-8'
+}
+//endregion
+
 compileKotlin {
+    dependsOn copyInfoTemplateProvider
     kotlinOptions {
-        jvmTarget = System.getenv().getOrDefault("ci_java_version", "1.8")
+        jvmTarget = "1.8"
         freeCompilerArgs += ['-progressive']
     }
 }
 
 gradlePlugin {
+    //noinspection GroovyAssignabilityCheck (it works fine)
     plugins {
         extraCarePlugin {
             id = 'dev.drewhamilton.extracare.extracare-gradle-plugin'
