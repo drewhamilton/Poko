@@ -14,28 +14,36 @@ class ExtraCarePluginTest {
     @JvmField
     @Rule var temporaryFolder: TemporaryFolder = TemporaryFolder()
 
-    @Test fun `compilation succeeds`() {
-        val dataApiClassFile = SourceFile.kotlin(
-            "DataApiClass.kt",
-            """
-                package dev.drewhamilton.extracare
-
-                import dev.drewhamilton.extracare.DataApi
-
-                @DataApi class DataApiClass(
-                    val string: String
-                )
-            """.trimIndent()
-        )
-        val result = prepareCompilation(dataApiClassFile).apply {
-            verbose = true
-        }.compile()
+    @Test fun `compilation of valid class succeeds`() {
+        val classFile = SourceFile.kotlin("DataApiClass.kt", VALID_DATA_API_CLASS)
+        val result = prepareCompilation(classFile).compile()
 
         assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
     }
 
-    private fun compile(vararg sourceFiles: SourceFile): KotlinCompilation.Result {
-        return prepareCompilation(*sourceFiles).compile()
+    @Test fun `compilation of data class fails`() {
+        val classFile = SourceFile.kotlin("DataClass.kt", VALID_DATA_API_CLASS.replace("class", "data class"))
+        val result = prepareCompilation(classFile).compile()
+
+        assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+        assertThat(result.messages).contains("@DataApi does not support data classes")
+    }
+
+    @Test fun `compilation without primary constructor fails`() {
+        val classWithoutPrimaryConstructor = """
+            package dev.drewhamilton.extracare
+
+            import dev.drewhamilton.extracare.DataApi
+
+            @DataApi class DataApiClass {
+                constructor(string: String)
+            }
+        """.trimIndent()
+        val classFile = SourceFile.kotlin("SecondaryConstructorClass.kt", classWithoutPrimaryConstructor)
+        val result = prepareCompilation(classFile).compile()
+
+        assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+        assertThat(result.messages).contains("@DataApi classes must have a primary constructor")
     }
 
     private fun prepareCompilation(vararg sourceFiles: SourceFile) = KotlinCompilation().apply {
@@ -45,5 +53,17 @@ class ExtraCarePluginTest {
         sources = sourceFiles.asList()
         verbose = false
         jvmTarget = JvmTarget.fromString("1.8")!!.description
+    }
+
+    companion object {
+        private val VALID_DATA_API_CLASS = """
+            package dev.drewhamilton.extracare
+
+            import dev.drewhamilton.extracare.DataApi
+
+            @DataApi class DataApiClass(
+                val string: String
+            )
+        """.trimIndent()
     }
 }
