@@ -1,14 +1,26 @@
 # Changelog
 
-## 0.1.2
+## 0.1.3
 _2020-04-19_
 
 Fix `equals` and `hashCode` generation for float and double member types. Update to Kotlin 1.3.72.
 
+Fix release process bug preventing changes from landing in 0.1.1 and 0.1.2.
+
+## 0.1.2
+_2020-04-19_
+
+No changes due to release process bug.
+
+~~Fix `equals` and `hashCode` generation for float and double member types. Update to Kotlin
+1.3.72.~~
+
 ## 0.1.1
 _2020-03-25_
 
-Update to Kotlin 1.3.71.
+No changes due to release process bug.
+
+~~Update to Kotlin 1.3.71.~~
 
 ## 0.1.0
 _2020-03-20_
