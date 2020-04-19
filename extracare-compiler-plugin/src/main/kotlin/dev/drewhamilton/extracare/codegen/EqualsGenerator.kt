@@ -92,10 +92,21 @@ internal class EqualsGenerator(
             val leftType = genOrLoadOnStack(instructionAdapter, context, property, 0)
             val rightType = genOrLoadOnStack(instructionAdapter, context, property, 2)
 
-            if (AsmUtil.isPrimitive(leftType.type) && leftType.type == rightType.type) {
-                // Bytecode: If ints are not equals, branch to L1
-                //  IF_ICMPNE L1
-                instructionAdapter.ificmpne(l1)
+            val leftAsmType = leftType.type
+            if (AsmUtil.isPrimitive(leftAsmType) && leftAsmType == rightType.type) {
+                if (leftAsmType.sort == Type.FLOAT || leftAsmType.sort == Type.DOUBLE) {
+                    val name = if (leftAsmType.sort == Type.FLOAT) "Float" else "Double"
+                    val descriptor = leftAsmType.descriptor
+                    // Bytecode: If floats/doubles are not equals, branch to L1
+                    //  INVOKESTATIC java/lang/Float.compare (FF)I
+                    //  IFNE L1
+                    instructionAdapter.invokestatic("java/lang/$name", "compare", "($descriptor${descriptor})I", false)
+                    instructionAdapter.ifne(l1)
+                } else {
+                    // Bytecode: If ints are not equals, branch to L1
+                    //  IF_ICMPNE L1
+                    instructionAdapter.ificmpne(l1)
+                }
             } else {
                 // TODO? Support arrays
 

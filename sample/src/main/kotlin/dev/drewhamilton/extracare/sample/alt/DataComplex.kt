@@ -3,8 +3,10 @@ package dev.drewhamilton.extracare.sample.alt
 data class DataComplex<T>(
     val referenceType: String,
     val nullableReferenceType: String?,
-    val primitiveType: Int,
-    val nullablePrimitiveType: Int?,
+    val int: Int,
+    val nullableInt: Int?,
+    val float: Float,
+    val double: Double,
     val arrayReferenceType: Array<String>,
     val nullableArrayReferenceType: Array<String>?,
     val arrayPrimitiveType: IntArray,

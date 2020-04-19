@@ -62,7 +62,9 @@ class ExtraCarePluginTest {
             import dev.drewhamilton.extracare.DataApi
 
             @DataApi class DataApiClass(
-                val string: String
+                val string: String,
+                val float: Float,
+                val double: Double
             )
         """.trimIndent()
     }

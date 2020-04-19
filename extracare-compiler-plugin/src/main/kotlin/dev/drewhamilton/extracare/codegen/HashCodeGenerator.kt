@@ -41,14 +41,14 @@ internal class HashCodeGenerator(
             //  GETFIELD path/ClassName.property : <type>
             val type = genOrLoadOnStack(instructionAdapter, context, property, 0)
 
-            if (!AsmUtil.isPrimitive(type.type)) {
+            val asmType = type.type
+            if (!AsmUtil.isPrimitive(asmType)) {
                 // Bytecode: Duplicate the property value and jump to L0 if it's null
                 //  DUP
                 //  IFNULL L0
                 instructionAdapter.dup()
                 instructionAdapter.ifnull(l0)
 
-                val asmType = type.type
                 if (asmType.sort == Type.ARRAY) {
                     val elementType = AsmUtil.correctElementType(asmType)
                     val elementDescriptor = if (AsmUtil.isPrimitive(elementType))
@@ -80,6 +80,24 @@ internal class HashCodeGenerator(
 
                 // Bytecode L1
                 instructionAdapter.visitLabel(l1)
+            } else if (asmType.sort == Type.FLOAT) {
+                // Bytecode: Convert the float to a hashed int
+                //  INVOKESTATIC java/lang/Float.floatToIntBits (F)I
+                instructionAdapter.invokestatic("java/lang/Float", "floatToIntBits", "(F)I", false)
+            } else if (asmType.sort == Type.DOUBLE) {
+                // Bytecode: Convert the double to a hashed int
+                //  INVOKESTATIC java/lang/Double.doubleToLongBits (D)J
+                //  DUP2
+                //  BIPUSH 32
+                //  LUSHR
+                //  LXOR
+                //  L2I
+                instructionAdapter.invokestatic("java/lang/Double", "doubleToLongBits", "(D)J", false)
+                instructionAdapter.dup2()
+                instructionAdapter.iconst(32)
+                instructionAdapter.ushr(Type.LONG_TYPE)
+                instructionAdapter.xor(Type.LONG_TYPE)
+                instructionAdapter.cast(Type.LONG_TYPE, Type.INT_TYPE)
             }
 
             if (property !== properties.first()) {
