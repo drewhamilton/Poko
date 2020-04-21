@@ -70,7 +70,7 @@ gradlePlugin {
     //noinspection GroovyAssignabilityCheck (it works fine)
     plugins {
         extraCarePlugin {
-            id = 'dev.drewhamilton.extracare.extracare-gradle-plugin'
+            id = 'dev.drewhamilton.extracare'
             implementationClass = 'dev.drewhamilton.extracare.gradle.ExtraCareGradlePlugin'
         }
     }

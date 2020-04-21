@@ -1,5 +1,5 @@
 apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'dev.drewhamilton.extracare.extracare-gradle-plugin'
+apply plugin: 'dev.drewhamilton.extracare'
 
 dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
