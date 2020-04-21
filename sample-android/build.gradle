@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
-apply plugin: 'dev.drewhamilton.extracare.extracare-gradle-plugin'
+apply plugin: 'dev.drewhamilton.extracare'
 
 android {
   compileSdkVersion 29
