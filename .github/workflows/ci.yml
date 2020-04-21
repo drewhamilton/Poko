@@ -19,7 +19,7 @@ jobs:
           # TODO: Multiple Java versions
           java-version: 1.8
       - name: Assemble
-        run: ./extracare-gradle-plugin/gradlew clean && ./gradlew clean assemble --stacktrace
+        run: cd extracare-gradle-plugin && ./gradlew clean && cd .. && ./gradlew clean assemble --stacktrace
       - name: Check
         run: ./gradlew check --stacktrace
       - name: Build
