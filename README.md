@@ -46,7 +46,7 @@ buildscript {
 }
 
 // Per module:
-apply plugin: 'dev.drewhamilton.extracare.extracare-gradle-plugin'
+apply plugin: 'dev.drewhamilton.extracare'
 ```
 
 ## To-do

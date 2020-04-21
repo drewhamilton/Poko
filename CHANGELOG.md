@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0
+_2020-04-21_
+
+Change the Gradle plugin ID so applying the plugin is less verbose:
+```groovy
+apply plugin: 'dev.drewhamilton.extracare'
+```
+
 ## 0.1.3
 _2020-04-19_
 
