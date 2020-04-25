@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+_2020-04-24_
+
+Publish with Gradle module metadata.
+
 ## 0.2.0
 _2020-04-21_
 

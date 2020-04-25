@@ -37,7 +37,7 @@ publishing {
             artifactId artifactName
             version version
 
-            artifact artifact("$buildDir/libs/$project.name-${version}.jar")
+            from components.java
             artifact sourcesJar
             artifact javadocJar
 
@@ -65,30 +65,6 @@ publishing {
                     connection = 'scm:git:github.com/drewhamilton/ExtraCare.git'
                     developerConnection = 'scm:git:ssh://github.com/drewhamilton/ExtraCare.git'
                     url = 'https://github.com/drewhamilton/ExtraCare/tree/master'
-                }
-
-                // TODO WORKAROUND: Figure out why OkHttp doesn't have to write this block
-                withXml {
-                    def dependenciesNode = asNode().appendNode('dependencies')
-
-                    def addDependency = { Dependency dep, String scope ->
-                        if (!isValid(dep)) return
-
-                        logger.info "$name dependency: $dep"
-
-                        final dependencyNode = dependenciesNode.appendNode('dependency')
-                            .appendNode('groupId', dep.group).parent()
-                            .appendNode('artifactId', extractDependencyArtifactId(dep)).parent()
-                            .appendNode('version', dep.version).parent()
-                            .appendNode('scope', scope).parent()
-
-                        if (isLocalDependency(dep))
-                            dependencyNode.appendNode('type', 'aar').parent()
-                    }
-
-                    configurations.api.getDependencies().each { dep -> addDependency(dep, 'compile') }
-                    configurations.implementation.getDependencies().each { dep -> addDependency(dep, 'runtime') }
-                    configurations.compile.getDependencies().each { dep -> addDependency(dep, 'compile') }
                 }
             }
         }
@@ -122,28 +98,4 @@ ext.'signing.password' = hasProperty('personalGpgPassword') ? personalGpgPasswor
 ext.'signing.secretKeyRingFile' = hasProperty('personalGpgKeyringFile') ? personalGpgKeyringFile : 'x'
 signing {
     sign publishing.publications
-}
-
-private static boolean isValid(Dependency dep) {
-    String artifactId = extractDependencyArtifactId(dep)
-    String version = dep.version
-    return dep.group != null &&
-        version != null && version != 'unspecified' &&
-        artifactId != null && artifactId != 'unspecified'
-}
-
-private static String extractDependencyArtifactId(dependency) {
-    def depArtifactId = dependency.name
-
-    // If ext.artifactName is explicitly defined, use that over the module name:
-    if (isLocalDependency(dependency)) {
-        def depProject = dependency.dependencyProject
-        if (depProject.hasProperty('artifactName'))
-            depArtifactId = depProject.artifactName
-    }
-    return depArtifactId
-}
-
-private static boolean isLocalDependency(dependency) {
-    return dependency.hasProperty('dependencyProject')
 }
