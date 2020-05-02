@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.cli.common.messages.MessageUtil
 import org.jetbrains.kotlin.codegen.ImplementationBodyCodegen
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor
@@ -46,41 +47,44 @@ class DataApiCodegenExtension(
             codegen.bindingContext.get(BindingContext.VALUE_PARAMETER_AS_PROPERTY, parameter)
         }
 
-        ToStringGenerator(
-            declaration = codegen.myClass as KtClassOrObject,
-            classDescriptor = targetClass,
-            classAsmType = codegen.typeMapper.mapType(targetClass),
-            fieldOwnerContext = codegen.context,
-            v = codegen.v,
-            generationState = codegen.state
-        ).generate(
-            targetClass.findFunction("toString")!!,
-            properties
-        )
+        val toStringFunction = targetClass.findFunction("toString")!!
+        // Only generate if it's a fake override (of Any.toString):
+        if (toStringFunction.kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE) {
+            ToStringGenerator(
+                declaration = codegen.myClass as KtClassOrObject,
+                classDescriptor = targetClass,
+                classAsmType = codegen.typeMapper.mapType(targetClass),
+                fieldOwnerContext = codegen.context,
+                v = codegen.v,
+                generationState = codegen.state
+            ).generate(toStringFunction, properties)
+        }
 
-        EqualsGenerator(
-            declaration = codegen.myClass as KtClassOrObject,
-            classDescriptor = targetClass,
-            classAsmType = codegen.typeMapper.mapType(targetClass),
-            fieldOwnerContext = codegen.context,
-            v = codegen.v,
-            generationState = codegen.state
-        ).generate(
-            targetClass.findFunction("equals")!!,
-            properties
-        )
+        val equalsFunction = targetClass.findFunction("equals")!!
+        // Only generate if it's a fake override (of Any.equals):
+        if (equalsFunction.kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE) {
+            EqualsGenerator(
+                declaration = codegen.myClass as KtClassOrObject,
+                classDescriptor = targetClass,
+                classAsmType = codegen.typeMapper.mapType(targetClass),
+                fieldOwnerContext = codegen.context,
+                v = codegen.v,
+                generationState = codegen.state
+            ).generate(equalsFunction, properties)
+        }
 
-        HashCodeGenerator(
-            declaration = codegen.myClass as KtClassOrObject,
-            classDescriptor = targetClass,
-            classAsmType = codegen.typeMapper.mapType(targetClass),
-            fieldOwnerContext = codegen.context,
-            v = codegen.v,
-            generationState = codegen.state
-        ).generate(
-            targetClass.findFunction("hashCode")!!,
-            properties
-        )
+        val hashCodeFunction = targetClass.findFunction("hashCode")!!
+        // Only generate if it's a fake override (of Any.hashCode):
+        if (hashCodeFunction.kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE) {
+            HashCodeGenerator(
+                declaration = codegen.myClass as KtClassOrObject,
+                classDescriptor = targetClass,
+                classAsmType = codegen.typeMapper.mapType(targetClass),
+                fieldOwnerContext = codegen.context,
+                v = codegen.v,
+                generationState = codegen.state
+            ).generate(hashCodeFunction, properties)
+        }
 
         // TODO("Generate Builder")
         // TODO("Generate top-level DSL constructor")

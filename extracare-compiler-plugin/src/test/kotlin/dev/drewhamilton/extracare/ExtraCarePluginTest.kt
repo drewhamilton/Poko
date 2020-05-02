@@ -46,6 +46,24 @@ class ExtraCarePluginTest {
         assertThat(result.messages).contains("@DataApi classes must have a primary constructor")
     }
 
+    @Test fun `compilation with explicit function declarations succeeds`() {
+        val classWithExplicitFunctionDeclarations = """
+            package dev.drewhamilton.extracare
+
+            import dev.drewhamilton.extracare.DataApi
+
+            @DataApi class ExplicitDeclarationsClass(private val string: String) {
+                override fun toString() = string
+                override fun equals(other: Any?) = other == string
+                override fun hashCode() = string.hashCode()
+            }
+        """.trimIndent()
+        val classFile = SourceFile.kotlin("ExplicitFunctionDeclarationClass.kt", classWithExplicitFunctionDeclarations)
+        val result = prepareCompilation(classFile).compile()
+
+        assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+    }
+
     private fun prepareCompilation(vararg sourceFiles: SourceFile) = KotlinCompilation().apply {
         workingDir = temporaryFolder.root
         compilerPlugins = listOf<ComponentRegistrar>(ExtraCareComponentRegistrar())
