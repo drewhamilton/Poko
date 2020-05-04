@@ -86,7 +86,8 @@ class ExtraCarePluginTest {
                 val long: Long,
                 val int: Int,
                 val short: Short,
-                val byte: Byte
+                val byte: Byte,
+                val boolean: Boolean
             )
         """.trimIndent()
     }

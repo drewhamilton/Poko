@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.3
+_2020-05-04_
+
+Fix `equals` and `hashCode` generation for long member types.
+
 ## 0.2.2
 _2020-05-02_
 

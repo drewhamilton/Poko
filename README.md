@@ -56,7 +56,6 @@ apply plugin: 'dev.drewhamilton.extracare'
 * Generate the top-level DSL initializer
 * Add robust testing
 * Add robust compiler messages for unsupported cases
-* Handle arrays in `equals`?
 * Write an IDE plugin?
 * Multiplatform support?
 
