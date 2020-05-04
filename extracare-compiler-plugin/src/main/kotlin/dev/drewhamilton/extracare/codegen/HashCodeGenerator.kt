@@ -84,15 +84,19 @@ internal class HashCodeGenerator(
                 // Bytecode: Convert the float to a hashed int
                 //  INVOKESTATIC java/lang/Float.floatToIntBits (F)I
                 instructionAdapter.invokestatic("java/lang/Float", "floatToIntBits", "(F)I", false)
-            } else if (asmType.sort == Type.DOUBLE) {
-                // Bytecode: Convert the double to a hashed int
-                //  INVOKESTATIC java/lang/Double.doubleToLongBits (D)J
+            } else if (asmType.sort == Type.DOUBLE || asmType.sort == Type.LONG) {
+                if (asmType.sort == Type.DOUBLE) {
+                    // Bytecode: Convert the double to a long
+                    //  INVOKESTATIC java/lang/Double.doubleToLongBits (D)J
+                    instructionAdapter.invokestatic("java/lang/Double", "doubleToLongBits", "(D)J", false)
+                }
+
+                // Bytecode: Convert the long to a hashed int
                 //  DUP2
                 //  BIPUSH 32
                 //  LUSHR
                 //  LXOR
                 //  L2I
-                instructionAdapter.invokestatic("java/lang/Double", "doubleToLongBits", "(D)J", false)
                 instructionAdapter.dup2()
                 instructionAdapter.iconst(32)
                 instructionAdapter.ushr(Type.LONG_TYPE)

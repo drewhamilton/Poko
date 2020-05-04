@@ -15,6 +15,7 @@ class ComplexTest {
             nullableReferenceType = null,
             int = 19,
             nullableInt = null,
+            long = 2222222222L,
             float = 20f,
             double = 21.0,
             arrayReferenceType = arrayReferenceType,
@@ -31,6 +32,7 @@ class ComplexTest {
             nullableReferenceType = null,
             int = 19,
             nullableInt = null,
+            long = 2222222222L,
             float = 20f,
             double = 21.0,
             arrayReferenceType = arrayReferenceType,
@@ -53,6 +55,7 @@ class ComplexTest {
             nullableReferenceType = null,
             int = 19,
             nullableInt = null,
+            long = 2222222222L,
             float = 20f,
             double = 21.0,
             arrayReferenceType = arrayOf("B", "C"),
@@ -69,6 +72,7 @@ class ComplexTest {
             nullableReferenceType = null,
             int = 19,
             nullableInt = null,
+            long = 2222222222L,
             float = 20f,
             double = 21.0,
             arrayReferenceType = arrayOf("B", "C"),
@@ -90,6 +94,7 @@ class ComplexTest {
             nullableReferenceType = null,
             int = 19,
             nullableInt = null,
+            long = 2222222222L,
             float = 20f,
             double = 21.0,
             arrayReferenceType = arrayOf("B", "C"),
@@ -107,6 +112,7 @@ class ComplexTest {
             nullableReferenceType = null,
             int = 19,
             nullableInt = null,
+            long = 2222222222L,
             float = 20f,
             double = 21.0,
             arrayReferenceType = arrayOf("B", "C"),
@@ -128,6 +134,7 @@ class ComplexTest {
             nullableReferenceType = null,
             int = 19,
             nullableInt = null,
+            long = 2222222222L,
             float = 20f,
             double = 21.0,
             arrayReferenceType = arrayOf("one", "two"),
@@ -145,6 +152,7 @@ class ComplexTest {
                     "nullableReferenceType=null, " +
                     "int=19, " +
                     "nullableInt=null, " +
+                    "long=2222222222, " +
                     "float=20.0, " +
                     "double=21.0, " +
                     "arrayReferenceType=[one, two], " +
@@ -165,6 +173,7 @@ class ComplexTest {
             nullableReferenceType = null,
             int = 19,
             nullableInt = null,
+            long = 2222222222L,
             float = 20f,
             double = 21.0,
             arrayReferenceType = arrayOf("one", "two"),
@@ -182,6 +191,7 @@ class ComplexTest {
             nullableReferenceType = null,
             int = 19,
             nullableInt = null,
+            long = 2222222222L,
             float = 20f,
             double = 21.0,
             arrayReferenceType = arrayOf("one", "two"),

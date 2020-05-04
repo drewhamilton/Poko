@@ -82,7 +82,9 @@ class ExtraCarePluginTest {
             @DataApi class DataApiClass(
                 val string: String,
                 val float: Float,
-                val double: Double
+                val double: Double,
+                val long: Long,
+                val int: Int
             )
         """.trimIndent()
     }
