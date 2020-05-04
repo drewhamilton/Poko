@@ -5,6 +5,7 @@ data class DataComplex<T>(
     val nullableReferenceType: String?,
     val int: Int,
     val nullableInt: Int?,
+    val long: Long,
     val float: Float,
     val double: Double,
     val arrayReferenceType: Array<String>,
