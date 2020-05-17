@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: automate-publish
+    branches: master
     tags: '*'
 
 jobs:
