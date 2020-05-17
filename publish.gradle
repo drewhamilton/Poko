@@ -78,12 +78,8 @@ publishing {
             def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
             url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
 
-            def sonatypeIssuesUsername = project.hasProperty('personalSonatypeIssuesUsername')
-                ? personalSonatypeIssuesUsername
-                : 'x'
-            def sonatypeIssuesPassword = project.hasProperty('personalSonatypeIssuesPassword')
-                ? personalSonatypeIssuesPassword
-                : 'x'
+            def sonatypeIssuesUsername = findProperty('personalSonatypeIssuesUsername')
+            def sonatypeIssuesPassword = findProperty('personalSonatypeIssuesPassword')
             credentials {
                 username sonatypeIssuesUsername
                 password sonatypeIssuesPassword
@@ -93,9 +89,9 @@ publishing {
 }
 
 apply plugin: 'signing'
-ext.'signing.keyId' = hasProperty('personalGpgKeyId') ? personalGpgKeyId : 'x'
-ext.'signing.password' = hasProperty('personalGpgPassword') ? personalGpgPassword : 'x'
-ext.'signing.secretKeyRingFile' = hasProperty('personalGpgKeyringFile') ? personalGpgKeyringFile : 'x'
 signing {
+    def key = findProperty('personalGpgKey')
+    def password = findProperty('personalGpgPassword')
+    useInMemoryPgpKeys(key, password)
     sign publishing.publications
 }
