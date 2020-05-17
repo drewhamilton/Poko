@@ -1,12 +1,18 @@
 # Releasing
 
-1. Make sure you're on the master branch.
-2. Change `publish_version` in gradle.properties. 
-3. Update README.md if applicable for the impending release.
-4. Update CHANGELOG.md for the impending release.
-5. Clean: `cd extracare-gradle-plugin && ./gradlew clean && cd .. && ./gradlew clean`
-6. Publish: `./gradlew assemble && ./gradlew publishReleasePublicationToMavenCentralRepository && cd extracare-gradle-plugin && ./gradlew assemble && ./gradlew publishReleasePublicationToMavenCentralRepository && cd ..`
-7. Visit [Sonatype Nexus](https://oss.sonatype.org/#stagingRepositories). Close and release the
-   staging repository.
-8. Commit and push the release changes to master.
-9. Create the release on GitHub with the changelog updates as the release notes.
+ 1. Make sure you're on the master branch.
+ 2. Change `publish_version` in gradle.properties to a non-SNAPSHOT version.
+ 3. Update README.md for the impending release.
+ 4. Update CHANGELOG.md for the impending release.
+ 5. Commit (don't push) the changes with message "Release x.y.z", where x.y.z is the new version.
+ 6. Tag the commit `x.y.z`, where x.y.z is the new version.
+ 7. Change 'publish_version' in gradle.properties to the next SNAPSHOT version.
+ 8. Commit the snapshot change.
+ 9. Push the 2 commits + 1 tag to origin/master.
+10. Wait for the "Release" Action to complete.
+11. Visit [Sonatype Nexus](https://oss.sonatype.org/#stagingRepositories). Verify the artifacts,
+    close the staging repository, and release the closed staging repository.
+12. Create the release on GitHub with release notes copied from the changelog.
+
+If steps 9, 10, or 11 fail: drop the Sonatype repo, fix the problem, commit, and start again at
+step 6.
