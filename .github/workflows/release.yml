@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    branches: master
+    tags: '*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+      - name: Install JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Clean
+        run: cd extracare-gradle-plugin && ./gradlew clean && cd .. && ./gradlew clean
+      - name: Assemble for release
+        run: ./gradlew assemble && cd extracare-gradle-plugin && ./gradlew assemble && cd ..
+      - name: Publish
+        env:
+          ORG_GRADLE_PROJECT_personalSonatypeIssuesUsername: >-
+            ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesUsername }}
+          ORG_GRADLE_PROJECT_personalSonatypeIssuesPassword: >-
+            ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesPassword }}
+          ORG_GRADLE_PROJECT_personalGpgKey: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgKey }}
+          ORG_GRADLE_PROJECT_personalGpgPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgPassword }}
+        run: >-
+          ./gradlew publishReleasePublicationToMavenCentralRepository
+          && cd extracare-gradle-plugin
+          && ./gradlew publishReleasePublicationToMavenCentralRepository
+          && cd ..
