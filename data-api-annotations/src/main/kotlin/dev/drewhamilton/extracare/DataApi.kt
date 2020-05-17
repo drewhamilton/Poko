@@ -1,5 +1,5 @@
 package dev.drewhamilton.extracare
 
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS)
 annotation class DataApi
