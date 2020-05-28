@@ -13,7 +13,9 @@ buildscript {
     }
     repositories {
         google()
+        mavenCentral()
         jcenter()
+        maven { url = 'https://dl.bintray.com/kotlin/kotlin-eap' }
     }
 
     dependencies {
@@ -35,7 +37,9 @@ apply from: "../publish.gradle"
 
 repositories {
     google()
+    mavenCentral()
     jcenter()
+    maven { url = 'https://dl.bintray.com/kotlin/kotlin-eap' }
 }
 
 //region ArtifactInfo.kt template for setting the artifact info in the build
