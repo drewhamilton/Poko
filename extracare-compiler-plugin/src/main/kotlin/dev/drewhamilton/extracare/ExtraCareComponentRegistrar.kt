@@ -28,7 +28,7 @@ class ExtraCareComponentRegistrar : ComponentRegistrar {
     }
 
     private fun <T : Any> ProjectExtensionDescriptor<T>.registerExtensionAsFirst(project: Project, extension: T) {
-        Extensions.getArea(project)
+        project.extensionArea
             .getExtensionPoint(extensionPointName)
             .let { it as ExtensionPointImpl }
             .registerExtension(extension, project)
