@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.config.CompilerConfigurationKey
 @AutoService(CommandLineProcessor::class)
 class ExtraCareCommandLineProcessor : CommandLineProcessor {
 
-    // TODO: Shared with Gradle subplugin; centralize
+    // TODO: Shared with Gradle plugin; centralize
     override val pluginId = "extracare-compiler-plugin"
 
     override val pluginOptions: Collection<AbstractCliOption> = listOf(
@@ -22,8 +22,7 @@ class ExtraCareCommandLineProcessor : CommandLineProcessor {
         value: String,
         configuration: CompilerConfiguration
     ) = when (option.optionName) {
-        Options.ENABLED -> configuration.put(
-            KEY_ENABLED, value.toBoolean())
+        Options.ENABLED -> configuration.put(KEY_ENABLED, value.toBoolean())
         else -> error("Unknown plugin option: ${option.optionName}")
     }
 
