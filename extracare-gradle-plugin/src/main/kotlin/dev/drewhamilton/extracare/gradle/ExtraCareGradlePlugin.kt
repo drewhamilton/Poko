@@ -1,21 +1,15 @@
-package dev.drewhamilton.extracare.gradle.sub
+package dev.drewhamilton.extracare.gradle
 
-import com.google.auto.service.AutoService
-import dev.drewhamilton.extracare.gradle.ExtraCareGradlePlugin
-import dev.drewhamilton.extracare.gradle.ExtraCarePluginExtension
 import dev.drewhamilton.extracare.info.ArtifactInfo
-import org.gradle.api.Project
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.compile.AbstractCompile
-import org.jetbrains.kotlin.gradle.dsl.KotlinCommonOptions
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerPluginSupportPlugin
-import org.jetbrains.kotlin.gradle.plugin.KotlinGradleSubplugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.SubpluginArtifact
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
-class ExtraCareGradleSubplugin : KotlinCompilerPluginSupportPlugin {
+@Suppress("unused") // Referenced in extracare-gradle-plugin/build.gradle
+class ExtraCareGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean =
         when (kotlinCompilation.platformType) {
