@@ -10,8 +10,7 @@
  8. Commit the snapshot change.
  9. Push the 2 commits + 1 tag to origin/master.
 10. Wait for the "Release" Action to complete.
-11. Visit [Sonatype Nexus](https://oss.sonatype.org/#stagingRepositories). Verify the artifacts,
-    close the staging repository, and release the closed staging repository.
+11. `startship release -c dev.drewhamilton.extracare:extracare-compiler-plugin:x.y.z`
 12. Create the release on GitHub with release notes copied from the changelog.
 
 If steps 9, 10, or 11 fail: drop the Sonatype repo, fix the problem, commit, and start again at
