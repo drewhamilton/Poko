@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.4
+_2020-09-29_
+
+Add code documentation to `@DataApi`.
+
 ## 0.2.3
 _2020-05-04_
 
