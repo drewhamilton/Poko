@@ -57,14 +57,14 @@ publishing {
                     developer {
                         id = 'drewhamilton'
                         name = 'Drew Hamilton'
-                        email = 'drew.hamilton.0+android@gmail.com'
+                        email = 'software@drewhamilton.dev'
                     }
                 }
 
                 scm {
                     connection = 'scm:git:github.com/drewhamilton/ExtraCare.git'
                     developerConnection = 'scm:git:ssh://github.com/drewhamilton/ExtraCare.git'
-                    url = 'https://github.com/drewhamilton/ExtraCare/tree/master'
+                    url = 'https://github.com/drewhamilton/ExtraCare/tree/main'
                 }
             }
         }

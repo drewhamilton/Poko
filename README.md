@@ -1,5 +1,5 @@
 # Extra Care
-![](https://github.com/drewhamilton/ExtraCare/workflows/CI/badge.svg?branch=master)
+![](https://github.com/drewhamilton/ExtraCare/workflows/CI/badge.svg?branch=main)
 
 > Using Kotlin types whose properties will change over time in public API requires extra care to
 > maintain source and binary compatibility as well as an idiomatic API for each language.
