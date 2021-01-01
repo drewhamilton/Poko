@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0
+_2021-01-01_
+
+Support Kotlin 1.4.20+ (compile with 1.4.21).
+
 ## 0.3.1 (patched to 0.2.4)
 _2020-09-29_
 
@@ -13,7 +18,7 @@ Update to Kotlin 1.4.0.
 ## 0.2.3
 _2020-05-04_
 
-Fix `equals` and `hashCode` generation for long member types.
+Fix `equals` and `hashCode` generation for `long` member types.
 
 ## 0.2.2
 _2020-05-02_
@@ -37,7 +42,8 @@ apply plugin: 'dev.drewhamilton.extracare'
 ## 0.1.3
 _2020-04-19_
 
-Fix `equals` and `hashCode` generation for float and double member types. Update to Kotlin 1.3.72.
+Fix `equals` and `hashCode` generation for `float` and `double` member types. Update to Kotlin
+1.3.72.
 
 Fix release process bug preventing changes from landing in 0.1.1 and 0.1.2.
 
@@ -46,7 +52,7 @@ _2020-04-19_
 
 No changes due to release process bug.
 
-~~Fix `equals` and `hashCode` generation for float and double member types. Update to Kotlin
+~~Fix `equals` and `hashCode` generation for `float` and `double` member types. Update to Kotlin
 1.3.72.~~
 
 ## 0.1.1

@@ -36,8 +36,8 @@ Extra Care is available on Maven Central. It is experimental, and the API may un
 changes before version 1.0.0. Kotlin Compiler plugins in general are experimental and new versions
 of Kotlin might break something in this compiler plugin.
 
-Extra Care 0.3+ is only compatible with Kotlin 1.4. If you are using Kotlin 1.3, stick with Extra
-Care 0.2.3.
+Extra Care 0.4 is only compatible with Kotlin 1.4.20+. Extra Care 0.3 is only compatible with Kotlin
+1.4.0 and 1.4.10. Extra Care 0.2 is compatible with Kotlin 1.3.72. 
 
 Snapshots of the development version are available in [Sonatype's Snapshots
 repository](https://oss.sonatype.org/#view-repositories;snapshots~browsestorage).
