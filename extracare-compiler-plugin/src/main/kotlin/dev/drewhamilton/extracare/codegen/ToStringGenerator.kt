@@ -3,6 +3,7 @@ package dev.drewhamilton.extracare.codegen
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.kotlin.codegen.AsmUtil
 import org.jetbrains.kotlin.codegen.ClassBuilder
+import org.jetbrains.kotlin.codegen.StringConcatGenerator
 import org.jetbrains.kotlin.codegen.context.FieldOwnerContext
 import org.jetbrains.kotlin.codegen.context.MethodContext
 import org.jetbrains.kotlin.codegen.state.GenerationState
@@ -10,7 +11,6 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.kotlin.resolve.descriptorUtil.builtIns
 import org.jetbrains.kotlin.resolve.jvm.AsmTypes
 import org.jetbrains.org.objectweb.asm.MethodVisitor
 import org.jetbrains.org.objectweb.asm.Type
@@ -47,7 +47,8 @@ internal class ToStringGenerator(
         //  NEW java/lang/StringBuilder
         //  DUP
         //  INVOKESPECIAL java/lang/StringBuilder.<init> ()V
-        AsmUtil.genStringBuilderConstructor(instructionAdapter)
+        val concatGenerator = StringConcatGenerator.create(generationState, instructionAdapter)
+        concatGenerator.genStringBuilderConstructorIfNeded()
 
         var first = true
         for (property in properties) {
@@ -62,7 +63,7 @@ internal class ToStringGenerator(
 
             // Bytecode: Append previously created static text to the StringBuilder
             //  INVOKEVIRTUAL java/lang/StringBuilder.append (Ljava/lang/String;)Ljava/lang/StringBuilder;
-            AsmUtil.genInvokeAppendMethod(instructionAdapter, AsmTypes.JAVA_STRING_TYPE, null)
+            concatGenerator.invokeAppend(AsmTypes.JAVA_STRING_TYPE)
 
             // Bytecode: Load the property's value
             //  ALOAD 0
@@ -83,7 +84,6 @@ internal class ToStringGenerator(
                         false
                     )
                     asmType = AsmTypes.JAVA_STRING_TYPE
-                    kotlinType = function.builtIns.stringType
                 } else if (elementType.sort != Type.CHAR) {
                     // TODO: Why are char arrays skipped?
 
@@ -95,13 +95,12 @@ internal class ToStringGenerator(
                         false
                     )
                     asmType = AsmTypes.JAVA_STRING_TYPE
-                    kotlinType = function.builtIns.stringType
                 }
             }
 
             // Bytecode: Append the property's value to the StringBuilder
             //  INVOKEVIRTUAL java/lang/StringBuilder.append (<type>)Ljava/lang/StringBuilder;
-            AsmUtil.genInvokeAppendMethod(instructionAdapter, asmType, kotlinType, typeMapper)
+            concatGenerator.invokeAppend(asmType)
         }
 
         // Bytecode: Create static text (a single character in this case)
@@ -109,7 +108,7 @@ internal class ToStringGenerator(
         instructionAdapter.aconst(")")
         // Bytecode: Append character to StringBuilder
         //  INVOKEVIRTUAL java/lang/StringBuilder.append (C)Ljava/lang/StringBuilder;
-        AsmUtil.genInvokeAppendMethod(instructionAdapter, AsmTypes.JAVA_STRING_TYPE, null)
+        concatGenerator.invokeAppend(AsmTypes.JAVA_STRING_TYPE)
 
         // Bytecode: Build the string
         //  INVOKEVIRTUAL java/lang/StringBuilder.toString ()Ljava/lang/String;
