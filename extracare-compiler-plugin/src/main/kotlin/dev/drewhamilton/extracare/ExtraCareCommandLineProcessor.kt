@@ -23,14 +23,14 @@ class ExtraCareCommandLineProcessor : CommandLineProcessor {
         configuration: CompilerConfiguration
     ) = when (option.optionName) {
         Options.ENABLED -> configuration.put(KEY_ENABLED, value.toBoolean())
-        else -> error("Unknown plugin option: ${option.optionName}")
+        else -> throw IllegalArgumentException("Unknown plugin option: ${option.optionName}")
     }
 
     private object Options {
         const val ENABLED = "enabled"
     }
 
-    companion object {
+    internal companion object {
         internal val KEY_ENABLED = CompilerConfigurationKey<Boolean>(Options.ENABLED)
     }
 }

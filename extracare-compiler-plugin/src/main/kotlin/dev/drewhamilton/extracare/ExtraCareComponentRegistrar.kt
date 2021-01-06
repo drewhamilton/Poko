@@ -1,11 +1,12 @@
 package dev.drewhamilton.extracare
 
 import com.google.auto.service.AutoService
+import dev.drewhamilton.extracare.ir.DataApiIrCodegenExtension
+import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
 import org.jetbrains.kotlin.com.intellij.mock.MockProject
-import org.jetbrains.kotlin.com.intellij.openapi.extensions.Extensions
 import org.jetbrains.kotlin.com.intellij.openapi.extensions.impl.ExtensionPointImpl
 import org.jetbrains.kotlin.com.intellij.openapi.project.Project
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
@@ -22,9 +23,8 @@ class ExtraCareComponentRegistrar : ComponentRegistrar {
         // TODO: Use ClassBuilderInterceptorExtension, ExpressionCodegenExtension, or both?
 
         val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
-        ExpressionCodegenExtension.registerExtensionAsFirst(project,
-            DataApiCodegenExtension(messageCollector)
-        )
+        ExpressionCodegenExtension.registerExtensionAsFirst(project, DataApiCodegenExtension(messageCollector))
+        IrGenerationExtension.registerExtensionAsFirst(project, DataApiIrCodegenExtension(messageCollector))
     }
 
     private fun <T : Any> ProjectExtensionDescriptor<T>.registerExtensionAsFirst(project: Project, extension: T) {

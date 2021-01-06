@@ -16,17 +16,19 @@ class ExtraCarePluginTest {
 
     @Test fun `compilation of valid class succeeds`() {
         val classFile = SourceFile.kotlin("DataApiClass.kt", VALID_DATA_API_CLASS)
-        val result = prepareCompilation(classFile).compile()
 
-        assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+        testWithAndWithoutIr(classFile) { result ->
+            assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+        }
     }
 
     @Test fun `compilation of data class fails`() {
         val classFile = SourceFile.kotlin("DataClass.kt", VALID_DATA_API_CLASS.replace("class", "data class"))
-        val result = prepareCompilation(classFile).compile()
 
-        assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
-        assertThat(result.messages).contains("@DataApi does not support data classes")
+        testWithAndWithoutIr(classFile) { result ->
+            assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+            assertThat(result.messages).contains("@DataApi does not support data classes")
+        }
     }
 
     @Test fun `compilation without primary constructor fails`() {
@@ -40,10 +42,11 @@ class ExtraCarePluginTest {
             }
         """.trimIndent()
         val classFile = SourceFile.kotlin("SecondaryConstructorClass.kt", classWithoutPrimaryConstructor)
-        val result = prepareCompilation(classFile).compile()
 
-        assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
-        assertThat(result.messages).contains("@DataApi classes must have a primary constructor")
+        testWithAndWithoutIr(classFile) { result ->
+            assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+            assertThat(result.messages).contains("@DataApi classes must have a primary constructor")
+        }
     }
 
     @Test fun `compilation with explicit function declarations succeeds`() {
@@ -59,18 +62,31 @@ class ExtraCarePluginTest {
             }
         """.trimIndent()
         val classFile = SourceFile.kotlin("ExplicitFunctionDeclarationClass.kt", classWithExplicitFunctionDeclarations)
-        val result = prepareCompilation(classFile).compile()
 
-        assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+        testWithAndWithoutIr(classFile) { result ->
+            assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+        }
     }
 
-    private fun prepareCompilation(vararg sourceFiles: SourceFile) = KotlinCompilation().apply {
+    private inline fun testWithAndWithoutIr(vararg sourceFiles: SourceFile, test: (KotlinCompilation.Result) -> Unit) {
+        val nonIrResult = prepareCompilation(false, *sourceFiles).compile()
+        test(nonIrResult)
+
+        val irResult = prepareCompilation(true, *sourceFiles).compile()
+        test(irResult)
+    }
+
+    private fun prepareCompilation(
+        useIr: Boolean,
+        vararg sourceFiles: SourceFile
+    ) = KotlinCompilation().apply {
         workingDir = temporaryFolder.root
         compilerPlugins = listOf<ComponentRegistrar>(ExtraCareComponentRegistrar())
         inheritClassPath = true
         sources = sourceFiles.asList()
         verbose = false
         jvmTarget = JvmTarget.fromString("1.8")!!.description
+        useIR = useIr
     }
 
     companion object {
