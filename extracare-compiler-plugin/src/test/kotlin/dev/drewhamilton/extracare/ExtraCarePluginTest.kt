@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.File
 
 class ExtraCarePluginTest {
 
@@ -17,16 +18,13 @@ class ExtraCarePluginTest {
     @Test fun `compilation of valid class succeeds`() {
         val classFile = SourceFile.kotlin("DataApiClass.kt", VALID_DATA_API_CLASS)
 
-        testWithAndWithoutIr(classFile) { result ->
-            assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
-        }
+        testWithAndWithoutIr(classFile)
     }
 
     @Test fun `compilation of data class fails`() {
         val classFile = SourceFile.kotlin("DataClass.kt", VALID_DATA_API_CLASS.replace("class", "data class"))
 
-        testWithAndWithoutIr(classFile) { result ->
-            assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+        testWithAndWithoutIr(classFile, expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR) { result ->
             assertThat(result.messages).contains("@DataApi does not support data classes")
         }
     }
@@ -43,8 +41,7 @@ class ExtraCarePluginTest {
         """.trimIndent()
         val classFile = SourceFile.kotlin("SecondaryConstructorClass.kt", classWithoutPrimaryConstructor)
 
-        testWithAndWithoutIr(classFile) { result ->
-            assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+        testWithAndWithoutIr(classFile, expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR) { result ->
             assertThat(result.messages).contains("@DataApi classes must have a primary constructor")
         }
     }
@@ -63,17 +60,33 @@ class ExtraCarePluginTest {
         """.trimIndent()
         val classFile = SourceFile.kotlin("ExplicitFunctionDeclarationClass.kt", classWithExplicitFunctionDeclarations)
 
+        testWithAndWithoutIr(classFile)
+    }
+
+    @Test fun `compiled Simple class instance has expected toString`() {
+        val classFile = SourceFile.fromPath("src/test/resources/Simple.kt")
+
         testWithAndWithoutIr(classFile) { result ->
-            assertThat(result.exitCode).isEqualTo(KotlinCompilation.ExitCode.OK)
+            val clazz = result.classLoader.loadClass("Simple")
+            val constructor = clazz.getConstructor(Int::class.java, String::class.java, String::class.java)
+
+            val instance = constructor.newInstance(1, "String", null)
+            assertThat(instance.toString()).isEqualTo("Simple(int=1, requiredString=String, optionalString=null)")
         }
     }
 
-    private inline fun testWithAndWithoutIr(vararg sourceFiles: SourceFile, test: (KotlinCompilation.Result) -> Unit) {
+    private inline fun testWithAndWithoutIr(
+        vararg sourceFiles: SourceFile,
+        expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
+        additionalTesting: (KotlinCompilation.Result) -> Unit = {}
+    ) {
         val nonIrResult = prepareCompilation(false, *sourceFiles).compile()
-        test(nonIrResult)
+        assertThat(nonIrResult.exitCode).isEqualTo(expectedExitCode)
+        additionalTesting(nonIrResult)
 
         val irResult = prepareCompilation(true, *sourceFiles).compile()
-        test(irResult)
+        assertThat(irResult.exitCode).isEqualTo(expectedExitCode)
+        additionalTesting(irResult)
     }
 
     private fun prepareCompilation(
@@ -88,6 +101,8 @@ class ExtraCarePluginTest {
         jvmTarget = JvmTarget.fromString("1.8")!!.description
         useIR = useIr
     }
+
+    private fun SourceFile.Companion.fromPath(path: String): SourceFile = fromPath(File(path))
 
     companion object {
         private val VALID_DATA_API_CLASS = """

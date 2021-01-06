@@ -3,7 +3,7 @@ package dev.drewhamilton.extracare.sample.alt
 import java.util.Objects
 
 /**
- * Source code equivalent to the desired end state of [Sample], useful for comparing bytecode.
+ * Source code equivalent to the desired end state of [DataSimple], useful for comparing bytecode.
  */
 class HandwrittenSample private constructor(
     val int: Int,
