@@ -1,15 +1,18 @@
 package dev.drewhamilton.extracare.ir
 
+import dev.drewhamilton.extracare.dataApiAnnotationName
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 
 class DataApiIrCodegenExtension(
     private val messageCollector: MessageCollector
 ) : IrGenerationExtension {
+
     override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
-        messageCollector.report(CompilerMessageSeverity.INFO, "Generating @DataApi class for IR backend")
+        val dataApiAnnotation = pluginContext.referenceClass(dataApiAnnotationName)!!
+        val dataApiMembersGenerator = DataApiMembersGenerator(pluginContext, dataApiAnnotation, messageCollector)
+        moduleFragment.transform(dataApiMembersGenerator, null)
     }
 }
