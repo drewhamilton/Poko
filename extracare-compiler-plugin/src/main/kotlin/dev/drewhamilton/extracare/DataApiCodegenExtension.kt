@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.source.getPsi
 
-class DataApiCodegenExtension(
+internal class DataApiCodegenExtension(
     private val messageCollector: MessageCollector
 ) : ExpressionCodegenExtension {
 
