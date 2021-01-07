@@ -65,6 +65,10 @@ internal class DataApiMembersTransformer(
             log("Data class")
             reportError("@DataApi does not support data classes")
             return false
+        } else if (isInline) {
+            log("Inline class")
+            reportError("@DataApi does not support inline classes")
+            return false
         }
 
         val primaryConstructor = primaryConstructor

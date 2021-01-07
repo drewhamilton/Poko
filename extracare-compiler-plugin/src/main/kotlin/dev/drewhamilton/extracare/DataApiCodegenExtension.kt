@@ -34,6 +34,10 @@ class DataApiCodegenExtension(
             log("Data class")
             reportError("@DataApi does not support data classes", codegen)
             return
+        } else if (targetClass.isInline) {
+            log("Inline class")
+            reportError("@DataApi does not support inline classes", codegen)
+            return
         }
 
         val primaryConstructor = targetClass.constructors.firstOrNull { it.isPrimary }

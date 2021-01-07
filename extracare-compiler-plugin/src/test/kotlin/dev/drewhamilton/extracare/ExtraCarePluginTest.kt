@@ -45,6 +45,24 @@ class ExtraCarePluginTest {
         }
     }
 
+    @Test fun `compilation of inline class fails`() {
+        `compilation of inline class fails`(useIr = false)
+    }
+
+    @Test fun `IR compilation of inline class fails`() {
+        `compilation of inline class fails`(useIr = true)
+    }
+
+    private fun `compilation of inline class fails`(useIr: Boolean) {
+        testCompilation(
+            "illegal/Inline",
+            useIr = useIr,
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages).contains("@DataApi does not support inline classes")
+        }
+    }
+
     @Test fun `compilation without primary constructor fails`() {
         `compilation without primary constructor fails`(useIr = false)
     }
