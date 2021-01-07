@@ -4,8 +4,8 @@ import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
+import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
@@ -19,8 +19,6 @@ import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irReturn
 import org.jetbrains.kotlin.ir.builders.irString
 import org.jetbrains.kotlin.ir.declarations.IrClass
-import org.jetbrains.kotlin.ir.declarations.IrDeclarationOriginImpl
-import org.jetbrains.kotlin.ir.declarations.IrDeclarationParent
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
@@ -47,42 +45,26 @@ internal class DataApiMembersGenerator(
         log("Reading <$declaration>")
 
         val declarationParent = declaration.parent
-        if (declarationParent is IrClass && declaration.isFakeOverride && declarationParent.isDataApiClass()) {
+        if (declarationParent is IrClass && declarationParent.isDataApiClass() && declaration.isFakeOverride) {
             val properties = declarationParent.properties.toList().filter { it.symbol.descriptor.source.getPsi() is KtParameter }
-            if (declaration.name.asString() == "toString" && declaration.valueParameters.isEmpty()) {
+            if (declaration.isToString()) {
                 declaration.origin = DataApiOrigin
 
-                val initialReceiver = declaration.dispatchReceiverParameter!!
-                declaration.dispatchReceiverParameter = IrValueParameterImpl(
-                    startOffset = initialReceiver.startOffset,
-                    endOffset = initialReceiver.endOffset,
-                    origin = initialReceiver.origin,
-                    symbol = IrValueParameterSymbolImpl(LazyClassReceiverParameterDescriptor(declarationParent.descriptor)),
-                    name = initialReceiver.name,
-                    index = initialReceiver.index,
-                    type = declarationParent.symbol.createType(hasQuestionMark = false, emptyList()),
-                    varargElementType = initialReceiver.varargElementType,
-                    isCrossinline = initialReceiver.isCrossinline,
-                    isNoinline = initialReceiver.isNoinline,
-                    isHidden = initialReceiver.isHidden,
-                    isAssignable = initialReceiver.isAssignable
-                ).apply {
-                    parent = declaration
-                }
+                declaration.mutateWithNewDispatchReceiverParameterForParentClass()
 
                 declaration.body = DeclarationIrBuilder(pluginContext, declaration.symbol).irBlockBody {
-                    +irReturn(toString(declarationParent, declaration, properties))
+                    +irReturn(generateToStringMethodBody(declarationParent, declaration, properties))
                 }
+
+                declaration.reflectivelySetFakeOverride(false)
             }
         }
 
         return super.visitFunctionNew(declaration)
     }
 
-    private fun IrDeclarationParent.isDataApiClass(): Boolean {
-        if (this !is IrClass) {
-            return false
-        } else if (!hasAnnotation(annotationClass)) {
+    private fun IrClass.isDataApiClass(): Boolean {
+        if (!hasAnnotation(annotationClass)) {
             log("Not @DataApi")
             return false
         } else if (isData) {
@@ -101,21 +83,43 @@ internal class DataApiMembersGenerator(
         return true
     }
 
-    private fun log(message: String) {
-        messageCollector.report(CompilerMessageSeverity.LOGGING, "EXTRA CARE COMPILER PLUGIN (IR): $message")
+    private fun IrFunction.isToString(): Boolean =
+        name.asString() == "toString" && valueParameters.isEmpty() && returnType == pluginContext.irBuiltIns.stringType
+
+    private fun IrFunction.mutateWithNewDispatchReceiverParameterForParentClass() {
+        val parentClass = parent
+        require(parentClass is IrClass)
+        val originalReceiver = checkNotNull(dispatchReceiverParameter)
+        dispatchReceiverParameter = IrValueParameterImpl(
+            startOffset = originalReceiver.startOffset,
+            endOffset = originalReceiver.endOffset,
+            origin = originalReceiver.origin,
+            symbol = IrValueParameterSymbolImpl(LazyClassReceiverParameterDescriptor(parentClass.descriptor)),
+            name = originalReceiver.name,
+            index = originalReceiver.index,
+            type = parentClass.symbol.createType(hasQuestionMark = false, emptyList()),
+            varargElementType = originalReceiver.varargElementType,
+            isCrossinline = originalReceiver.isCrossinline,
+            isNoinline = originalReceiver.isNoinline,
+            isHidden = originalReceiver.isHidden,
+            isAssignable = originalReceiver.isAssignable
+        ).apply {
+            parent = this@mutateWithNewDispatchReceiverParameterForParentClass
+        }
     }
 
-    // TODO: Mandatory location
-    @Deprecated("Provide a location when errors occur")
-    private fun reportError(message: String) {
-        messageCollector.report(CompilerMessageSeverity.ERROR, "EXTRA CARE COMPILER PLUGIN (IR): $message")
+    private fun IrFunction.reflectivelySetFakeOverride(isFakeOverride: Boolean) {
+        with(javaClass.getDeclaredField("isFakeOverride")) {
+            isAccessible = true
+            setBoolean(this@reflectivelySetFakeOverride, isFakeOverride)
+        }
     }
 
-    private fun reportError(message: String, location: CompilerMessageSourceLocation) {
-        messageCollector.report(CompilerMessageSeverity.ERROR, "EXTRA CARE COMPILER PLUGIN (IR): $message", location)
-    }
-
-    private fun IrBuilderWithScope.toString(
+    /**
+     * The actual body of the toString method. Copied from
+     * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateToStringMethodBody].
+     */
+    private fun IrBuilderWithScope.generateToStringMethodBody(
         irClass: IrClass,
         irFunction: IrFunction,
         irProperties: List<IrProperty>,
@@ -128,7 +132,6 @@ internal class DataApiMembersGenerator(
 
             irConcat.addArgument(irString(property.name.asString() + "="))
 
-            // FIXME: Not sure about irFunction.irThis()
             val irPropertyValue = irGetField(irFunction.irThis(), property.backingField!!)
 
             val typeConstructorDescriptor = property.descriptor.type.constructor.declarationDescriptor
@@ -153,12 +156,18 @@ internal class DataApiMembersGenerator(
     private fun IrFunction.irThis(): IrExpression {
         val dispatchReceiverParameter = dispatchReceiverParameter!!
         return IrGetValueImpl(
-            // TODO: Not sure about offsets
             startOffset, endOffset,
             dispatchReceiverParameter.type,
             dispatchReceiverParameter.symbol
         )
     }
 
-    private object DataApiOrigin : IrDeclarationOriginImpl("GENERATED_DATA_API_CLASS_MEMBER")
+    private fun log(message: String) {
+        messageCollector.report(CompilerMessageSeverity.LOGGING, "EXTRA CARE COMPILER PLUGIN (IR): $message")
+    }
+
+    private fun IrClass.reportError(message: String) {
+        val location = CompilerMessageLocation.create(name.asString())
+        messageCollector.report(CompilerMessageSeverity.ERROR, "EXTRA CARE COMPILER PLUGIN (IR): $message", location)
+    }
 }
