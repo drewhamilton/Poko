@@ -12,7 +12,7 @@ class DataApiIrCodegenExtension(
 
     override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
         val dataApiAnnotation = pluginContext.referenceClass(dataApiAnnotationName)!!
-        val dataApiMembersGenerator = DataApiMembersGenerator(pluginContext, dataApiAnnotation, messageCollector)
-        moduleFragment.transform(dataApiMembersGenerator, null)
+        val dataApiMembersTransformer = DataApiMembersTransformer(pluginContext, dataApiAnnotation, messageCollector)
+        moduleFragment.transform(dataApiMembersTransformer, null)
     }
 }

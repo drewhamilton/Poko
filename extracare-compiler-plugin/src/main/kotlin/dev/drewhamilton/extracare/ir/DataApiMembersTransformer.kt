@@ -35,7 +35,7 @@ import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.resolve.source.getPsi
 
 @OptIn(ObsoleteDescriptorBasedAPI::class)
-internal class DataApiMembersGenerator(
+internal class DataApiMembersTransformer(
     private val pluginContext: IrPluginContext,
     private val annotationClass: IrClassSymbol,
     private val messageCollector: MessageCollector,
@@ -46,17 +46,11 @@ internal class DataApiMembersGenerator(
 
         val declarationParent = declaration.parent
         if (declarationParent is IrClass && declarationParent.isDataApiClass() && declaration.isFakeOverride) {
-            val properties = declarationParent.properties.toList().filter { it.symbol.descriptor.source.getPsi() is KtParameter }
+            val properties = declarationParent.properties
+                .toList()
+                .filter { it.symbol.descriptor.source.getPsi() is KtParameter }
             if (declaration.isToString()) {
-                declaration.origin = DataApiOrigin
-
-                declaration.mutateWithNewDispatchReceiverParameterForParentClass()
-
-                declaration.body = DeclarationIrBuilder(pluginContext, declaration.symbol).irBlockBody {
-                    +irReturn(generateToStringMethodBody(declarationParent, declaration, properties))
-                }
-
-                declaration.reflectivelySetFakeOverride(false)
+                declaration.convertToGeneratedToString(properties)
             }
         }
 
@@ -85,6 +79,20 @@ internal class DataApiMembersGenerator(
 
     private fun IrFunction.isToString(): Boolean =
         name.asString() == "toString" && valueParameters.isEmpty() && returnType == pluginContext.irBuiltIns.stringType
+
+    private fun IrFunction.convertToGeneratedToString(properties: List<IrProperty>) {
+        val parent = parent as IrClass
+
+        origin = DataApiOrigin
+
+        mutateWithNewDispatchReceiverParameterForParentClass()
+
+        body = DeclarationIrBuilder(pluginContext, symbol).irBlockBody {
+            +irReturn(generateToStringMethodBody(parent, this@convertToGeneratedToString, properties))
+        }
+
+        reflectivelySetFakeOverride(false)
+    }
 
     private fun IrFunction.mutateWithNewDispatchReceiverParameterForParentClass() {
         val parentClass = parent
