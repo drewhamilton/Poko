@@ -1,7 +1,8 @@
 package dev.drewhamilton.extracare
 
 import com.google.auto.service.AutoService
-import dev.drewhamilton.extracare.ir.DataApiIrCodegenExtension
+import dev.drewhamilton.extracare.codegen.DataApiCodegenExtension
+import dev.drewhamilton.extracare.ir.DataApiIrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -24,7 +25,7 @@ class ExtraCareComponentRegistrar : ComponentRegistrar {
 
         val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
         ExpressionCodegenExtension.registerExtensionAsFirst(project, DataApiCodegenExtension(messageCollector))
-        IrGenerationExtension.registerExtensionAsFirst(project, DataApiIrCodegenExtension(messageCollector))
+        IrGenerationExtension.registerExtensionAsFirst(project, DataApiIrGenerationExtension(messageCollector))
     }
 
     private fun <T : Any> ProjectExtensionDescriptor<T>.registerExtensionAsFirst(project: Project, extension: T) {

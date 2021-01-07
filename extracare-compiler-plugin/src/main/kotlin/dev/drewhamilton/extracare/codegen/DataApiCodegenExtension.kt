@@ -1,8 +1,6 @@
-package dev.drewhamilton.extracare
+package dev.drewhamilton.extracare.codegen
 
-import dev.drewhamilton.extracare.codegen.EqualsGenerator
-import dev.drewhamilton.extracare.codegen.HashCodeGenerator
-import dev.drewhamilton.extracare.codegen.ToStringGenerator
+import dev.drewhamilton.extracare.dataApiAnnotationName
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -13,6 +11,7 @@ import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor
+import org.jetbrains.kotlin.descriptors.annotations.Annotated
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtClassOrObject
@@ -93,6 +92,9 @@ internal class DataApiCodegenExtension(
         // TODO("Generate Builder")
         // TODO("Generate top-level DSL constructor")
     }
+
+    private val Annotated.isDataApi: Boolean
+        get() = annotations.hasAnnotation(dataApiAnnotationName)
 
     private fun ClassDescriptor.findFunction(name: String): SimpleFunctionDescriptor? =
         unsubstitutedMemberScope.getContributedFunctions(
