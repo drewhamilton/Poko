@@ -1,22 +1,30 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.kotlin.kapt'
 
 ext {
-  artifactName = publish_compiler_plugin_artifact
-  pomName = 'Extra Care Compiler Plugin'
+    artifactName = publish_compiler_plugin_artifact
+    pomName = 'Extra Care Compiler Plugin'
 }
 apply from: "../publish.gradle"
 
 dependencies {
-  compileOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
-  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compileOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-  compileOnly "com.google.auto.service:auto-service-annotations:$autoservice_version"
-  kapt "com.google.auto.service:auto-service:$autoservice_version"
+    compileOnly "com.google.auto.service:auto-service-annotations:$autoservice_version"
+    kapt "com.google.auto.service:auto-service:$autoservice_version"
 
-  testImplementation project(':data-api-annotations')
-  testImplementation "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
-  testImplementation "com.github.tschuchortdev:kotlin-compile-testing:1.2.9"
-  testImplementation "junit:junit:4.13"
-  testImplementation "com.google.truth:truth:1.0.1"
+    testImplementation project(':data-api-annotations')
+    testImplementation "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
+    testImplementation "com.github.tschuchortdev:kotlin-compile-testing:1.2.9"
+    testImplementation "junit:junit:4.13"
+    testImplementation "com.google.truth:truth:1.0.1"
+}
+
+tasks.withType(KotlinCompile).all {
+    kotlinOptions {
+        freeCompilerArgs += ['-Xopt-in=kotlin.RequiresOptIn']
+    }
 }

@@ -64,14 +64,19 @@ class ExtraCarePluginTest {
     }
 
     @Test fun `compiled Simple class instance has expected toString`() {
-        val classFile = SourceFile.fromPath("src/test/resources/Simple.kt")
+        val dataClassName = "DataSimple"
+        val dataClassFile = SourceFile.fromPath("src/test/resources/$dataClassName.kt")
+        testWithAndWithoutIr(dataClassFile)
+
+        val className = "Simple"
+        val classFile = SourceFile.fromPath("src/test/resources/$className.kt")
 
         testWithAndWithoutIr(classFile) { result ->
-            val clazz = result.classLoader.loadClass("Simple")
+            val clazz = result.classLoader.loadClass(className)
             val constructor = clazz.getConstructor(Int::class.java, String::class.java, String::class.java)
 
             val instance = constructor.newInstance(1, "String", null)
-            assertThat(instance.toString()).isEqualTo("Simple(int=1, requiredString=String, optionalString=null)")
+            assertThat(instance.toString()).isEqualTo("$className(int=1, requiredString=String, optionalString=null)")
         }
     }
 
