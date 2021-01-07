@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'org.jetbrains.kotlin.kapt'
 
@@ -23,8 +21,14 @@ dependencies {
     testImplementation "com.google.truth:truth:1.0.1"
 }
 
-tasks.withType(KotlinCompile).all {
+compileKotlin {
     kotlinOptions {
         freeCompilerArgs += ['-Xopt-in=kotlin.RequiresOptIn']
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        freeCompilerArgs = ["-Xinline-classes"]
     }
 }

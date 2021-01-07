@@ -24,9 +24,7 @@ class ExtraCarePluginTest {
     }
 
     private fun `compilation of valid class succeeds`(useIr: Boolean) {
-        val classFile = SourceFile.kotlin("DataApiClass.kt", VALID_DATA_API_CLASS)
-
-        testCompilation(classFile, useIr = useIr)
+        testCompilation("api/Primitives", useIr = useIr)
     }
 
     @Test fun `compilation of data class fails`() {
@@ -38,10 +36,8 @@ class ExtraCarePluginTest {
     }
 
     private fun `compilation of data class fails`(useIr: Boolean) {
-        val classFile = SourceFile.kotlin("DataClass.kt", VALID_DATA_API_CLASS.replace("class", "data class"))
-
         testCompilation(
-            classFile,
+            "illegal/Data",
             useIr = useIr,
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
@@ -58,19 +54,8 @@ class ExtraCarePluginTest {
     }
 
     private fun `compilation without primary constructor fails`(useIr: Boolean) {
-        val classWithoutPrimaryConstructor = """
-            package dev.drewhamilton.extracare
-
-            import dev.drewhamilton.extracare.DataApi
-
-            @DataApi class DataApiClass {
-                constructor(string: String)
-            }
-        """.trimIndent()
-        val classFile = SourceFile.kotlin("SecondaryConstructorClass.kt", classWithoutPrimaryConstructor)
-
         testCompilation(
-            classFile,
+            "illegal/NoPrimaryConstructor",
             useIr = useIr,
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
@@ -214,23 +199,4 @@ class ExtraCarePluginTest {
 
     private fun SourceFile.Companion.fromPath(path: String): SourceFile = fromPath(File(path))
     //endregion
-
-    private companion object {
-        private val VALID_DATA_API_CLASS = """
-            package dev.drewhamilton.extracare
-
-            import dev.drewhamilton.extracare.DataApi
-
-            @DataApi class DataApiClass(
-                val string: String,
-                val float: Float,
-                val double: Double,
-                val long: Long,
-                val int: Int,
-                val short: Short,
-                val byte: Byte,
-                val boolean: Boolean
-            )
-        """.trimIndent()
-    }
 }
