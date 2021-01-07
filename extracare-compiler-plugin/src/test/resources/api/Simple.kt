@@ -1,3 +1,5 @@
+package api
+
 import dev.drewhamilton.extracare.DataApi
 
 @Suppress("Unused")

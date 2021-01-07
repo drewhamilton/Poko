@@ -26,7 +26,7 @@ class ExtraCarePluginTest {
     private fun `compilation of valid class succeeds`(useIr: Boolean) {
         val classFile = SourceFile.kotlin("DataApiClass.kt", VALID_DATA_API_CLASS)
 
-        testCompilation(classFile, useIr)
+        testCompilation(classFile, useIr = useIr)
     }
 
     @Test fun `compilation of data class fails`() {
@@ -40,7 +40,11 @@ class ExtraCarePluginTest {
     private fun `compilation of data class fails`(useIr: Boolean) {
         val classFile = SourceFile.kotlin("DataClass.kt", VALID_DATA_API_CLASS.replace("class", "data class"))
 
-        testCompilation(classFile, useIr, KotlinCompilation.ExitCode.COMPILATION_ERROR) { result ->
+        testCompilation(
+            classFile,
+            useIr = useIr,
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
             assertThat(result.messages).contains("@DataApi does not support data classes")
         }
     }
@@ -65,34 +69,33 @@ class ExtraCarePluginTest {
         """.trimIndent()
         val classFile = SourceFile.kotlin("SecondaryConstructorClass.kt", classWithoutPrimaryConstructor)
 
-        testCompilation(classFile, useIr, KotlinCompilation.ExitCode.COMPILATION_ERROR) { result ->
+        testCompilation(
+            classFile,
+            useIr = useIr,
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
             assertThat(result.messages).contains("@DataApi classes must have a primary constructor")
         }
     }
 
-    @Test fun `compilation with explicit function declarations succeeds`() {
-        `compilation with explicit function declarations succeeds`(useIr = false)
+    @Test fun `compilation with explicit function declarations respects explicit toString`() {
+        `compilation with explicit function declarations respects explicit toString`(useIr = false)
     }
 
-    @Test fun `IR compilation with explicit function declarations succeeds`() {
-        `compilation with explicit function declarations succeeds`(useIr = true)
+    @Test fun `IR compilation with explicit function declarations respects explicit toString`() {
+        `compilation with explicit function declarations respects explicit toString`(useIr = true)
     }
 
-    private fun `compilation with explicit function declarations succeeds`(useIr: Boolean) {
-        val classWithExplicitFunctionDeclarations = """
-            package dev.drewhamilton.extracare
-
-            import dev.drewhamilton.extracare.DataApi
-
-            @DataApi class ExplicitDeclarationsClass(private val string: String) {
-                override fun toString() = string
-                override fun equals(other: Any?) = other == string
-                override fun hashCode() = string.hashCode()
-            }
-        """.trimIndent()
-        val classFile = SourceFile.kotlin("ExplicitFunctionDeclarationClass.kt", classWithExplicitFunctionDeclarations)
-
-        testCompilation(classFile, useIr)
+    private fun `compilation with explicit function declarations respects explicit toString`(useIr: Boolean) {
+        val testString = "test string"
+        compareWithDataClass(
+            "ExplicitDeclarations",
+            listOf(String::class.java to testString),
+            useIr
+        ) { apiInstance, dataInstance ->
+            assertThat(apiInstance.toString()).isEqualTo(testString)
+            assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
+        }
     }
 
     @Test fun `compiled Simple class instance has expected toString`() {
@@ -104,13 +107,12 @@ class ExtraCarePluginTest {
     }
 
     private fun `compiled Simple class instance has expected toString`(useIr: Boolean) {
-        val className = "Simple"
-        testCompilation(className, useIr) { result ->
-            val clazz = result.classLoader.loadClass(className)
-            val constructor = clazz.getConstructor(Int::class.java, String::class.java, String::class.java)
-
-            val instance = constructor.newInstance(1, "String", null)
-            assertThat(instance.toString()).isEqualTo("$className(int=1, requiredString=String, optionalString=null)")
+        compareWithDataClass(
+            "Simple",
+            listOf(Int::class.java to 1, String::class.java to "String", String::class.java to null),
+            useIr
+        ) { apiClass, dataClass ->
+            assertThat(apiClass.toString()).isEqualTo(dataClass.toString())
         }
     }
 
@@ -123,78 +125,76 @@ class ExtraCarePluginTest {
     }
 
     private fun `compiled Complex class instance has expected toString`(useIr: Boolean) {
-        val className = "Complex"
-        testCompilation(className, useIr) { result ->
-            val clazz = result.classLoader.loadClass(className)
-            val constructor = clazz.getConstructor(
-                String::class.java,
-                String::class.java,
-                Int::class.javaPrimitiveType,
-                Int::class.javaObjectType,
-                Long::class.javaPrimitiveType,
-                Float::class.javaPrimitiveType,
-                Double::class.javaPrimitiveType,
-                Array<String>::class.java,
-                Array<String>::class.java,
-                IntArray::class.java,
-                IntArray::class.java,
-                List::class.java,
-                List::class.java,
-                Any::class.java,
-                Any::class.java,
-            )
-
-            val instance = constructor.newInstance(
-                "Text", null,
-                2, null,
-                12345L, 67f, 89.0,
-                arrayOf("Strings"), null,
-                intArrayOf(3, 4, 5), null,
-                listOf(6, 7, 8), null,
-                9, null
-            )
-            assertThat(instance.toString()).isEqualTo(
-                "$className(" +
-                        "referenceType=Text, " +
-                        "nullableReferenceType=null, " +
-                        "int=2, " +
-                        "nullableInt=null, " +
-                        "long=12345, " +
-                        "float=67.0, " +
-                        "double=89.0, " +
-                        "arrayReferenceType=[Strings], " +
-                        "nullableArrayReferenceType=null, " +
-                        "arrayPrimitiveType=[3, 4, 5], " +
-                        "nullableArrayPrimitiveType=null, " +
-                        "genericCollectionType=[6, 7, 8], " +
-                        "nullableGenericCollectionType=null, " +
-                        "genericType=9, " +
-                        "nullableGenericType=null" +
-                        ")"
-            )
+        compareWithDataClass(
+            "Complex",
+            listOf(
+                String::class.java to "Text",
+                String::class.java to null,
+                Int::class.javaPrimitiveType!! to 2,
+                Int::class.javaObjectType to null,
+                Long::class.javaPrimitiveType!! to 12345L,
+                Float::class.javaPrimitiveType!! to 67f,
+                Double::class.javaPrimitiveType!! to 89.0,
+                Array<String>::class.java to arrayOf("Strings"),
+                Array<String>::class.java to null,
+                IntArray::class.java to intArrayOf(3, 4, 5),
+                IntArray::class.java to null,
+                List::class.java to listOf(6, 7, 8),
+                List::class.java to null,
+                Any::class.java to 9,
+                Any::class.java to null,
+            ),
+            useIr
+        ) { apiClass, dataClass ->
+            assertThat(apiClass.toString()).isEqualTo(dataClass.toString())
         }
     }
 
     //region Helpers for all tests
-    private inline fun testCompilation(
+    /**
+     * Compiles and instantiates [sourceFileName] from both the `api` package and the `data` package, with the
+     * expectation that they compile to a [DataApi] class and a data class, respectively. After instantiating each,
+     * passes both to [compare] for comparison testing.
+     */
+    private inline fun compareWithDataClass(
         sourceFileName: String,
+        constructorArgs: List<Pair<Class<*>, Any?>>,
+        useIr: Boolean = false,
+        compare: (apiInstance: Any, dataInstance: Any) -> Unit
+    ) = testCompilation("api/$sourceFileName", "data/$sourceFileName", useIr = useIr) { result ->
+        val apiClass = result.classLoader.loadClass("api.$sourceFileName")
+        val dataClass = result.classLoader.loadClass("api.$sourceFileName")
+
+        val constructorArgParameterTypes = constructorArgs.map { it.first }.toTypedArray()
+        val apiConstructor = apiClass.getConstructor(*constructorArgParameterTypes)
+        val dataConstructor = dataClass.getConstructor(*constructorArgParameterTypes)
+
+        val constructorParameters = constructorArgs.map { it.second }.toTypedArray()
+        val apiInstance = apiConstructor.newInstance(*constructorParameters)
+        val dataInstance = dataConstructor.newInstance(*constructorParameters)
+
+        compare(apiInstance, dataInstance)
+    }
+
+    private inline fun testCompilation(
+        vararg sourceFileNames: String,
         useIr: Boolean = false,
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
         additionalTesting: (KotlinCompilation.Result) -> Unit = {}
     ) = testCompilation(
-        SourceFile.fromPath("src/test/resources/$sourceFileName.kt"),
-        useIr,
-        expectedExitCode,
-        additionalTesting
+        *sourceFileNames.map { SourceFile.fromPath("src/test/resources/$it.kt") }.toTypedArray(),
+        useIr = useIr,
+        expectedExitCode = expectedExitCode,
+        additionalTesting = additionalTesting
     )
 
     private inline fun testCompilation(
-        sourceFile: SourceFile,
+        vararg sourceFiles: SourceFile,
         useIr: Boolean = false,
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
         additionalTesting: (KotlinCompilation.Result) -> Unit = {}
     ) {
-        val result = prepareCompilation(useIr, sourceFile).compile()
+        val result = prepareCompilation(useIr, *sourceFiles).compile()
         assertThat(result.exitCode).isEqualTo(expectedExitCode)
         additionalTesting(result)
     }
