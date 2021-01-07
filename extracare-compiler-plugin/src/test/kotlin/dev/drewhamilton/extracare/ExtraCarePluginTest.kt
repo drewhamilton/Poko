@@ -114,6 +114,67 @@ class ExtraCarePluginTest {
         }
     }
 
+    @Test fun `compiled Complex class instance has expected toString`() {
+        `compiled Complex class instance has expected toString`(useIr = false)
+    }
+
+    @Test fun `IR-compiled Complex class instance has expected toString`() {
+        `compiled Complex class instance has expected toString`(useIr = true)
+    }
+
+    private fun `compiled Complex class instance has expected toString`(useIr: Boolean) {
+        val className = "Complex"
+        testCompilation(className, useIr) { result ->
+            val clazz = result.classLoader.loadClass(className)
+            val constructor = clazz.getConstructor(
+                String::class.java,
+                String::class.java,
+                Int::class.javaPrimitiveType,
+                Int::class.javaObjectType,
+                Long::class.javaPrimitiveType,
+                Float::class.javaPrimitiveType,
+                Double::class.javaPrimitiveType,
+                Array<String>::class.java,
+                Array<String>::class.java,
+                IntArray::class.java,
+                IntArray::class.java,
+                List::class.java,
+                List::class.java,
+                Any::class.java,
+                Any::class.java,
+            )
+
+            val instance = constructor.newInstance(
+                "Text", null,
+                2, null,
+                12345L, 67f, 89.0,
+                arrayOf("Strings"), null,
+                intArrayOf(3, 4, 5), null,
+                listOf(6, 7, 8), null,
+                9, null
+            )
+            assertThat(instance.toString()).isEqualTo(
+                "$className(" +
+                        "referenceType=Text, " +
+                        "nullableReferenceType=null, " +
+                        "int=2, " +
+                        "nullableInt=null, " +
+                        "long=12345, " +
+                        "float=67.0, " +
+                        "double=89.0, " +
+                        "arrayReferenceType=[Strings], " +
+                        "nullableArrayReferenceType=null, " +
+                        "arrayPrimitiveType=[3, 4, 5], " +
+                        "nullableArrayPrimitiveType=null, " +
+                        "genericCollectionType=[6, 7, 8], " +
+                        "nullableGenericCollectionType=null, " +
+                        "genericType=9, " +
+                        "nullableGenericType=null" +
+                        ")"
+            )
+        }
+    }
+
     //region Helpers for all tests
     private inline fun testCompilation(
         sourceFileName: String,
