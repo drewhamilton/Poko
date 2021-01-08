@@ -125,13 +125,59 @@ class ExtraCarePluginTest {
         compareWithDataClass(
             sourceFileName = "Sub",
             constructorArgs = listOf(Number::class.java to 123.4),
-            otherClassesToCompile = listOf("Super"),
+            otherFilesToCompile = listOf("Super"),
             useIr = useIr
         ) { apiInstance, dataInstance ->
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
             assertThat(apiInstance.toString()).isNotEqualTo("superclass")
         }
     }
+    //endregion
+
+    //region Nested
+    @Test fun `compilation of nested class within class matches corresponding data class toString`() {
+        `compilation of nested class within class matches corresponding data class toString`(useIr = false)
+    }
+
+    @Test fun `IR compilation of nested class within class matches corresponding data class toString`() {
+        `compilation of nested class within class matches corresponding data class toString`(useIr = true)
+    }
+
+    private fun `compilation of nested class within class matches corresponding data class toString`(useIr: Boolean) =
+        compareNestedClassInstances(useIr = useIr, nestedClassName = "Nested") { apiInstance, dataInstance ->
+            assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
+        }
+
+    @Test fun `compilation of nested class within interface matches corresponding data class toString`() {
+        `compilation of nested class within interface matches corresponding data class toString`(useIr = false)
+    }
+
+    @Test fun `IR compilation of nested class within interface matches corresponding data class toString`() {
+        `compilation of nested class within interface matches corresponding data class toString`(useIr = true)
+    }
+
+    private fun `compilation of nested class within interface matches corresponding data class toString`(
+        useIr: Boolean
+    ) = compareNestedClassInstances(
+        useIr = useIr,
+        nestedClassName = "Nested",
+        outerClassName = "OuterInterface"
+    ) { apiInstance, dataInstance ->
+        assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
+    }
+
+    private inline fun compareNestedClassInstances(
+        useIr: Boolean,
+        nestedClassName: String,
+        outerClassName: String = "OuterClass",
+        compare: (apiInstance: Any, dataInstance: Any) -> Unit
+    ) = compareWithDataClass(
+        sourceFileName = outerClassName,
+        className = "$outerClassName\$$nestedClassName",
+        constructorArgs = listOf(String::class.java to "nested class value"),
+        useIr = useIr,
+        compare = compare
+    )
     //endregion
 
     //region Simple class
@@ -256,16 +302,18 @@ class ExtraCarePluginTest {
      */
     private inline fun compareWithDataClass(
         sourceFileName: String,
+        className: String = sourceFileName,
         constructorArgs: List<Pair<Class<*>, Any?>>,
-        otherClassesToCompile: List<String> = emptyList(),
+        otherFilesToCompile: List<String> = emptyList(),
         useIr: Boolean = false,
         compare: (apiInstance: Any, dataInstance: Any) -> Unit
     ) = testCompilation(
-        "api/$sourceFileName", "data/$sourceFileName", *otherClassesToCompile.toTypedArray(),
+        "api/$sourceFileName", "data/$sourceFileName", *otherFilesToCompile.toTypedArray(),
         useIr = useIr
     ) { result ->
-        val apiClass = result.classLoader.loadClass("api.$sourceFileName")
-        val dataClass = result.classLoader.loadClass("api.$sourceFileName")
+        val apiClass = result.classLoader.loadClass("api.$className")
+        val dataClass = result.classLoader.loadClass("data.$className")
+        assertThat(apiClass).isNotEqualTo(dataClass)
 
         val constructorArgParameterTypes = constructorArgs.map { it.first }.toTypedArray()
         val apiConstructor = apiClass.getConstructor(*constructorArgParameterTypes)
@@ -275,6 +323,7 @@ class ExtraCarePluginTest {
         val apiInstance = apiConstructor.newInstance(*constructorParameters)
         val dataInstance = dataConstructor.newInstance(*constructorParameters)
 
+        assertThat(apiInstance.javaClass).isNotEqualTo(dataInstance.javaClass)
         compare(apiInstance, dataInstance)
     }
 
