@@ -1,18 +1,17 @@
 package dev.drewhamilton.extracare.sample
 
 import com.google.common.truth.Truth.assertThat
-import dev.drewhamilton.extracare.sample.alt.DataSimple
 import org.junit.Test
 
-class SimpleTest {
+class SampleTest {
 
     @Test fun `equals works`() {
-        val a = Simple(
+        val a = Sample(
             int = 1,
             requiredString = "String",
             optionalString = null
         )
-        val b = Simple(
+        val b = Sample(
             int = 1,
             requiredString = "String",
             optionalString = null
@@ -23,12 +22,12 @@ class SimpleTest {
     }
 
     @Test fun `hashCode is consistent`() {
-        val a = Simple(
+        val a = Sample(
             int = 1,
             requiredString = "String",
             optionalString = null
         )
-        val b = Simple(
+        val b = Sample(
             int = 1,
             requiredString = "String",
             optionalString = null
@@ -38,13 +37,13 @@ class SimpleTest {
     }
 
     @Test fun `hashCode is equivalent to data class hashCode`() {
-        val dataApi = Simple(
+        val dataApi = Sample(
             int = 1,
             requiredString = "String",
             optionalString = null
         )
 
-        val data = DataSimple(
+        val data = DataSample(
             int = 1,
             requiredString = "String",
             optionalString = null
@@ -54,18 +53,18 @@ class SimpleTest {
     }
 
     @Test fun `toString includes class name and each property`() {
-        val simple = Simple(3, "sample", null)
-        assertThat(simple.toString()).isEqualTo("Simple(int=3, requiredString=sample, optionalString=null)")
+        val simple = Sample(3, "sample", null)
+        assertThat(simple.toString()).isEqualTo("Sample(int=3, requiredString=sample, optionalString=null)")
     }
 
     @Test fun `toString is equivalent to data class toString`() {
-        val dataApi = Simple(
+        val dataApi = Sample(
             int = 99,
             requiredString = "test",
             optionalString = null
         )
 
-        val data = DataSimple(
+        val data = DataSample(
             int = 99,
             requiredString = "test",
             optionalString = null
@@ -73,4 +72,10 @@ class SimpleTest {
 
         assertThat(dataApi.toString()).isEqualTo(data.toString().removePrefix("Data"))
     }
+
+    private data class DataSample(
+        val int: Int,
+        val requiredString: String,
+        val optionalString: String?
+    )
 }
