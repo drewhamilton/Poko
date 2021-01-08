@@ -151,7 +151,7 @@ internal class DataApiMembersTransformer(
     }
 
     /**
-     * The actual body of the toString method. Copied from
+     * Generate the body of the equals method. Copied from
      * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateEqualsMethodBody].
      */
     private fun IrBlockBodyBuilder.generateEqualsMethodBody(
@@ -314,7 +314,7 @@ internal class DataApiMembersTransformer(
                 valueParameters.isEmpty()
 
     /**
-     * The actual body of the toString method. Copied from
+     * Generate the body of the toString method. Copied from
      * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateToStringMethodBody].
      */
     private fun IrBlockBodyBuilder.generateToStringMethodBody(
