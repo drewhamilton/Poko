@@ -113,25 +113,45 @@ class ExtraCarePluginTest {
     //endregion
 
     //region Superclass function declarations
-    @Test fun `superclass toString is ignored`() {
-        `superclass toString is ignored`(useIr = false)
+    @Test fun `superclass hashCode is overridden`() {
+        `superclass hashCode is overridden`(useIr = false)
     }
 
-    @Test fun `IR superclass toString is ignored`() {
-        `superclass toString is ignored`(useIr = true)
+    @Test fun `IR superclass hashCode is overridden`() {
+        `superclass hashCode is overridden`(useIr = true)
     }
 
-    private fun `superclass toString is ignored`(useIr: Boolean) {
-        compareWithDataClass(
-            sourceFileName = "Sub",
-            constructorArgs = listOf(Number::class.java to 123.4),
-            otherFilesToCompile = listOf("Super"),
-            useIr = useIr
-        ) { apiInstance, dataInstance ->
+    private fun `superclass hashCode is overridden`(useIr: Boolean) =
+        compareSubclassInstances(useIr) { apiInstance, dataInstance ->
+            assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
+            assertThat(apiInstance.hashCode()).isNotEqualTo(50934)
+        }
+
+    @Test fun `superclass toString is overridden`() {
+        `superclass toString is overridden`(useIr = false)
+    }
+
+    @Test fun `IR superclass toString is overridden`() {
+        `superclass toString is overridden`(useIr = true)
+    }
+
+    private fun `superclass toString is overridden`(useIr: Boolean) =
+        compareSubclassInstances(useIr) { apiInstance, dataInstance ->
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
             assertThat(apiInstance.toString()).isNotEqualTo("superclass")
         }
-    }
+
+    private fun compareSubclassInstances(
+        useIr: Boolean,
+        number: Number = 123.4,
+        compare: (apiInstance: Any, dataInstance: Any) -> Unit
+    ) = compareWithDataClass(
+        sourceFileName = "Sub",
+        constructorArgs = listOf(Number::class.java to number),
+        otherFilesToCompile = listOf("Super"),
+        useIr = useIr,
+        compare = compare
+    )
     //endregion
 
     //region Nested
