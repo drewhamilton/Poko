@@ -1,6 +1,5 @@
 package dev.drewhamilton.extracare.ir
 
-import dev.drewhamilton.extracare.dataApiAnnotationName
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -11,8 +10,7 @@ internal class DataApiIrGenerationExtension(
 ) : IrGenerationExtension {
 
     override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
-        val dataApiAnnotation = pluginContext.referenceClass(dataApiAnnotationName)!!
-        val dataApiMembersTransformer = DataApiMembersTransformer(pluginContext, dataApiAnnotation, messageCollector)
+        val dataApiMembersTransformer = DataApiMembersTransformer(pluginContext, messageCollector)
         moduleFragment.transform(dataApiMembersTransformer, null)
     }
 }
