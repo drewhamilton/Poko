@@ -57,30 +57,32 @@ internal class DataApiMembersTransformer(
         return super.visitFunctionNew(declaration)
     }
 
-    private fun IrClass.isDataApiClass(): Boolean {
-        if (!hasAnnotation(annotationClass)) {
+    private fun IrClass.isDataApiClass(): Boolean = when {
+        !hasAnnotation(annotationClass) -> {
             log("Not @DataApi")
-            return false
-        } else if (isData) {
+            false
+        }
+        isData -> {
             log("Data class")
             reportError("@DataApi does not support data classes")
-            return false
-        } else if (isInline) {
+            false
+        }
+        isInline -> {
             log("Inline class")
             reportError("@DataApi does not support inline classes")
-            return false
+            false
         }
-
-        val primaryConstructor = primaryConstructor
-        if (primaryConstructor == null) {
+        primaryConstructor == null -> {
             log("No primary constructor")
             reportError("@DataApi classes must have a primary constructor")
-            return false
+            false
         }
-
-        return true
+        else -> {
+            true
+        }
     }
 
+    //region toString
     private fun IrFunction.isToString(): Boolean =
         name.asString() == "toString" && valueParameters.isEmpty() && returnType == pluginContext.irBuiltIns.stringType
 
@@ -96,35 +98,6 @@ internal class DataApiMembersTransformer(
         }
 
         reflectivelySetFakeOverride(false)
-    }
-
-    private fun IrFunction.mutateWithNewDispatchReceiverParameterForParentClass() {
-        val parentClass = parent
-        require(parentClass is IrClass)
-        val originalReceiver = checkNotNull(dispatchReceiverParameter)
-        dispatchReceiverParameter = IrValueParameterImpl(
-            startOffset = originalReceiver.startOffset,
-            endOffset = originalReceiver.endOffset,
-            origin = originalReceiver.origin,
-            symbol = IrValueParameterSymbolImpl(LazyClassReceiverParameterDescriptor(parentClass.descriptor)),
-            name = originalReceiver.name,
-            index = originalReceiver.index,
-            type = parentClass.symbol.createType(hasQuestionMark = false, emptyList()),
-            varargElementType = originalReceiver.varargElementType,
-            isCrossinline = originalReceiver.isCrossinline,
-            isNoinline = originalReceiver.isNoinline,
-            isHidden = originalReceiver.isHidden,
-            isAssignable = originalReceiver.isAssignable
-        ).apply {
-            parent = this@mutateWithNewDispatchReceiverParameterForParentClass
-        }
-    }
-
-    private fun IrFunction.reflectivelySetFakeOverride(isFakeOverride: Boolean) {
-        with(javaClass.getDeclaredField("isFakeOverride")) {
-            isAccessible = true
-            setBoolean(this@reflectivelySetFakeOverride, isFakeOverride)
-        }
     }
 
     /**
@@ -173,6 +146,38 @@ internal class DataApiMembersTransformer(
             dispatchReceiverParameter.symbol
         )
     }
+    //endregion
+
+    //region Shared generation helpers
+    private fun IrFunction.mutateWithNewDispatchReceiverParameterForParentClass() {
+        val parentClass = parent
+        require(parentClass is IrClass)
+        val originalReceiver = checkNotNull(dispatchReceiverParameter)
+        dispatchReceiverParameter = IrValueParameterImpl(
+            startOffset = originalReceiver.startOffset,
+            endOffset = originalReceiver.endOffset,
+            origin = originalReceiver.origin,
+            symbol = IrValueParameterSymbolImpl(LazyClassReceiverParameterDescriptor(parentClass.descriptor)),
+            name = originalReceiver.name,
+            index = originalReceiver.index,
+            type = parentClass.symbol.createType(hasQuestionMark = false, emptyList()),
+            varargElementType = originalReceiver.varargElementType,
+            isCrossinline = originalReceiver.isCrossinline,
+            isNoinline = originalReceiver.isNoinline,
+            isHidden = originalReceiver.isHidden,
+            isAssignable = originalReceiver.isAssignable
+        ).apply {
+            parent = this@mutateWithNewDispatchReceiverParameterForParentClass
+        }
+    }
+
+    private fun IrFunction.reflectivelySetFakeOverride(isFakeOverride: Boolean) {
+        with(javaClass.getDeclaredField("isFakeOverride")) {
+            isAccessible = true
+            setBoolean(this@reflectivelySetFakeOverride, isFakeOverride)
+        }
+    }
+    //endregion
 
     private fun log(message: String) {
         messageCollector.report(CompilerMessageSeverity.LOGGING, "EXTRA CARE COMPILER PLUGIN (IR): $message")
