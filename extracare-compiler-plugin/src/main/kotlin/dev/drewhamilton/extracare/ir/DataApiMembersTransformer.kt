@@ -4,9 +4,9 @@ import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
+import org.jetbrains.kotlin.cli.common.messages.MessageUtil
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
@@ -342,7 +342,8 @@ internal class DataApiMembersTransformer(
     }
 
     private fun IrClass.reportError(message: String) {
-        val location = CompilerMessageLocation.create(name.asString())
-        messageCollector.report(CompilerMessageSeverity.ERROR, "EXTRA CARE COMPILER PLUGIN (IR): $message", location)
+        val psi = descriptor.source.getPsi()
+        val location = MessageUtil.psiElementToMessageLocation(psi)
+        messageCollector.report(CompilerMessageSeverity.ERROR, message, location)
     }
 }
