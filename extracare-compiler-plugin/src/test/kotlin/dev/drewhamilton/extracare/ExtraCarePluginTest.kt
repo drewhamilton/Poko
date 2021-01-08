@@ -209,6 +209,24 @@ class ExtraCarePluginTest {
         useIr = useIr,
         compare = compare
     )
+
+    @Test fun `compilation of inner class fails`() {
+        `compilation of inner class fails`(useIr = false)
+    }
+
+    @Test fun `IR compilation of inner class fails`() {
+        `compilation of inner class fails`(useIr = true)
+    }
+
+    private fun `compilation of inner class fails`(useIr: Boolean) {
+        testCompilation(
+            "illegal/OuterClass",
+            useIr = useIr,
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages).contains("@DataApi cannot be applied to inner classes")
+        }
+    }
     //endregion
 
     //region Simple class

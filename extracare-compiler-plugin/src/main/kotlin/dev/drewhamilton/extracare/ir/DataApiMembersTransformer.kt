@@ -94,6 +94,11 @@ internal class DataApiMembersTransformer(
             reportError("@DataApi does not support inline classes")
             false
         }
+        isInner -> {
+            log("Inner class")
+            reportError("@DataApi cannot be applied to inner classes")
+            false
+        }
         primaryConstructor == null -> {
             log("No primary constructor")
             reportError("@DataApi classes must have a primary constructor")
