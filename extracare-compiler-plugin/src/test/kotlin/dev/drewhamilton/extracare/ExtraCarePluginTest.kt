@@ -148,6 +148,19 @@ class ExtraCarePluginTest {
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
         }
 
+    @Test fun `compilation of nested class within class matches corresponding data class hashCode`() {
+        `compilation of nested class within class matches corresponding data class hashCode`(useIr = false)
+    }
+
+    @Test fun `IR compilation of nested class within class matches corresponding data class hashCode`() {
+        `compilation of nested class within class matches corresponding data class hashCode`(useIr = true)
+    }
+
+    private fun `compilation of nested class within class matches corresponding data class hashCode`(useIr: Boolean) =
+        compareNestedClassInstances(useIr = useIr, nestedClassName = "Nested") { apiInstance, dataInstance ->
+            assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
+        }
+
     @Test fun `compilation of nested class within interface matches corresponding data class toString`() {
         `compilation of nested class within interface matches corresponding data class toString`(useIr = false)
     }
@@ -164,6 +177,24 @@ class ExtraCarePluginTest {
         outerClassName = "OuterInterface"
     ) { apiInstance, dataInstance ->
         assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
+    }
+
+    @Test fun `compilation of nested class within interface matches corresponding data class hashCode`() {
+        `compilation of nested class within interface matches corresponding data class hashCode`(useIr = false)
+    }
+
+    @Test fun `IR compilation of nested class within interface matches corresponding data class hashCode`() {
+        `compilation of nested class within interface matches corresponding data class hashCode`(useIr = true)
+    }
+
+    private fun `compilation of nested class within interface matches corresponding data class hashCode`(
+        useIr: Boolean
+    ) = compareNestedClassInstances(
+        useIr = useIr,
+        nestedClassName = "Nested",
+        outerClassName = "OuterInterface"
+    ) { apiInstance, dataInstance ->
+        assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
     }
 
     private inline fun compareNestedClassInstances(
