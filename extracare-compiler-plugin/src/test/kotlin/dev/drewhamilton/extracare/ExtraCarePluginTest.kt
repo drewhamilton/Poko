@@ -91,6 +91,22 @@ class ExtraCarePluginTest {
     //endregion
 
     //region Explicit function declarations
+    @Test fun `compilation with explicit function declarations respects explicit hashCode`() {
+        `compilation with explicit function declarations respects explicit hashCode`(useIr = false)
+    }
+
+    @Test fun `IR compilation with explicit function declarations respects explicit hashCode`() {
+        `compilation with explicit function declarations respects explicit hashCode`(useIr = true)
+    }
+
+    private fun `compilation with explicit function declarations respects explicit hashCode`(useIr: Boolean) {
+        val testString = "test thing"
+        compareExplicitDeclarationsInstances(useIr, string = testString) { apiInstance, dataInstance ->
+            assertThat(apiInstance.hashCode()).isEqualTo(testString.length)
+            assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
+        }
+    }
+
     @Test fun `compilation with explicit function declarations respects explicit toString`() {
         `compilation with explicit function declarations respects explicit toString`(useIr = false)
     }
@@ -101,15 +117,22 @@ class ExtraCarePluginTest {
 
     private fun `compilation with explicit function declarations respects explicit toString`(useIr: Boolean) {
         val testString = "test string"
-        compareWithDataClass(
-            sourceFileName = "ExplicitDeclarations",
-            constructorArgs = listOf(String::class.java to testString),
-            useIr = useIr
-        ) { apiInstance, dataInstance ->
+        compareExplicitDeclarationsInstances(useIr, string = testString) { apiInstance, dataInstance ->
             assertThat(apiInstance.toString()).isEqualTo(testString)
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
         }
     }
+
+    private fun compareExplicitDeclarationsInstances(
+        useIr: Boolean,
+        string: String = "test string",
+        compare: (apiInstance: Any, dataInstance: Any) -> Unit
+    ) = compareWithDataClass(
+        sourceFileName = "ExplicitDeclarations",
+        constructorArgs = listOf(String::class.java to string),
+        useIr = useIr,
+        compare = compare
+    )
     //endregion
 
     //region Superclass function declarations
@@ -259,8 +282,8 @@ class ExtraCarePluginTest {
     }
 
     private fun `compiled Simple class instance has expected hashCode`(useIr: Boolean) =
-        compareSimpleClassInstances(useIr) { apiClass, dataClass ->
-            assertThat(apiClass.hashCode()).isEqualTo(dataClass.hashCode())
+        compareSimpleClassInstances(useIr) { apiInstance, dataInstance ->
+            assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
         }
 
     @Test fun `compiled Simple class instance has expected toString`() {
@@ -272,8 +295,8 @@ class ExtraCarePluginTest {
     }
 
     private fun `compiled Simple class instance has expected toString`(useIr: Boolean) =
-        compareSimpleClassInstances(useIr) { apiClass, dataClass ->
-            assertThat(apiClass.toString()).isEqualTo(dataClass.toString())
+        compareSimpleClassInstances(useIr) { apiInstance, dataInstance ->
+            assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
         }
 
     private inline fun compareSimpleClassInstances(
