@@ -91,6 +91,47 @@ class ExtraCarePluginTest {
     //endregion
 
     //region Explicit function declarations
+    @Test fun `two equivalent compiled ExplicitDeclarations instances are equals`() {
+        `two equivalent compiled ExplicitDeclarations instances are equals`(useIr = false)
+    }
+
+    @Test fun `two equivalent IR-compiled ExplicitDeclarations instances are equals`() {
+        `two equivalent compiled ExplicitDeclarations instances are equals`(useIr = true)
+    }
+
+    private fun `two equivalent compiled ExplicitDeclarations instances are equals`(useIr: Boolean) =
+        compareTwoExplicitDeclarationsApiInstances(useIr) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+
+    @Test fun `two inequivalent compiled ExplicitDeclarations instances are not equals`() {
+        `two inequivalent compiled ExplicitDeclarations instances are not equals`(useIr = false)
+    }
+
+    @Test fun `two inequivalent IR-compiled ExplicitDeclarations instances are not equals`() {
+        `two inequivalent compiled ExplicitDeclarations instances are not equals`(useIr = true)
+    }
+
+    private fun `two inequivalent compiled ExplicitDeclarations instances are not equals`(useIr: Boolean) =
+        compareTwoExplicitDeclarationsApiInstances(useIr, string2 = "string 11") { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+
+    private fun compareTwoExplicitDeclarationsApiInstances(
+        useIr: Boolean,
+        string1: String = "string 1",
+        string2: String = "string 2",
+        compare: (firstInstance: Any, secondInstance: Any) -> Unit
+    ) = compareTwoInstances(
+        sourceFileName = "api/ExplicitDeclarations",
+        firstInstanceConstructorArgs = listOf(String::class.java to string1),
+        secondInstanceConstructorArgs = listOf(String::class.java to string2),
+        useIr = useIr,
+        compare = compare
+    )
+
     @Test fun `compilation with explicit function declarations respects explicit hashCode`() {
         `compilation with explicit function declarations respects explicit hashCode`(useIr = false)
     }
@@ -136,6 +177,48 @@ class ExtraCarePluginTest {
     //endregion
 
     //region Superclass function declarations
+    @Test fun `two equivalent compiled Subclass instances are equals`() {
+        `two equivalent compiled Subclass instances are equals`(useIr = false)
+    }
+
+    @Test fun `two equivalent IR-compiled Subclass instances are equals`() {
+        `two equivalent compiled Subclass instances are equals`(useIr = true)
+    }
+
+    private fun `two equivalent compiled Subclass instances are equals`(useIr: Boolean) =
+        compareTwoSubclassApiInstances(useIr) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+
+    @Test fun `two inequivalent compiled Subclass instances are not equals`() {
+        `two inequivalent compiled Subclass instances are not equals`(useIr = false)
+    }
+
+    @Test fun `two inequivalent IR-compiled Subclass instances are not equals`() {
+        `two inequivalent compiled Subclass instances are not equals`(useIr = true)
+    }
+
+    private fun `two inequivalent compiled Subclass instances are not equals`(useIr: Boolean) =
+        compareTwoSubclassApiInstances(useIr, number2 = 888) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+
+    private fun compareTwoSubclassApiInstances(
+        useIr: Boolean,
+        number1: Number = 999,
+        number2: Number = number1,
+        compare: (firstInstance: Any, secondInstance: Any) -> Unit
+    ) = compareTwoInstances(
+        sourceFileName = "api/Sub",
+        firstInstanceConstructorArgs = listOf(Number::class.java to number1),
+        secondInstanceConstructorArgs = listOf(Number::class.java to number2),
+        otherFilesToCompile = listOf("Super"),
+        useIr = useIr,
+        compare = compare
+    )
+
     @Test fun `superclass hashCode is overridden`() {
         `superclass hashCode is overridden`(useIr = false)
     }
@@ -178,6 +261,48 @@ class ExtraCarePluginTest {
     //endregion
 
     //region Nested
+    @Test fun `two equivalent compiled Nested instances are equals`() {
+        `two equivalent compiled Nested instances are equals`(useIr = false)
+    }
+
+    @Test fun `two equivalent IR-compiled Nested instances are equals`() {
+        `two equivalent compiled Nested instances are equals`(useIr = true)
+    }
+
+    private fun `two equivalent compiled Nested instances are equals`(useIr: Boolean) =
+        compareTwoNestedApiInstances(useIr) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+
+    @Test fun `two inequivalent compiled Nested instances are not equals`() {
+        `two inequivalent compiled Nested instances are not equals`(useIr = false)
+    }
+
+    @Test fun `two inequivalent IR-compiled Nested instances are not equals`() {
+        `two inequivalent compiled Nested instances are not equals`(useIr = true)
+    }
+
+    private fun `two inequivalent compiled Nested instances are not equals`(useIr: Boolean) =
+        compareTwoNestedApiInstances(useIr, value2 = "string 2") { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+
+    private fun compareTwoNestedApiInstances(
+        useIr: Boolean,
+        value1: String = "string 1",
+        value2: String = value1,
+        compare: (firstInstance: Any, secondInstance: Any) -> Unit
+    ) = compareTwoInstances(
+        sourceFileName = "api/OuterClass",
+        className = "api.OuterClass\$Nested",
+        firstInstanceConstructorArgs = listOf(String::class.java to value1),
+        secondInstanceConstructorArgs = listOf(String::class.java to value2),
+        useIr = useIr,
+        compare = compare
+    )
+
     @Test fun `compilation of nested class within class matches corresponding data class toString`() {
         `compilation of nested class within class matches corresponding data class toString`(useIr = false)
     }
@@ -187,7 +312,7 @@ class ExtraCarePluginTest {
     }
 
     private fun `compilation of nested class within class matches corresponding data class toString`(useIr: Boolean) =
-        compareNestedClassInstances(useIr = useIr, nestedClassName = "Nested") { apiInstance, dataInstance ->
+        compareNestedClassApiAndDataInstances(useIr = useIr, nestedClassName = "Nested") { apiInstance, dataInstance ->
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
         }
 
@@ -200,7 +325,7 @@ class ExtraCarePluginTest {
     }
 
     private fun `compilation of nested class within class matches corresponding data class hashCode`(useIr: Boolean) =
-        compareNestedClassInstances(useIr = useIr, nestedClassName = "Nested") { apiInstance, dataInstance ->
+        compareNestedClassApiAndDataInstances(useIr = useIr, nestedClassName = "Nested") { apiInstance, dataInstance ->
             assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
         }
 
@@ -214,7 +339,7 @@ class ExtraCarePluginTest {
 
     private fun `compilation of nested class within interface matches corresponding data class toString`(
         useIr: Boolean
-    ) = compareNestedClassInstances(
+    ) = compareNestedClassApiAndDataInstances(
         useIr = useIr,
         nestedClassName = "Nested",
         outerClassName = "OuterInterface"
@@ -232,7 +357,7 @@ class ExtraCarePluginTest {
 
     private fun `compilation of nested class within interface matches corresponding data class hashCode`(
         useIr: Boolean
-    ) = compareNestedClassInstances(
+    ) = compareNestedClassApiAndDataInstances(
         useIr = useIr,
         nestedClassName = "Nested",
         outerClassName = "OuterInterface"
@@ -240,7 +365,7 @@ class ExtraCarePluginTest {
         assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
     }
 
-    private inline fun compareNestedClassInstances(
+    private inline fun compareNestedClassApiAndDataInstances(
         useIr: Boolean,
         nestedClassName: String,
         outerClassName: String = "OuterClass",
@@ -371,6 +496,107 @@ class ExtraCarePluginTest {
     //endregion
 
     //region Complex class
+    @Test fun `two equivalent compiled Complex instances are equals`() {
+        `two equivalent compiled Complex instances are equals`(useIr = false)
+    }
+
+    @Test fun `two equivalent IR-compiled Complex instances are equals`() {
+        `two equivalent compiled Complex instances are equals`(useIr = true)
+    }
+
+    private fun `two equivalent compiled Complex instances are equals`(useIr: Boolean) =
+        compareTwoComplexApiInstances(useIr) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+
+    @Test fun `two inequivalent compiled Complex instances are not equals`() {
+        `two inequivalent compiled Complex instances are not equals`(useIr = false)
+    }
+
+    @Test fun `two inequivalent IR-compiled Complex instances are not equals`() {
+        `two inequivalent compiled Complex instances are not equals`(useIr = true)
+    }
+
+    private fun `two inequivalent compiled Complex instances are not equals`(useIr: Boolean) =
+        compareTwoComplexApiInstances(useIr, nullableReferenceType2 = "non-null") { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+
+    private fun compareTwoComplexApiInstances(
+        useIr: Boolean,
+        referenceType1: String = "Text",
+        nullableReferenceType1: String? = null,
+        int1: Int = 2,
+        nullableInt1: Int? = null,
+        long1: Long = 12345L,
+        float1: Float = 67f,
+        double1: Double = 89.0,
+        arrayReferenceType1: Array<String> = arrayOf("one string", "another string"),
+        nullableArrayReferenceType1: Array<String>? = null,
+        arrayPrimitiveType1: IntArray = intArrayOf(3, 4, 5),
+        nullableArrayPrimitiveType1: IntArray? = null,
+        genericCollectionType1: List<BigDecimal> = listOf(6, 7, 8).map { BigDecimal(it) },
+        nullableGenericCollectionType1: List<BigDecimal>? = null,
+        genericType1: BigDecimal = BigDecimal(9),
+        nullableGenericType1: BigDecimal? = null,
+        referenceType2: String = referenceType1,
+        nullableReferenceType2: String? = nullableReferenceType1,
+        int2: Int = int1,
+        nullableInt2: Int? = nullableInt1,
+        long2: Long = long1,
+        float2: Float = float1,
+        double2: Double = double1,
+        arrayReferenceType2: Array<String> = arrayReferenceType1,
+        nullableArrayReferenceType2: Array<String>? = nullableArrayReferenceType1,
+        arrayPrimitiveType2: IntArray = arrayPrimitiveType1,
+        nullableArrayPrimitiveType2: IntArray? = nullableArrayPrimitiveType1,
+        genericCollectionType2: List<BigDecimal> = genericCollectionType1,
+        nullableGenericCollectionType2: List<BigDecimal>? = nullableGenericCollectionType1,
+        genericType2: BigDecimal = genericType1,
+        nullableGenericType2: BigDecimal? = nullableGenericType1,
+        compare: (firstInstance: Any, secondInstance: Any) -> Unit
+    ) = compareTwoInstances(
+        sourceFileName = "api/Complex",
+        firstInstanceConstructorArgs = listOf(
+            String::class.java to referenceType1,
+            String::class.java to nullableReferenceType1,
+            Int::class.javaPrimitiveType!! to int1,
+            Int::class.javaObjectType to nullableInt1,
+            Long::class.javaPrimitiveType!! to long1,
+            Float::class.javaPrimitiveType!! to float1,
+            Double::class.javaPrimitiveType!! to double1,
+            Array<String>::class.java to arrayReferenceType1,
+            Array<String>::class.java to nullableArrayReferenceType1,
+            IntArray::class.java to arrayPrimitiveType1,
+            IntArray::class.java to nullableArrayPrimitiveType1,
+            List::class.java to genericCollectionType1,
+            List::class.java to nullableGenericCollectionType1,
+            Any::class.java to genericType1,
+            Any::class.java to nullableGenericType1,
+        ),
+        secondInstanceConstructorArgs = listOf(
+            String::class.java to referenceType2,
+            String::class.java to nullableReferenceType2,
+            Int::class.javaPrimitiveType!! to int2,
+            Int::class.javaObjectType to nullableInt2,
+            Long::class.javaPrimitiveType!! to long2,
+            Float::class.javaPrimitiveType!! to float2,
+            Double::class.javaPrimitiveType!! to double2,
+            Array<String>::class.java to arrayReferenceType2,
+            Array<String>::class.java to nullableArrayReferenceType2,
+            IntArray::class.java to arrayPrimitiveType2,
+            IntArray::class.java to nullableArrayPrimitiveType2,
+            List::class.java to genericCollectionType2,
+            List::class.java to nullableGenericCollectionType2,
+            Any::class.java to genericType2,
+            Any::class.java to nullableGenericType2,
+        ),
+        useIr = useIr,
+        compare = compare
+    )
+
     @Test fun `compiled Complex class instance has expected hashCode`() {
         `compiled Complex class instance has expected hashCode`(useIr = false)
     }
