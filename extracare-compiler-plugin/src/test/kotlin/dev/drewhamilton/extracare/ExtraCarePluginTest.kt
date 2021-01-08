@@ -9,6 +9,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.math.BigDecimal
 
 class ExtraCarePluginTest {
 
@@ -134,6 +135,19 @@ class ExtraCarePluginTest {
     //endregion
 
     //region Simple class
+    @Test fun `compiled Simple class instance has expected hashCode`() {
+        `compiled Simple class instance has expected hashCode`(useIr = false)
+    }
+
+    @Test fun `IR-compiled Simple class instance has expected hashCode`() {
+        `compiled Simple class instance has expected hashCode`(useIr = true)
+    }
+
+    private fun `compiled Simple class instance has expected hashCode`(useIr: Boolean) =
+        compareSimpleClassInstances(useIr) { apiClass, dataClass ->
+            assertThat(apiClass.hashCode()).isEqualTo(dataClass.hashCode())
+        }
+
     @Test fun `compiled Simple class instance has expected toString`() {
         `compiled Simple class instance has expected toString`(useIr = false)
     }
@@ -142,18 +156,43 @@ class ExtraCarePluginTest {
         `compiled Simple class instance has expected toString`(useIr = true)
     }
 
-    private fun `compiled Simple class instance has expected toString`(useIr: Boolean) {
-        compareWithDataClass(
-            sourceFileName = "Simple",
-            constructorArgs = listOf(Int::class.java to 1, String::class.java to "String", String::class.java to null),
-            useIr = useIr
-        ) { apiClass, dataClass ->
+    private fun `compiled Simple class instance has expected toString`(useIr: Boolean) =
+        compareSimpleClassInstances(useIr) { apiClass, dataClass ->
             assertThat(apiClass.toString()).isEqualTo(dataClass.toString())
         }
-    }
+
+    private inline fun compareSimpleClassInstances(
+        useIr: Boolean,
+        int: Int = 1,
+        requiredString: String = "String",
+        optionalString: String? = null,
+        compare: (apiInstance: Any, dataInstance: Any) -> Unit
+    ) = compareWithDataClass(
+        sourceFileName = "Simple",
+        constructorArgs = listOf(
+            Int::class.java to int,
+            String::class.java to requiredString,
+            String::class.java to optionalString
+        ),
+        useIr = useIr,
+        compare = compare
+    )
     //endregion
 
     //region Complex class
+    @Test fun `compiled Complex class instance has expected hashCode`() {
+        `compiled Complex class instance has expected hashCode`(useIr = false)
+    }
+
+    @Test fun `IR-compiled Complex class instance has expected hashCode`() {
+        `compiled Complex class instance has expected hashCode`(useIr = true)
+    }
+
+    private fun `compiled Complex class instance has expected hashCode`(useIr: Boolean) =
+        compareComplexClassInstances(useIr) { apiInstance, dataInstance ->
+            assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
+        }
+
     @Test fun `compiled Complex class instance has expected toString`() {
         `compiled Complex class instance has expected toString`(useIr = false)
     }
@@ -162,31 +201,51 @@ class ExtraCarePluginTest {
         `compiled Complex class instance has expected toString`(useIr = true)
     }
 
-    private fun `compiled Complex class instance has expected toString`(useIr: Boolean) {
-        compareWithDataClass(
-            sourceFileName = "Complex",
-            constructorArgs = listOf(
-                String::class.java to "Text",
-                String::class.java to null,
-                Int::class.javaPrimitiveType!! to 2,
-                Int::class.javaObjectType to null,
-                Long::class.javaPrimitiveType!! to 12345L,
-                Float::class.javaPrimitiveType!! to 67f,
-                Double::class.javaPrimitiveType!! to 89.0,
-                Array<String>::class.java to arrayOf("Strings"),
-                Array<String>::class.java to null,
-                IntArray::class.java to intArrayOf(3, 4, 5),
-                IntArray::class.java to null,
-                List::class.java to listOf(6, 7, 8),
-                List::class.java to null,
-                Any::class.java to 9,
-                Any::class.java to null,
-            ),
-            useIr = useIr
-        ) { apiClass, dataClass ->
-            assertThat(apiClass.toString()).isEqualTo(dataClass.toString())
+    private fun `compiled Complex class instance has expected toString`(useIr: Boolean) =
+        compareComplexClassInstances(useIr) { apiInstance, dataInstance ->
+            assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
         }
-    }
+
+    private inline fun compareComplexClassInstances(
+        useIr: Boolean,
+        referenceType: String = "Text",
+        nullableReferenceType: String? = null,
+        int: Int = 2,
+        nullableInt: Int? = null,
+        long: Long = 12345L,
+        float: Float = 67f,
+        double: Double = 89.0,
+        arrayReferenceType: Array<String> = arrayOf("one string", "another string"),
+        nullableArrayReferenceType: Array<String>? = null,
+        arrayPrimitiveType: IntArray = intArrayOf(3, 4, 5),
+        nullableArrayPrimitiveType: IntArray? = null,
+        genericCollectionType: List<BigDecimal> = listOf(6, 7, 8).map { BigDecimal(it) },
+        nullableGenericCollectionType: List<BigDecimal>? = null,
+        genericType: BigDecimal = BigDecimal(9),
+        nullableGenericType: BigDecimal? = null,
+        compare: (apiInstance: Any, dataInstance: Any) -> Unit
+    ) = compareWithDataClass(
+        sourceFileName = "Complex",
+        constructorArgs = listOf(
+            String::class.java to referenceType,
+            String::class.java to nullableReferenceType,
+            Int::class.javaPrimitiveType!! to int,
+            Int::class.javaObjectType to nullableInt,
+            Long::class.javaPrimitiveType!! to long,
+            Float::class.javaPrimitiveType!! to float,
+            Double::class.javaPrimitiveType!! to double,
+            Array<String>::class.java to arrayReferenceType,
+            Array<String>::class.java to nullableArrayReferenceType,
+            IntArray::class.java to arrayPrimitiveType,
+            IntArray::class.java to nullableArrayPrimitiveType,
+            List::class.java to genericCollectionType,
+            List::class.java to nullableGenericCollectionType,
+            Any::class.java to genericType,
+            Any::class.java to nullableGenericType,
+        ),
+        useIr = useIr,
+        compare = compare,
+    )
     //endregion
 
     //region Helpers for all tests
