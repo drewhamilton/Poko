@@ -15,6 +15,7 @@ class ExtraCarePluginTest {
     @JvmField
     @Rule var temporaryFolder: TemporaryFolder = TemporaryFolder()
 
+    //region Primitives
     @Test fun `compilation of valid class succeeds`() {
         `compilation of valid class succeeds`(useIr = false)
     }
@@ -26,7 +27,9 @@ class ExtraCarePluginTest {
     private fun `compilation of valid class succeeds`(useIr: Boolean) {
         testCompilation("api/Primitives", useIr = useIr)
     }
+    //endregion
 
+    //region data class
     @Test fun `compilation of data class fails`() {
         `compilation of data class fails`(useIr = false)
     }
@@ -44,7 +47,9 @@ class ExtraCarePluginTest {
             assertThat(result.messages).contains("@DataApi does not support data classes")
         }
     }
+    //endregion
 
+    //region inline class
     @Test fun `compilation of inline class fails`() {
         `compilation of inline class fails`(useIr = false)
     }
@@ -62,7 +67,9 @@ class ExtraCarePluginTest {
             assertThat(result.messages).contains("@DataApi does not support inline classes")
         }
     }
+    //endregion
 
+    //region No primary constructor
     @Test fun `compilation without primary constructor fails`() {
         `compilation without primary constructor fails`(useIr = false)
     }
@@ -80,7 +87,9 @@ class ExtraCarePluginTest {
             assertThat(result.messages).contains("@DataApi classes must have a primary constructor")
         }
     }
+    //endregion
 
+    //region Explicit function declarations
     @Test fun `compilation with explicit function declarations respects explicit toString`() {
         `compilation with explicit function declarations respects explicit toString`(useIr = false)
     }
@@ -92,15 +101,39 @@ class ExtraCarePluginTest {
     private fun `compilation with explicit function declarations respects explicit toString`(useIr: Boolean) {
         val testString = "test string"
         compareWithDataClass(
-            "ExplicitDeclarations",
-            listOf(String::class.java to testString),
-            useIr
+            sourceFileName = "ExplicitDeclarations",
+            constructorArgs = listOf(String::class.java to testString),
+            useIr = useIr
         ) { apiInstance, dataInstance ->
             assertThat(apiInstance.toString()).isEqualTo(testString)
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
         }
     }
+    //endregion
 
+    //region Superclass function declarations
+    @Test fun `superclass toString is ignored`() {
+        `superclass toString is ignored`(useIr = false)
+    }
+
+    @Test fun `IR superclass toString is ignored`() {
+        `superclass toString is ignored`(useIr = true)
+    }
+
+    private fun `superclass toString is ignored`(useIr: Boolean) {
+        compareWithDataClass(
+            sourceFileName = "Sub",
+            constructorArgs = listOf(Number::class.java to 123.4),
+            otherClassesToCompile = listOf("Super"),
+            useIr = useIr
+        ) { apiInstance, dataInstance ->
+            assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
+            assertThat(apiInstance.toString()).isNotEqualTo("superclass")
+        }
+    }
+    //endregion
+
+    //region Simple class
     @Test fun `compiled Simple class instance has expected toString`() {
         `compiled Simple class instance has expected toString`(useIr = false)
     }
@@ -111,14 +144,16 @@ class ExtraCarePluginTest {
 
     private fun `compiled Simple class instance has expected toString`(useIr: Boolean) {
         compareWithDataClass(
-            "Simple",
-            listOf(Int::class.java to 1, String::class.java to "String", String::class.java to null),
-            useIr
+            sourceFileName = "Simple",
+            constructorArgs = listOf(Int::class.java to 1, String::class.java to "String", String::class.java to null),
+            useIr = useIr
         ) { apiClass, dataClass ->
             assertThat(apiClass.toString()).isEqualTo(dataClass.toString())
         }
     }
+    //endregion
 
+    //region Complex class
     @Test fun `compiled Complex class instance has expected toString`() {
         `compiled Complex class instance has expected toString`(useIr = false)
     }
@@ -129,8 +164,8 @@ class ExtraCarePluginTest {
 
     private fun `compiled Complex class instance has expected toString`(useIr: Boolean) {
         compareWithDataClass(
-            "Complex",
-            listOf(
+            sourceFileName = "Complex",
+            constructorArgs = listOf(
                 String::class.java to "Text",
                 String::class.java to null,
                 Int::class.javaPrimitiveType!! to 2,
@@ -147,11 +182,12 @@ class ExtraCarePluginTest {
                 Any::class.java to 9,
                 Any::class.java to null,
             ),
-            useIr
+            useIr = useIr
         ) { apiClass, dataClass ->
             assertThat(apiClass.toString()).isEqualTo(dataClass.toString())
         }
     }
+    //endregion
 
     //region Helpers for all tests
     /**
@@ -162,9 +198,13 @@ class ExtraCarePluginTest {
     private inline fun compareWithDataClass(
         sourceFileName: String,
         constructorArgs: List<Pair<Class<*>, Any?>>,
+        otherClassesToCompile: List<String> = emptyList(),
         useIr: Boolean = false,
         compare: (apiInstance: Any, dataInstance: Any) -> Unit
-    ) = testCompilation("api/$sourceFileName", "data/$sourceFileName", useIr = useIr) { result ->
+    ) = testCompilation(
+        "api/$sourceFileName", "data/$sourceFileName", *otherClassesToCompile.toTypedArray(),
+        useIr = useIr
+    ) { result ->
         val apiClass = result.classLoader.loadClass("api.$sourceFileName")
         val dataClass = result.classLoader.loadClass("api.$sourceFileName")
 
