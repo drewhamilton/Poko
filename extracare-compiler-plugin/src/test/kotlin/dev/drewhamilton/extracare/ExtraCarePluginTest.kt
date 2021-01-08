@@ -127,7 +127,7 @@ class ExtraCarePluginTest {
         useIr: Boolean,
         string: String = "test string",
         compare: (apiInstance: Any, dataInstance: Any) -> Unit
-    ) = compareWithDataClass(
+    ) = compareApiWithDataClass(
         sourceFileName = "ExplicitDeclarations",
         constructorArgs = listOf(String::class.java to string),
         useIr = useIr,
@@ -168,7 +168,7 @@ class ExtraCarePluginTest {
         useIr: Boolean,
         number: Number = 123.4,
         compare: (apiInstance: Any, dataInstance: Any) -> Unit
-    ) = compareWithDataClass(
+    ) = compareApiWithDataClass(
         sourceFileName = "Sub",
         constructorArgs = listOf(Number::class.java to number),
         otherFilesToCompile = listOf("Super"),
@@ -245,7 +245,7 @@ class ExtraCarePluginTest {
         nestedClassName: String,
         outerClassName: String = "OuterClass",
         compare: (apiInstance: Any, dataInstance: Any) -> Unit
-    ) = compareWithDataClass(
+    ) = compareApiWithDataClass(
         sourceFileName = outerClassName,
         className = "$outerClassName\$$nestedClassName",
         constructorArgs = listOf(String::class.java to "nested class value"),
@@ -273,6 +273,59 @@ class ExtraCarePluginTest {
     //endregion
 
     //region Simple class
+    @Test fun `two equivalent compiled Simple instances are equals`() {
+        `two equivalent compiled Simple instances are equals`(useIr = false)
+    }
+
+    @Test fun `two equivalent IR-compiled Simple instances are equals`() {
+        `two equivalent compiled Simple instances are equals`(useIr = true)
+    }
+
+    private fun `two equivalent compiled Simple instances are equals`(useIr: Boolean) =
+        compareTwoSimpleApiInstances(useIr) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+
+    @Test fun `two inequivalent compiled Simple instances are not equals`() {
+        `two inequivalent compiled Simple instances are not equals`(useIr = false)
+    }
+
+    @Test fun `two inequivalent IR-compiled Simple instances are not equals`() {
+        `two inequivalent compiled Simple instances are not equals`(useIr = true)
+    }
+
+    private fun `two inequivalent compiled Simple instances are not equals`(useIr: Boolean) =
+        compareTwoSimpleApiInstances(useIr, optionalString2 = "non-null") { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+
+    private fun compareTwoSimpleApiInstances(
+        useIr: Boolean,
+        int1: Int = 1,
+        requiredString1: String = "String",
+        optionalString1: String? = null,
+        int2: Int = int1,
+        requiredString2: String = requiredString1,
+        optionalString2: String? = optionalString1,
+        compare: (firstInstance: Any, secondInstance: Any) -> Unit
+    ) = compareTwoInstances(
+        sourceFileName = "api/Simple",
+        firstInstanceConstructorArgs = listOf(
+            Int::class.java to int1,
+            String::class.java to requiredString1,
+            String::class.java to optionalString1
+        ),
+        secondInstanceConstructorArgs = listOf(
+            Int::class.java to int2,
+            String::class.java to requiredString2,
+            String::class.java to optionalString2
+        ),
+        useIr = useIr,
+        compare = compare
+    )
+
     @Test fun `compiled Simple class instance has expected hashCode`() {
         `compiled Simple class instance has expected hashCode`(useIr = false)
     }
@@ -305,7 +358,7 @@ class ExtraCarePluginTest {
         requiredString: String = "String",
         optionalString: String? = null,
         compare: (apiInstance: Any, dataInstance: Any) -> Unit
-    ) = compareWithDataClass(
+    ) = compareApiWithDataClass(
         sourceFileName = "Simple",
         constructorArgs = listOf(
             Int::class.java to int,
@@ -362,7 +415,7 @@ class ExtraCarePluginTest {
         genericType: BigDecimal = BigDecimal(9),
         nullableGenericType: BigDecimal? = null,
         compare: (apiInstance: Any, dataInstance: Any) -> Unit
-    ) = compareWithDataClass(
+    ) = compareApiWithDataClass(
         sourceFileName = "Complex",
         constructorArgs = listOf(
             String::class.java to referenceType,
@@ -387,12 +440,37 @@ class ExtraCarePluginTest {
     //endregion
 
     //region Helpers for all tests
+    private inline fun compareTwoInstances(
+        sourceFileName: String,
+        className: String = sourceFileName.replace('/', '.'),
+        firstInstanceConstructorArgs: List<Pair<Class<*>, Any?>>,
+        secondInstanceConstructorArgs: List<Pair<Class<*>, Any?>> = firstInstanceConstructorArgs,
+        otherFilesToCompile: List<String> = emptyList(),
+        useIr: Boolean = false,
+        compare: (firstInstance: Any, secondInstance: Any) -> Unit
+    ) = testCompilation(sourceFileName, *otherFilesToCompile.toTypedArray(), useIr = useIr) { result ->
+        val constructorArgParameterTypeList = firstInstanceConstructorArgs.map { it.first }
+        assertThat(constructorArgParameterTypeList).isEqualTo(secondInstanceConstructorArgs.map { it.first })
+
+        val clazz = result.classLoader.loadClass(className)
+
+        val constructor = clazz.getConstructor(*constructorArgParameterTypeList.toTypedArray())
+
+        val firstConstructorParameters = firstInstanceConstructorArgs.map { it.second }.toTypedArray()
+        val firstInstance = constructor.newInstance(*firstConstructorParameters)
+
+        val secondConstructorParameters = secondInstanceConstructorArgs.map { it.second }.toTypedArray()
+        val secondInstance = constructor.newInstance(*secondConstructorParameters)
+
+        compare(firstInstance, secondInstance)
+    }
+
     /**
      * Compiles and instantiates [sourceFileName] from both the `api` package and the `data` package, with the
      * expectation that they compile to a [DataApi] class and a data class, respectively. After instantiating each,
      * passes both to [compare] for comparison testing.
      */
-    private inline fun compareWithDataClass(
+    private inline fun compareApiWithDataClass(
         sourceFileName: String,
         className: String = sourceFileName,
         constructorArgs: List<Pair<Class<*>, Any?>>,

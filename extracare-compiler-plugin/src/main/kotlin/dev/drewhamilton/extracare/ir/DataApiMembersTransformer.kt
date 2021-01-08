@@ -15,21 +15,30 @@ import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
+import org.jetbrains.kotlin.ir.builders.irAs
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irCallOp
 import org.jetbrains.kotlin.ir.builders.irConcat
+import org.jetbrains.kotlin.ir.builders.irEqeqeq
 import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irIfNull
+import org.jetbrains.kotlin.ir.builders.irIfThenReturnFalse
+import org.jetbrains.kotlin.ir.builders.irIfThenReturnTrue
 import org.jetbrains.kotlin.ir.builders.irInt
+import org.jetbrains.kotlin.ir.builders.irNotEquals
+import org.jetbrains.kotlin.ir.builders.irNotIs
 import org.jetbrains.kotlin.ir.builders.irReturn
+import org.jetbrains.kotlin.ir.builders.irReturnTrue
 import org.jetbrains.kotlin.ir.builders.irSet
 import org.jetbrains.kotlin.ir.builders.irString
+import org.jetbrains.kotlin.ir.builders.irTemporary
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
+import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.descriptors.WrappedVariableDescriptor
@@ -40,6 +49,7 @@ import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
 import org.jetbrains.kotlin.ir.types.createType
+import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.findFirstFunction
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isFakeOverride
@@ -67,6 +77,9 @@ internal class DataApiMembersTransformer(
         val declarationParent = declaration.parent
         if (declarationParent is IrClass && declarationParent.isDataApiClass() && declaration.isFakeOverride) {
             when {
+                declaration.isEquals() -> declaration.convertToGenerated { properties ->
+                    generateEqualsMethodBody(declarationParent, declaration, properties)
+                }
                 declaration.isHashCode() -> declaration.convertToGenerated { properties ->
                     generateHashCodeMethodBody(declaration, properties)
                 }
@@ -127,10 +140,51 @@ internal class DataApiMembersTransformer(
         reflectivelySetFakeOverride(false)
     }
 
+    //region equals
+    private fun IrFunction.isEquals(): Boolean {
+        val valueParameters = valueParameters
+        return name == Name.identifier("equals") &&
+                returnType == pluginContext.irBuiltIns.booleanType &&
+                valueParameters.size == 1 && valueParameters[0].type == pluginContext.irBuiltIns.anyNType
+    }
+
+    /**
+     * The actual body of the toString method. Copied from
+     * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateEqualsMethodBody].
+     */
+    private fun IrBlockBodyBuilder.generateEqualsMethodBody(
+        irClass: IrClass,
+        irFunction: IrFunction,
+        irProperties: List<IrProperty>,
+    ) {
+        val irType = irClass.defaultType
+        fun irOther(): IrExpression = IrGetValueImpl(irFunction.valueParameters[0])
+
+        if (!irClass.isInline) {
+            +irIfThenReturnTrue(irEqeqeq(receiver(irFunction), irOther()))
+        }
+        +irIfThenReturnFalse(irNotIs(irOther(), irType))
+        val otherWithCast = irTemporary(irAs(irOther(), irType), "other_with_cast")
+        for (property in irProperties) {
+            val field = property.backingField!!
+            val arg1 = irGetField(receiver(irFunction), field)
+            val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
+            +irIfThenReturnFalse(irNotEquals(arg1, arg2))
+        }
+        +irReturnTrue()
+    }
+    //endregion
+
     //region hashCode
     private fun IrFunction.isHashCode(): Boolean =
-        name == Name.identifier("hashCode") && valueParameters.isEmpty() && returnType == pluginContext.irBuiltIns.intType
+        name == Name.identifier("hashCode") &&
+                returnType == pluginContext.irBuiltIns.intType &&
+                valueParameters.isEmpty()
 
+    /**
+     * Generate the body of the hashCode method. Copied from
+     * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateHashCodeMethodBody].
+     */
     private fun IrBlockBodyBuilder.generateHashCodeMethodBody(
         irFunction: IrFunction,
         irProperties: List<IrProperty>,
@@ -188,11 +242,11 @@ internal class DataApiMembersTransformer(
         return when {
             irProperty.descriptor.type.isNullable() -> irIfNull(
                 context.irBuiltIns.intType,
-                irGetField(irFunction.irThis(), field),
+                irGetField(receiver(irFunction), field),
                 irInt(0),
-                getHashCodeOf(irProperty, irGetField(irFunction.irThis(), field))
+                getHashCodeOf(irProperty, irGetField(receiver(irFunction), field))
             )
-            else -> getHashCodeOf(irProperty, irGetField(irFunction.irThis(), field))
+            else -> getHashCodeOf(irProperty, irGetField(receiver(irFunction), field))
         }
     }
 
@@ -253,7 +307,9 @@ internal class DataApiMembersTransformer(
 
     //region toString
     private fun IrFunction.isToString(): Boolean =
-        name == Name.identifier("toString") && valueParameters.isEmpty() && returnType == pluginContext.irBuiltIns.stringType
+        name == Name.identifier("toString") &&
+                returnType == pluginContext.irBuiltIns.stringType &&
+                valueParameters.isEmpty()
 
     /**
      * The actual body of the toString method. Copied from
@@ -272,7 +328,7 @@ internal class DataApiMembersTransformer(
 
             irConcat.addArgument(irString(property.name.asString() + "="))
 
-            val irPropertyValue = irGetField(irFunction.irThis(), property.backingField!!)
+            val irPropertyValue = irGetField(receiver(irFunction), property.backingField!!)
 
             val typeConstructorDescriptor = property.descriptor.type.constructor.declarationDescriptor
             val irPropertyStringValue =
@@ -317,17 +373,16 @@ internal class DataApiMembersTransformer(
     }
 
     /**
-     * Only works properly after [mutateWithNewDispatchReceiverParameterForParentClass] has been called on the receiver
-     * [IrFunction].
+     * Only works properly after [mutateWithNewDispatchReceiverParameterForParentClass] has been called on [irFunction].
      */
-    private fun IrFunction.irThis(): IrExpression {
-        val dispatchReceiverParameter = dispatchReceiverParameter!!
-        return IrGetValueImpl(
-            startOffset, endOffset,
-            dispatchReceiverParameter.type,
-            dispatchReceiverParameter.symbol
-        )
-    }
+    private fun IrBlockBodyBuilder.receiver(irFunction: IrFunction) =
+        IrGetValueImpl(irFunction.dispatchReceiverParameter!!)
+
+    private fun IrBlockBodyBuilder.IrGetValueImpl(irParameter: IrValueParameter) = IrGetValueImpl(
+        startOffset, endOffset,
+        irParameter.type,
+        irParameter.symbol
+    )
 
     private fun IrFunction.reflectivelySetFakeOverride(isFakeOverride: Boolean) {
         with(javaClass.getDeclaredField("isFakeOverride")) {
