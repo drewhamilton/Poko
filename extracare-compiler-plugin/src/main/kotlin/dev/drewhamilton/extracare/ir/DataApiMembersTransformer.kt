@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
-import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
+import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irConcat
@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isFakeOverride
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
+import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.resolve.source.getPsi
 
@@ -84,7 +85,7 @@ internal class DataApiMembersTransformer(
 
     //region toString
     private fun IrFunction.isToString(): Boolean =
-        name.asString() == "toString" && valueParameters.isEmpty() && returnType == pluginContext.irBuiltIns.stringType
+        name == Name.identifier("toString") && valueParameters.isEmpty() && returnType == pluginContext.irBuiltIns.stringType
 
     private fun IrFunction.convertToGeneratedToString(properties: List<IrProperty>) {
         val parent = parent as IrClass
@@ -94,7 +95,7 @@ internal class DataApiMembersTransformer(
         mutateWithNewDispatchReceiverParameterForParentClass()
 
         body = DeclarationIrBuilder(pluginContext, symbol).irBlockBody {
-            +irReturn(generateToStringMethodBody(parent, this@convertToGeneratedToString, properties))
+            generateToStringMethodBody(parent, this@convertToGeneratedToString, properties)
         }
 
         reflectivelySetFakeOverride(false)
@@ -104,11 +105,11 @@ internal class DataApiMembersTransformer(
      * The actual body of the toString method. Copied from
      * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateToStringMethodBody].
      */
-    private fun IrBuilderWithScope.generateToStringMethodBody(
+    private fun IrBlockBodyBuilder.generateToStringMethodBody(
         irClass: IrClass,
         irFunction: IrFunction,
         irProperties: List<IrProperty>,
-    ): IrExpression {
+    ) {
         val irConcat = irConcat()
         irConcat.addArgument(irString(irClass.name.asString() + "("))
         var first = true
@@ -135,7 +136,7 @@ internal class DataApiMembersTransformer(
             first = false
         }
         irConcat.addArgument(irString(")"))
-        return irConcat
+        +irReturn(irConcat)
     }
 
     private fun IrFunction.irThis(): IrExpression {
