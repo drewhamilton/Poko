@@ -187,6 +187,10 @@ class ExtraCarePluginTest {
 
     private fun `two equivalent compiled Subclass instances are equals`(useIr: Boolean) =
         compareTwoSubclassApiInstances(useIr) { firstInstance, secondInstance ->
+            // Super class equals implementation returns `other == true`; this confirms that is overridden:
+            assertThat(firstInstance).isNotEqualTo(true)
+            assertThat(secondInstance).isNotEqualTo(true)
+
             assertThat(firstInstance).isEqualTo(secondInstance)
             assertThat(secondInstance).isEqualTo(firstInstance)
         }
@@ -201,6 +205,10 @@ class ExtraCarePluginTest {
 
     private fun `two inequivalent compiled Subclass instances are not equals`(useIr: Boolean) =
         compareTwoSubclassApiInstances(useIr, number2 = 888) { firstInstance, secondInstance ->
+            // Super class equals implementation returns `other == true`; this confirms that is overridden:
+            assertThat(firstInstance).isNotEqualTo(true)
+            assertThat(secondInstance).isNotEqualTo(true)
+
             assertThat(firstInstance).isNotEqualTo(secondInstance)
             assertThat(secondInstance).isNotEqualTo(firstInstance)
         }

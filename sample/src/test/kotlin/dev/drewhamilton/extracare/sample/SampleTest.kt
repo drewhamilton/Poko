@@ -53,8 +53,8 @@ class SampleTest {
     }
 
     @Test fun `toString includes class name and each property`() {
-        val simple = Sample(3, "sample", null)
-        assertThat(simple.toString()).isEqualTo("Sample(int=3, requiredString=sample, optionalString=null)")
+        val sample = Sample(3, "sample", null)
+        assertThat(sample.toString()).isEqualTo("Sample(int=3, requiredString=sample, optionalString=null)")
     }
 
     @Test fun `toString is equivalent to data class toString`() {
@@ -73,6 +73,9 @@ class SampleTest {
         assertThat(dataApi.toString()).isEqualTo(data.toString().removePrefix("Data"))
     }
 
+    /**
+     * Data class equivalent to [Sample].
+     */
     private data class DataSample(
         val int: Int,
         val requiredString: String,
