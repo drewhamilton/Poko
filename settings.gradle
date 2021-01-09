@@ -3,11 +3,6 @@ include ':extracare-compiler-plugin'
 include ':data-api-annotations'
 include ':sample'
 
-// Only enable Android project on JDK 8 until Android tools catch up
-if (!JavaVersion.current().isJava9Compatible() && System.getenv("ANDROID_HOME") != null) {
-  include ':sample-android'
-}
-
 includeBuild('extracare-gradle-plugin') {
   dependencySubstitution {
     substitute module("$publish_group:$publish_gradle_plugin_artifact") with project(':')
