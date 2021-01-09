@@ -21,7 +21,7 @@ import org.jetbrains.org.objectweb.asm.Opcodes
 import org.jetbrains.org.objectweb.asm.Type
 import org.jetbrains.org.objectweb.asm.commons.InstructionAdapter
 
-abstract class FunctionGenerator(
+internal abstract class FunctionGenerator(
     protected val declaration: KtClassOrObject,
     protected val classDescriptor: ClassDescriptor,
     protected val classAsmType: Type,

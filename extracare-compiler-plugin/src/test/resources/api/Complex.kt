@@ -1,7 +1,8 @@
-package dev.drewhamilton.extracare.sample
+package api
 
 import dev.drewhamilton.extracare.DataApi
 
+@Suppress("Unused")
 @DataApi class Complex<T>(
     val referenceType: String,
     val nullableReferenceType: String?,
