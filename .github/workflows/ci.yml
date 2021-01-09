@@ -2,12 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ci_use_ir: [ true, false ]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -20,7 +23,5 @@ jobs:
           java-version: 1.8
       - name: Assemble
         run: cd extracare-gradle-plugin && ./gradlew clean && cd .. && ./gradlew clean assemble --stacktrace
-      - name: Check
-        run: ./gradlew check --stacktrace
       - name: Build
-        run: ./gradlew build --stacktrace
+        run: ./gradlew build --stacktrace -Puse_ir=${{ matrix.ci_use_ir }}
