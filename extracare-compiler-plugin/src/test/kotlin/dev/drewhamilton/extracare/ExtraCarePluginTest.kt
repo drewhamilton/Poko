@@ -8,41 +8,29 @@ import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.io.File
 import java.math.BigDecimal
 
-class ExtraCarePluginTest {
+@RunWith(Parameterized::class)
+class ExtraCarePluginTest(
+    private val useIr: Boolean
+) {
 
     @JvmField
     @Rule var temporaryFolder: TemporaryFolder = TemporaryFolder()
 
     //region Primitives
     @Test fun `compilation of valid class succeeds`() {
-        `compilation of valid class succeeds`(useIr = false)
-    }
-
-    @Test fun `IR compilation of valid class succeeds`() {
-        `compilation of valid class succeeds`(useIr = true)
-    }
-
-    private fun `compilation of valid class succeeds`(useIr: Boolean) {
-        testCompilation("api/Primitives", useIr = useIr)
+        testCompilation("api/Primitives")
     }
     //endregion
 
     //region data class
     @Test fun `compilation of data class fails`() {
-        `compilation of data class fails`(useIr = false)
-    }
-
-    @Test fun `IR compilation of data class fails`() {
-        `compilation of data class fails`(useIr = true)
-    }
-
-    private fun `compilation of data class fails`(useIr: Boolean) {
         testCompilation(
             "illegal/Data",
-            useIr = useIr,
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
             assertThat(result.messages).contains("@DataApi does not support data classes")
@@ -52,17 +40,8 @@ class ExtraCarePluginTest {
 
     //region inline class
     @Test fun `compilation of inline class fails`() {
-        `compilation of inline class fails`(useIr = false)
-    }
-
-    @Test fun `IR compilation of inline class fails`() {
-        `compilation of inline class fails`(useIr = true)
-    }
-
-    private fun `compilation of inline class fails`(useIr: Boolean) {
         testCompilation(
             "illegal/Inline",
-            useIr = useIr,
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
             assertThat(result.messages).contains("@DataApi does not support inline classes")
@@ -72,17 +51,8 @@ class ExtraCarePluginTest {
 
     //region No primary constructor
     @Test fun `compilation without primary constructor fails`() {
-        `compilation without primary constructor fails`(useIr = false)
-    }
-
-    @Test fun `IR compilation without primary constructor fails`() {
-        `compilation without primary constructor fails`(useIr = true)
-    }
-
-    private fun `compilation without primary constructor fails`(useIr: Boolean) {
         testCompilation(
             "illegal/NoPrimaryConstructor",
-            useIr = useIr,
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
             assertThat(result.messages).contains("@DataApi classes must have a primary constructor")
@@ -91,36 +61,19 @@ class ExtraCarePluginTest {
     //endregion
 
     //region Explicit function declarations
-    @Test fun `two equivalent compiled ExplicitDeclarations instances are equals`() {
-        `two equivalent compiled ExplicitDeclarations instances are equals`(useIr = false)
-    }
-
-    @Test fun `two equivalent IR-compiled ExplicitDeclarations instances are equals`() {
-        `two equivalent compiled ExplicitDeclarations instances are equals`(useIr = true)
-    }
-
-    private fun `two equivalent compiled ExplicitDeclarations instances are equals`(useIr: Boolean) =
-        compareTwoExplicitDeclarationsApiInstances(useIr) { firstInstance, secondInstance ->
+    @Test fun `two equivalent compiled ExplicitDeclarations instances are equals`() =
+        compareTwoExplicitDeclarationsApiInstances { firstInstance, secondInstance ->
             assertThat(firstInstance).isEqualTo(secondInstance)
             assertThat(secondInstance).isEqualTo(firstInstance)
         }
 
-    @Test fun `two inequivalent compiled ExplicitDeclarations instances are not equals`() {
-        `two inequivalent compiled ExplicitDeclarations instances are not equals`(useIr = false)
-    }
-
-    @Test fun `two inequivalent IR-compiled ExplicitDeclarations instances are not equals`() {
-        `two inequivalent compiled ExplicitDeclarations instances are not equals`(useIr = true)
-    }
-
-    private fun `two inequivalent compiled ExplicitDeclarations instances are not equals`(useIr: Boolean) =
-        compareTwoExplicitDeclarationsApiInstances(useIr, string2 = "string 11") { firstInstance, secondInstance ->
+    @Test fun `two inequivalent compiled ExplicitDeclarations instances are not equals`() =
+        compareTwoExplicitDeclarationsApiInstances(string2 = "string 11") { firstInstance, secondInstance ->
             assertThat(firstInstance).isNotEqualTo(secondInstance)
             assertThat(secondInstance).isNotEqualTo(firstInstance)
         }
 
     private fun compareTwoExplicitDeclarationsApiInstances(
-        useIr: Boolean,
         string1: String = "string 1",
         string2: String = "string 2",
         compare: (firstInstance: Any, secondInstance: Any) -> Unit
@@ -128,65 +81,38 @@ class ExtraCarePluginTest {
         sourceFileName = "api/ExplicitDeclarations",
         firstInstanceConstructorArgs = listOf(String::class.java to string1),
         secondInstanceConstructorArgs = listOf(String::class.java to string2),
-        useIr = useIr,
         compare = compare
     )
 
     @Test fun `compilation with explicit function declarations respects explicit hashCode`() {
-        `compilation with explicit function declarations respects explicit hashCode`(useIr = false)
-    }
-
-    @Test fun `IR compilation with explicit function declarations respects explicit hashCode`() {
-        `compilation with explicit function declarations respects explicit hashCode`(useIr = true)
-    }
-
-    private fun `compilation with explicit function declarations respects explicit hashCode`(useIr: Boolean) {
         val testString = "test thing"
-        compareExplicitDeclarationsInstances(useIr, string = testString) { apiInstance, dataInstance ->
+        compareExplicitDeclarationsInstances(string = testString) { apiInstance, dataInstance ->
             assertThat(apiInstance.hashCode()).isEqualTo(testString.length)
             assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
         }
     }
 
     @Test fun `compilation with explicit function declarations respects explicit toString`() {
-        `compilation with explicit function declarations respects explicit toString`(useIr = false)
-    }
-
-    @Test fun `IR compilation with explicit function declarations respects explicit toString`() {
-        `compilation with explicit function declarations respects explicit toString`(useIr = true)
-    }
-
-    private fun `compilation with explicit function declarations respects explicit toString`(useIr: Boolean) {
         val testString = "test string"
-        compareExplicitDeclarationsInstances(useIr, string = testString) { apiInstance, dataInstance ->
+        compareExplicitDeclarationsInstances(string = testString) { apiInstance, dataInstance ->
             assertThat(apiInstance.toString()).isEqualTo(testString)
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
         }
     }
 
     private fun compareExplicitDeclarationsInstances(
-        useIr: Boolean,
         string: String = "test string",
         compare: (apiInstance: Any, dataInstance: Any) -> Unit
     ) = compareApiWithDataClass(
         sourceFileName = "ExplicitDeclarations",
         constructorArgs = listOf(String::class.java to string),
-        useIr = useIr,
         compare = compare
     )
     //endregion
 
     //region Superclass function declarations
-    @Test fun `two equivalent compiled Subclass instances are equals`() {
-        `two equivalent compiled Subclass instances are equals`(useIr = false)
-    }
-
-    @Test fun `two equivalent IR-compiled Subclass instances are equals`() {
-        `two equivalent compiled Subclass instances are equals`(useIr = true)
-    }
-
-    private fun `two equivalent compiled Subclass instances are equals`(useIr: Boolean) =
-        compareTwoSubclassApiInstances(useIr) { firstInstance, secondInstance ->
+    @Test fun `two equivalent compiled Subclass instances are equals`() =
+        compareTwoSubclassApiInstances { firstInstance, secondInstance ->
             // Super class equals implementation returns `other == true`; this confirms that is overridden:
             assertThat(firstInstance).isNotEqualTo(true)
             assertThat(secondInstance).isNotEqualTo(true)
@@ -195,16 +121,8 @@ class ExtraCarePluginTest {
             assertThat(secondInstance).isEqualTo(firstInstance)
         }
 
-    @Test fun `two inequivalent compiled Subclass instances are not equals`() {
-        `two inequivalent compiled Subclass instances are not equals`(useIr = false)
-    }
-
-    @Test fun `two inequivalent IR-compiled Subclass instances are not equals`() {
-        `two inequivalent compiled Subclass instances are not equals`(useIr = true)
-    }
-
-    private fun `two inequivalent compiled Subclass instances are not equals`(useIr: Boolean) =
-        compareTwoSubclassApiInstances(useIr, number2 = 888) { firstInstance, secondInstance ->
+    @Test fun `two inequivalent compiled Subclass instances are not equals`() =
+        compareTwoSubclassApiInstances(number2 = 888) { firstInstance, secondInstance ->
             // Super class equals implementation returns `other == true`; this confirms that is overridden:
             assertThat(firstInstance).isNotEqualTo(true)
             assertThat(secondInstance).isNotEqualTo(true)
@@ -214,7 +132,6 @@ class ExtraCarePluginTest {
         }
 
     private fun compareTwoSubclassApiInstances(
-        useIr: Boolean,
         number1: Number = 999,
         number2: Number = number1,
         compare: (firstInstance: Any, secondInstance: Any) -> Unit
@@ -223,82 +140,46 @@ class ExtraCarePluginTest {
         firstInstanceConstructorArgs = listOf(Number::class.java to number1),
         secondInstanceConstructorArgs = listOf(Number::class.java to number2),
         otherFilesToCompile = listOf("Super"),
-        useIr = useIr,
         compare = compare
     )
 
-    @Test fun `superclass hashCode is overridden`() {
-        `superclass hashCode is overridden`(useIr = false)
-    }
-
-    @Test fun `IR superclass hashCode is overridden`() {
-        `superclass hashCode is overridden`(useIr = true)
-    }
-
-    private fun `superclass hashCode is overridden`(useIr: Boolean) =
-        compareSubclassInstances(useIr) { apiInstance, dataInstance ->
+    @Test fun `superclass hashCode is overridden`() =
+        compareSubclassInstances { apiInstance, dataInstance ->
             assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
             assertThat(apiInstance.hashCode()).isNotEqualTo(50934)
         }
 
-    @Test fun `superclass toString is overridden`() {
-        `superclass toString is overridden`(useIr = false)
-    }
-
-    @Test fun `IR superclass toString is overridden`() {
-        `superclass toString is overridden`(useIr = true)
-    }
-
-    private fun `superclass toString is overridden`(useIr: Boolean) =
-        compareSubclassInstances(useIr) { apiInstance, dataInstance ->
+    @Test fun `superclass toString is overridden`() =
+        compareSubclassInstances { apiInstance, dataInstance ->
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
             assertThat(apiInstance.toString()).isNotEqualTo("superclass")
         }
 
     private fun compareSubclassInstances(
-        useIr: Boolean,
         number: Number = 123.4,
         compare: (apiInstance: Any, dataInstance: Any) -> Unit
     ) = compareApiWithDataClass(
         sourceFileName = "Sub",
         constructorArgs = listOf(Number::class.java to number),
         otherFilesToCompile = listOf("Super"),
-        useIr = useIr,
         compare = compare
     )
     //endregion
 
     //region Nested
-    @Test fun `two equivalent compiled Nested instances are equals`() {
-        `two equivalent compiled Nested instances are equals`(useIr = false)
-    }
-
-    @Test fun `two equivalent IR-compiled Nested instances are equals`() {
-        `two equivalent compiled Nested instances are equals`(useIr = true)
-    }
-
-    private fun `two equivalent compiled Nested instances are equals`(useIr: Boolean) =
-        compareTwoNestedApiInstances(useIr) { firstInstance, secondInstance ->
+    @Test fun `two equivalent compiled Nested instances are equals`() =
+        compareTwoNestedApiInstances { firstInstance, secondInstance ->
             assertThat(firstInstance).isEqualTo(secondInstance)
             assertThat(secondInstance).isEqualTo(firstInstance)
         }
 
-    @Test fun `two inequivalent compiled Nested instances are not equals`() {
-        `two inequivalent compiled Nested instances are not equals`(useIr = false)
-    }
-
-    @Test fun `two inequivalent IR-compiled Nested instances are not equals`() {
-        `two inequivalent compiled Nested instances are not equals`(useIr = true)
-    }
-
-    private fun `two inequivalent compiled Nested instances are not equals`(useIr: Boolean) =
-        compareTwoNestedApiInstances(useIr, value2 = "string 2") { firstInstance, secondInstance ->
+    @Test fun `two inequivalent compiled Nested instances are not equals`() =
+        compareTwoNestedApiInstances(value2 = "string 2") { firstInstance, secondInstance ->
             assertThat(firstInstance).isNotEqualTo(secondInstance)
             assertThat(secondInstance).isNotEqualTo(firstInstance)
         }
 
     private fun compareTwoNestedApiInstances(
-        useIr: Boolean,
         value1: String = "string 1",
         value2: String = value1,
         compare: (firstInstance: Any, secondInstance: Any) -> Unit
@@ -307,74 +188,36 @@ class ExtraCarePluginTest {
         className = "api.OuterClass\$Nested",
         firstInstanceConstructorArgs = listOf(String::class.java to value1),
         secondInstanceConstructorArgs = listOf(String::class.java to value2),
-        useIr = useIr,
         compare = compare
     )
 
-    @Test fun `compilation of nested class within class matches corresponding data class toString`() {
-        `compilation of nested class within class matches corresponding data class toString`(useIr = false)
-    }
-
-    @Test fun `IR compilation of nested class within class matches corresponding data class toString`() {
-        `compilation of nested class within class matches corresponding data class toString`(useIr = true)
-    }
-
-    private fun `compilation of nested class within class matches corresponding data class toString`(useIr: Boolean) =
-        compareNestedClassApiAndDataInstances(useIr = useIr, nestedClassName = "Nested") { apiInstance, dataInstance ->
+    @Test fun `compilation of nested class within class matches corresponding data class toString`() =
+        compareNestedClassApiAndDataInstances(nestedClassName = "Nested") { apiInstance, dataInstance ->
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
         }
 
-    @Test fun `compilation of nested class within class matches corresponding data class hashCode`() {
-        `compilation of nested class within class matches corresponding data class hashCode`(useIr = false)
-    }
-
-    @Test fun `IR compilation of nested class within class matches corresponding data class hashCode`() {
-        `compilation of nested class within class matches corresponding data class hashCode`(useIr = true)
-    }
-
-    private fun `compilation of nested class within class matches corresponding data class hashCode`(useIr: Boolean) =
-        compareNestedClassApiAndDataInstances(useIr = useIr, nestedClassName = "Nested") { apiInstance, dataInstance ->
+    @Test fun `compilation of nested class within class matches corresponding data class hashCode`() =
+        compareNestedClassApiAndDataInstances(nestedClassName = "Nested") { apiInstance, dataInstance ->
             assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
         }
 
-    @Test fun `compilation of nested class within interface matches corresponding data class toString`() {
-        `compilation of nested class within interface matches corresponding data class toString`(useIr = false)
-    }
+    @Test fun `compilation of nested class within interface matches corresponding data class toString`() =
+        compareNestedClassApiAndDataInstances(
+            nestedClassName = "Nested",
+            outerClassName = "OuterInterface"
+        ) { apiInstance, dataInstance ->
+            assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
+        }
 
-    @Test fun `IR compilation of nested class within interface matches corresponding data class toString`() {
-        `compilation of nested class within interface matches corresponding data class toString`(useIr = true)
-    }
-
-    private fun `compilation of nested class within interface matches corresponding data class toString`(
-        useIr: Boolean
-    ) = compareNestedClassApiAndDataInstances(
-        useIr = useIr,
-        nestedClassName = "Nested",
-        outerClassName = "OuterInterface"
-    ) { apiInstance, dataInstance ->
-        assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
-    }
-
-    @Test fun `compilation of nested class within interface matches corresponding data class hashCode`() {
-        `compilation of nested class within interface matches corresponding data class hashCode`(useIr = false)
-    }
-
-    @Test fun `IR compilation of nested class within interface matches corresponding data class hashCode`() {
-        `compilation of nested class within interface matches corresponding data class hashCode`(useIr = true)
-    }
-
-    private fun `compilation of nested class within interface matches corresponding data class hashCode`(
-        useIr: Boolean
-    ) = compareNestedClassApiAndDataInstances(
-        useIr = useIr,
-        nestedClassName = "Nested",
-        outerClassName = "OuterInterface"
-    ) { apiInstance, dataInstance ->
-        assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
-    }
+    @Test fun `compilation of nested class within interface matches corresponding data class hashCode`() =
+        compareNestedClassApiAndDataInstances(
+            nestedClassName = "Nested",
+            outerClassName = "OuterInterface"
+        ) { apiInstance, dataInstance ->
+            assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
+        }
 
     private inline fun compareNestedClassApiAndDataInstances(
-        useIr: Boolean,
         nestedClassName: String,
         outerClassName: String = "OuterClass",
         compare: (apiInstance: Any, dataInstance: Any) -> Unit
@@ -382,22 +225,12 @@ class ExtraCarePluginTest {
         sourceFileName = outerClassName,
         className = "$outerClassName\$$nestedClassName",
         constructorArgs = listOf(String::class.java to "nested class value"),
-        useIr = useIr,
         compare = compare
     )
 
     @Test fun `compilation of inner class fails`() {
-        `compilation of inner class fails`(useIr = false)
-    }
-
-    @Test fun `IR compilation of inner class fails`() {
-        `compilation of inner class fails`(useIr = true)
-    }
-
-    private fun `compilation of inner class fails`(useIr: Boolean) {
         testCompilation(
             "illegal/OuterClass",
-            useIr = useIr,
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
             assertThat(result.messages).contains("@DataApi cannot be applied to inner classes")
@@ -406,36 +239,19 @@ class ExtraCarePluginTest {
     //endregion
 
     //region Simple class
-    @Test fun `two equivalent compiled Simple instances are equals`() {
-        `two equivalent compiled Simple instances are equals`(useIr = false)
-    }
-
-    @Test fun `two equivalent IR-compiled Simple instances are equals`() {
-        `two equivalent compiled Simple instances are equals`(useIr = true)
-    }
-
-    private fun `two equivalent compiled Simple instances are equals`(useIr: Boolean) =
-        compareTwoSimpleApiInstances(useIr) { firstInstance, secondInstance ->
+    @Test fun `two equivalent compiled Simple instances are equals`() =
+        compareTwoSimpleApiInstances { firstInstance, secondInstance ->
             assertThat(firstInstance).isEqualTo(secondInstance)
             assertThat(secondInstance).isEqualTo(firstInstance)
         }
 
-    @Test fun `two inequivalent compiled Simple instances are not equals`() {
-        `two inequivalent compiled Simple instances are not equals`(useIr = false)
-    }
-
-    @Test fun `two inequivalent IR-compiled Simple instances are not equals`() {
-        `two inequivalent compiled Simple instances are not equals`(useIr = true)
-    }
-
-    private fun `two inequivalent compiled Simple instances are not equals`(useIr: Boolean) =
-        compareTwoSimpleApiInstances(useIr, optionalString2 = "non-null") { firstInstance, secondInstance ->
+    @Test fun `two inequivalent compiled Simple instances are not equals`() =
+        compareTwoSimpleApiInstances(optionalString2 = "non-null") { firstInstance, secondInstance ->
             assertThat(firstInstance).isNotEqualTo(secondInstance)
             assertThat(secondInstance).isNotEqualTo(firstInstance)
         }
 
     private fun compareTwoSimpleApiInstances(
-        useIr: Boolean,
         int1: Int = 1,
         requiredString1: String = "String",
         optionalString1: String? = null,
@@ -455,38 +271,20 @@ class ExtraCarePluginTest {
             String::class.java to requiredString2,
             String::class.java to optionalString2
         ),
-        useIr = useIr,
         compare = compare
     )
 
-    @Test fun `compiled Simple class instance has expected hashCode`() {
-        `compiled Simple class instance has expected hashCode`(useIr = false)
-    }
-
-    @Test fun `IR-compiled Simple class instance has expected hashCode`() {
-        `compiled Simple class instance has expected hashCode`(useIr = true)
-    }
-
-    private fun `compiled Simple class instance has expected hashCode`(useIr: Boolean) =
-        compareSimpleClassInstances(useIr) { apiInstance, dataInstance ->
+    @Test fun `compiled Simple class instance has expected hashCode`() =
+        compareSimpleClassInstances { apiInstance, dataInstance ->
             assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
         }
 
-    @Test fun `compiled Simple class instance has expected toString`() {
-        `compiled Simple class instance has expected toString`(useIr = false)
-    }
-
-    @Test fun `IR-compiled Simple class instance has expected toString`() {
-        `compiled Simple class instance has expected toString`(useIr = true)
-    }
-
-    private fun `compiled Simple class instance has expected toString`(useIr: Boolean) =
-        compareSimpleClassInstances(useIr) { apiInstance, dataInstance ->
+    @Test fun `compiled Simple class instance has expected toString`() =
+        compareSimpleClassInstances { apiInstance, dataInstance ->
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
         }
 
     private inline fun compareSimpleClassInstances(
-        useIr: Boolean,
         int: Int = 1,
         requiredString: String = "String",
         optionalString: String? = null,
@@ -498,42 +296,24 @@ class ExtraCarePluginTest {
             String::class.java to requiredString,
             String::class.java to optionalString
         ),
-        useIr = useIr,
         compare = compare
     )
     //endregion
 
     //region Complex class
-    @Test fun `two equivalent compiled Complex instances are equals`() {
-        `two equivalent compiled Complex instances are equals`(useIr = false)
-    }
-
-    @Test fun `two equivalent IR-compiled Complex instances are equals`() {
-        `two equivalent compiled Complex instances are equals`(useIr = true)
-    }
-
-    private fun `two equivalent compiled Complex instances are equals`(useIr: Boolean) =
-        compareTwoComplexApiInstances(useIr) { firstInstance, secondInstance ->
+    @Test fun `two equivalent compiled Complex instances are equals`() =
+        compareTwoComplexApiInstances() { firstInstance, secondInstance ->
             assertThat(firstInstance).isEqualTo(secondInstance)
             assertThat(secondInstance).isEqualTo(firstInstance)
         }
 
-    @Test fun `two inequivalent compiled Complex instances are not equals`() {
-        `two inequivalent compiled Complex instances are not equals`(useIr = false)
-    }
-
-    @Test fun `two inequivalent IR-compiled Complex instances are not equals`() {
-        `two inequivalent compiled Complex instances are not equals`(useIr = true)
-    }
-
-    private fun `two inequivalent compiled Complex instances are not equals`(useIr: Boolean) =
-        compareTwoComplexApiInstances(useIr, nullableReferenceType2 = "non-null") { firstInstance, secondInstance ->
+    @Test fun `two inequivalent compiled Complex instances are not equals`() =
+        compareTwoComplexApiInstances(nullableReferenceType2 = "non-null") { firstInstance, secondInstance ->
             assertThat(firstInstance).isNotEqualTo(secondInstance)
             assertThat(secondInstance).isNotEqualTo(firstInstance)
         }
 
     private fun compareTwoComplexApiInstances(
-        useIr: Boolean,
         referenceType1: String = "Text",
         nullableReferenceType1: String? = null,
         int1: Int = 2,
@@ -601,38 +381,20 @@ class ExtraCarePluginTest {
             Any::class.java to genericType2,
             Any::class.java to nullableGenericType2,
         ),
-        useIr = useIr,
         compare = compare
     )
 
-    @Test fun `compiled Complex class instance has expected hashCode`() {
-        `compiled Complex class instance has expected hashCode`(useIr = false)
-    }
-
-    @Test fun `IR-compiled Complex class instance has expected hashCode`() {
-        `compiled Complex class instance has expected hashCode`(useIr = true)
-    }
-
-    private fun `compiled Complex class instance has expected hashCode`(useIr: Boolean) =
-        compareComplexClassInstances(useIr) { apiInstance, dataInstance ->
+    @Test fun `compiled Complex class instance has expected hashCode`() =
+        compareComplexClassInstances { apiInstance, dataInstance ->
             assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
         }
 
-    @Test fun `compiled Complex class instance has expected toString`() {
-        `compiled Complex class instance has expected toString`(useIr = false)
-    }
-
-    @Test fun `IR-compiled Complex class instance has expected toString`() {
-        `compiled Complex class instance has expected toString`(useIr = true)
-    }
-
-    private fun `compiled Complex class instance has expected toString`(useIr: Boolean) =
-        compareComplexClassInstances(useIr) { apiInstance, dataInstance ->
+    @Test fun `compiled Complex class instance has expected toString`() =
+        compareComplexClassInstances { apiInstance, dataInstance ->
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
         }
 
     private inline fun compareComplexClassInstances(
-        useIr: Boolean,
         referenceType: String = "Text",
         nullableReferenceType: String? = null,
         int: Int = 2,
@@ -668,7 +430,6 @@ class ExtraCarePluginTest {
             Any::class.java to genericType,
             Any::class.java to nullableGenericType,
         ),
-        useIr = useIr,
         compare = compare,
     )
     //endregion
@@ -680,9 +441,8 @@ class ExtraCarePluginTest {
         firstInstanceConstructorArgs: List<Pair<Class<*>, Any?>>,
         secondInstanceConstructorArgs: List<Pair<Class<*>, Any?>> = firstInstanceConstructorArgs,
         otherFilesToCompile: List<String> = emptyList(),
-        useIr: Boolean = false,
         compare: (firstInstance: Any, secondInstance: Any) -> Unit
-    ) = testCompilation(sourceFileName, *otherFilesToCompile.toTypedArray(), useIr = useIr) { result ->
+    ) = testCompilation(sourceFileName, *otherFilesToCompile.toTypedArray()) { result ->
         val constructorArgParameterTypeList = firstInstanceConstructorArgs.map { it.first }
         assertThat(constructorArgParameterTypeList).isEqualTo(secondInstanceConstructorArgs.map { it.first })
 
@@ -709,12 +469,8 @@ class ExtraCarePluginTest {
         className: String = sourceFileName,
         constructorArgs: List<Pair<Class<*>, Any?>>,
         otherFilesToCompile: List<String> = emptyList(),
-        useIr: Boolean = false,
         compare: (apiInstance: Any, dataInstance: Any) -> Unit
-    ) = testCompilation(
-        "api/$sourceFileName", "data/$sourceFileName", *otherFilesToCompile.toTypedArray(),
-        useIr = useIr
-    ) { result ->
+    ) = testCompilation("api/$sourceFileName", "data/$sourceFileName", *otherFilesToCompile.toTypedArray()) { result ->
         val apiClass = result.classLoader.loadClass("api.$className")
         val dataClass = result.classLoader.loadClass("data.$className")
         assertThat(apiClass).isNotEqualTo(dataClass)
@@ -733,31 +489,25 @@ class ExtraCarePluginTest {
 
     private inline fun testCompilation(
         vararg sourceFileNames: String,
-        useIr: Boolean = false,
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
         additionalTesting: (KotlinCompilation.Result) -> Unit = {}
     ) = testCompilation(
         *sourceFileNames.map { SourceFile.fromPath("src/test/resources/$it.kt") }.toTypedArray(),
-        useIr = useIr,
         expectedExitCode = expectedExitCode,
         additionalTesting = additionalTesting
     )
 
     private inline fun testCompilation(
         vararg sourceFiles: SourceFile,
-        useIr: Boolean = false,
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
         additionalTesting: (KotlinCompilation.Result) -> Unit = {}
     ) {
-        val result = prepareCompilation(useIr, *sourceFiles).compile()
+        val result = prepareCompilation(*sourceFiles).compile()
         assertThat(result.exitCode).isEqualTo(expectedExitCode)
         additionalTesting(result)
     }
 
-    private fun prepareCompilation(
-        useIr: Boolean,
-        vararg sourceFiles: SourceFile
-    ) = KotlinCompilation().apply {
+    private fun prepareCompilation(vararg sourceFiles: SourceFile) = KotlinCompilation().apply {
         workingDir = temporaryFolder.root
         compilerPlugins = listOf<ComponentRegistrar>(ExtraCareComponentRegistrar())
         inheritClassPath = true
@@ -769,4 +519,9 @@ class ExtraCarePluginTest {
 
     private fun SourceFile.Companion.fromPath(path: String): SourceFile = fromPath(File(path))
     //endregion
+
+    companion object {
+        @Parameterized.Parameters(name = "useIr={0}")
+        @JvmStatic fun data(): Collection<Array<Any>> = listOf(arrayOf(true), arrayOf(false))
+    }
 }
