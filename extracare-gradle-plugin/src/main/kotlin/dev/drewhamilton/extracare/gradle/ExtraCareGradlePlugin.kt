@@ -1,6 +1,7 @@
 package dev.drewhamilton.extracare.gradle
 
 import dev.drewhamilton.extracare.info.ArtifactInfo
+import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerPluginSupportPlugin
@@ -10,6 +11,10 @@ import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
 @Suppress("unused") // Referenced in extracare-gradle-plugin/build.gradle
 class ExtraCareGradlePlugin : KotlinCompilerPluginSupportPlugin {
+
+    override fun apply(target: Project) {
+        target.extensions.create("extraCare", ExtraCarePluginExtension::class.java)
+    }
 
     override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean =
         when (kotlinCompilation.platformType) {
