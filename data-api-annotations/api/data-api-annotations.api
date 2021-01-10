@@ -1,0 +1,3 @@
+public abstract interface annotation class dev/drewhamilton/extracare/DataApi : java/lang/annotation/Annotation {
+}
+
