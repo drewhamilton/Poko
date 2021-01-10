@@ -17,6 +17,7 @@ buildscript {
     }
 }
 
+String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
 allprojects {
     repositories {
         google()
@@ -27,7 +28,7 @@ allprojects {
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
         project.tasks.withType(KotlinCompile.class).configureEach {
             kotlinOptions {
-                jvmTarget = '1.8'
+                jvmTarget = resolvedJvmTarget
                 freeCompilerArgs += ['-progressive']
             }
         }

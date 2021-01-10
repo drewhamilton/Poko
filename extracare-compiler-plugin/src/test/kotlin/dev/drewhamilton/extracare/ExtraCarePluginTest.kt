@@ -302,7 +302,7 @@ class ExtraCarePluginTest(
 
     //region Complex class
     @Test fun `two equivalent compiled Complex instances are equals`() =
-        compareTwoComplexApiInstances() { firstInstance, secondInstance ->
+        compareTwoComplexApiInstances { firstInstance, secondInstance ->
             assertThat(firstInstance).isEqualTo(secondInstance)
             assertThat(secondInstance).isEqualTo(firstInstance)
         }
@@ -513,7 +513,7 @@ class ExtraCarePluginTest(
         inheritClassPath = true
         sources = sourceFiles.asList()
         verbose = false
-        jvmTarget = JvmTarget.fromString("1.8")!!.description
+        jvmTarget = compilerJvmTarget.description
         useIR = useIr
     }
 
@@ -523,5 +523,31 @@ class ExtraCarePluginTest(
     companion object {
         @Parameterized.Parameters(name = "useIr={0}")
         @JvmStatic fun data(): Collection<Array<Any>> = listOf(arrayOf(true), arrayOf(false))
+
+        private val compilerJvmTarget: JvmTarget by lazy {
+            val ciEnvVariable = System.getProperty("ci_java_version")
+            val resolvedJvmDescription = ciEnvVariable ?: getJavaRuntimeVersion()
+
+            val resolvedJvmTarget = JvmTarget.fromString(resolvedJvmDescription)
+            val default = JvmTarget.JVM_1_8
+
+            val message = when {
+                ciEnvVariable != null -> "$ciEnvVariable specified by CI environment variable"
+                resolvedJvmTarget != null -> "${resolvedJvmTarget.description} determined from test runtime JVM"
+                else -> "${default.description} because test runtime JVM version <${getJavaRuntimeVersion()}> was not valid"
+            }
+            println("${ExtraCarePluginTest::class.java.simpleName}: Using jvmTarget $message")
+
+            resolvedJvmTarget ?: JvmTarget.JVM_1_8
+        }
+
+        private fun getJavaRuntimeVersion(): String {
+            val runtimeVersionArray = System.getProperty("java.runtime.version").split(".", "_", "-b")
+            val prefix = runtimeVersionArray[0]
+            return if (prefix == "1")
+                "1.${runtimeVersionArray[1]}"
+            else
+                prefix
+        }
     }
 }
