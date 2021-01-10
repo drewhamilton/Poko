@@ -27,8 +27,7 @@ class ExtraCareGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun applyToCompilation(kotlinCompilation: KotlinCompilation<*>): Provider<List<SubpluginOption>> {
         val project = kotlinCompilation.target.project
-        val extension = project.extensions.findByType(ExtraCarePluginExtension::class.java)
-            ?: ExtraCarePluginExtension()
+        val extension = project.extensions.getByType(ExtraCarePluginExtension::class.java)
 
         // Add annotations as a dependency
         project.dependencies.add(
@@ -38,7 +37,7 @@ class ExtraCareGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
         return project.provider {
             listOf(
-                SubpluginOption(key = "enabled", value = extension.enabled.toString())
+                SubpluginOption(key = "enabled", value = extension.enabled.get().toString())
             )
         }
     }
