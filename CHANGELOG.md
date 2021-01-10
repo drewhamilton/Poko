@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.0
+_2021-01-10_
+
+Support compilation in projects where IR compilation is enabled.
+
+Disable support for `inner` and `inline` classes, which are both also not supported by the `data`
+keyword.
+
+Add an `extraCare` Gradle extension, where the compiler plugin can be explicitly enabled or
+disabled.
+
 ## 0.4.0
 _2021-01-01_
 

@@ -13,6 +13,8 @@ class's constructor. Then give it the `@DataApi` annotation and enjoy the genera
 `equals`, and `hashCode`. (Builder class for Java consumers and DSL initializer for Kotlin consumers
 to be added.)
 
+From version 0.5.0, Extra Care supports both IR and non-IR compilation.
+
 Extra Care is a work in progress.
 
 ## Use
@@ -36,8 +38,8 @@ Extra Care is available on Maven Central. It is experimental, and the API may un
 changes before version 1.0.0. Kotlin Compiler plugins in general are experimental and new versions
 of Kotlin might break something in this compiler plugin.
 
-Extra Care 0.4 is only compatible with Kotlin 1.4.20+. Extra Care 0.3 is only compatible with Kotlin
-1.4.0 and 1.4.10. Extra Care 0.2 is compatible with Kotlin 1.3.72. 
+Extra Care 0.5 is only compatible with Kotlin 1.4.20+. For Kotlin 1.4.0 and 1.4.10, use Extra Care
+0.3. For Kotlin 1.3.72, use Extra Care 0.2. 
 
 Snapshots of the development version are available in [Sonatype's Snapshots
 repository](https://oss.sonatype.org/#view-repositories;snapshots~browsestorage).
@@ -60,8 +62,6 @@ apply plugin: 'dev.drewhamilton.extracare'
 * Propagate the constructor default values to the Builder 
 * Mark the constructor as private
 * Generate the top-level DSL initializer
-* Add robust testing
-* Add robust compiler messages for unsupported cases
 * Write an IDE plugin?
 * Multiplatform support?
 
