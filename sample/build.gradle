@@ -3,6 +3,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'dev.drewhamilton.extracare'
 
+extraCare {
+    enabled.set true
+}
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
