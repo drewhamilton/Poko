@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.extensions.ProjectExtensionDescriptor
 class ExtraCareComponentRegistrar : ComponentRegistrar {
 
     override fun registerProjectComponents(project: MockProject, configuration: CompilerConfiguration) {
-        if (configuration[ExtraCareCommandLineProcessor.KEY_ENABLED] == false)
+        if (configuration[CompilerOptions.ENABLED] == false)
             return
 
         // TODO: Use ClassBuilderInterceptorExtension, ExpressionCodegenExtension, or both?

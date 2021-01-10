@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.compiler.plugin.AbstractCliOption
 import org.jetbrains.kotlin.compiler.plugin.CliOption
 import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
 import org.jetbrains.kotlin.config.CompilerConfiguration
-import org.jetbrains.kotlin.config.CompilerConfigurationKey
 
 @AutoService(CommandLineProcessor::class)
 class ExtraCareCommandLineProcessor : CommandLineProcessor {
@@ -14,7 +13,7 @@ class ExtraCareCommandLineProcessor : CommandLineProcessor {
     override val pluginId = "extracare-compiler-plugin"
 
     override val pluginOptions: Collection<AbstractCliOption> = listOf(
-        CliOption(Options.ENABLED, "<true|false>", "", required = true)
+        CliOption(CompilerOptions.ENABLED.toString(), "<true|false>", "", required = true)
     )
 
     override fun processOption(
@@ -22,15 +21,7 @@ class ExtraCareCommandLineProcessor : CommandLineProcessor {
         value: String,
         configuration: CompilerConfiguration
     ) = when (option.optionName) {
-        Options.ENABLED -> configuration.put(KEY_ENABLED, value.toBoolean())
+        CompilerOptions.ENABLED.toString() -> configuration.put(CompilerOptions.ENABLED, value.toBoolean())
         else -> throw IllegalArgumentException("Unknown plugin option: ${option.optionName}")
-    }
-
-    private object Options {
-        const val ENABLED = "enabled"
-    }
-
-    internal companion object {
-        internal val KEY_ENABLED = CompilerConfigurationKey<Boolean>(Options.ENABLED)
     }
 }
