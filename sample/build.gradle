@@ -1,9 +1,19 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'dev.drewhamilton.extracare'
 
 dependencies {
-  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  
-  testImplementation "junit:junit:4.13"
-  testImplementation "com.google.truth:truth:1.0.1"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'com.google.truth:truth:1.1'
+}
+
+boolean useIr = Boolean.parseBoolean(project.property("use_ir").toString())
+logger.lifecycle "$project: useIR = $useIr"
+tasks.withType(KotlinCompile.class).configureEach {
+    kotlinOptions {
+        useIR = useIr
+    }
 }
