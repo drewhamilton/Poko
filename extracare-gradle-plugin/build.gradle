@@ -20,13 +20,15 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlinx:binary-compatibility-validator:$binary_compatibility_validator_version"
     }
 }
 
-apply plugin: "java-gradle-plugin"
-apply plugin: "org.jetbrains.kotlin.jvm"
-apply plugin: "org.jetbrains.kotlin.kapt"
+apply plugin: 'java-gradle-plugin'
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'org.jetbrains.kotlin.kapt'
 apply plugin: 'org.jetbrains.dokka'
+apply plugin: 'binary-compatibility-validator'
 
 ext {
     artifactName = publish_gradle_plugin_artifact

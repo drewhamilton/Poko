@@ -13,8 +13,14 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
+        classpath "org.jetbrains.kotlinx:binary-compatibility-validator:$binary_compatibility_validator_version"
         classpath "$publish_group:$publish_gradle_plugin_artifact"
     }
+}
+
+apply plugin: 'binary-compatibility-validator'
+apiValidation {
+    ignoredProjects += ['sample']
 }
 
 String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
