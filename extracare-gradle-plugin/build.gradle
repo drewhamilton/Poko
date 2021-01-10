@@ -63,7 +63,7 @@ TaskProvider copyInfoTemplateProvider = tasks.register("copyInfoTemplate", Copy)
 compileKotlin {
     dependsOn copyInfoTemplateProvider
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
         freeCompilerArgs += ['-progressive']
     }
 }

@@ -11,16 +11,16 @@ jobs:
     strategy:
       matrix:
         ci_use_ir: [ true, false ]
+        ci_java_version: [ 1.8, 11, 12, 13, 14, 15 ]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1
-      - name: Install JDK
+      - name: Install JDK ${{ matrix.ci_java_version }}
         uses: actions/setup-java@v1
         with:
-          # TODO: Multiple Java versions
-          java-version: 1.8
+          java-version: ${{ matrix.ci_java_version }}
       - name: Assemble
         run: cd extracare-gradle-plugin && ./gradlew clean && cd .. && ./gradlew clean assemble --stacktrace
       - name: Build
