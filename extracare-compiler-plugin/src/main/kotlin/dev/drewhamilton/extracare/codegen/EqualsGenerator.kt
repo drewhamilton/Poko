@@ -3,6 +3,7 @@ package dev.drewhamilton.extracare.codegen
 import org.jetbrains.annotations.Nullable
 import org.jetbrains.kotlin.codegen.AsmUtil
 import org.jetbrains.kotlin.codegen.ClassBuilder
+import org.jetbrains.kotlin.codegen.DescriptorAsmUtil
 import org.jetbrains.kotlin.codegen.FunctionCodegen
 import org.jetbrains.kotlin.codegen.context.FieldOwnerContext
 import org.jetbrains.kotlin.codegen.context.MethodContext
@@ -124,7 +125,7 @@ internal class EqualsGenerator(
                 // Bytecode: If objects are not equals, branch to L1
                 //  INVOKESTATIC kotlin/jvm/internal/Intrinsics.areEqual (Ljava/lang/Object;Ljava/lang/Object;)Z
                 //  IFEQ L1
-                AsmUtil.genAreEqualCall(instructionAdapter)
+                DescriptorAsmUtil.genAreEqualCall(instructionAdapter)
                 instructionAdapter.ifeq(l1)
             }
         }
