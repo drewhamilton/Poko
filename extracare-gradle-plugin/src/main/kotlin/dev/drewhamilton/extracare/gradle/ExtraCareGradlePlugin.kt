@@ -21,8 +21,6 @@ class ExtraCareGradlePlugin : KotlinCompilerPluginSupportPlugin {
             else -> false
         }
 
-    fun temp(): Nothing = TODO("Remove this")
-
     override fun getCompilerPluginId(): String = ArtifactInfo.COMPILER_PLUGIN_ARTIFACT
 
     override fun getPluginArtifact() = SubpluginArtifact(
