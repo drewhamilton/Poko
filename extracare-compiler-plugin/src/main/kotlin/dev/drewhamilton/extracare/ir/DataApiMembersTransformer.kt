@@ -1,6 +1,5 @@
 package dev.drewhamilton.extracare.ir
 
-import dev.drewhamilton.extracare.dataApiAnnotationName
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
@@ -67,11 +66,10 @@ import org.jetbrains.kotlin.types.typeUtil.representativeUpperBound
 
 @OptIn(ObsoleteDescriptorBasedAPI::class)
 internal class DataApiMembersTransformer(
+    private val annotationClass: IrClassSymbol,
     private val pluginContext: IrPluginContext,
     private val messageCollector: MessageCollector,
 ) : IrElementTransformerVoidWithContext() {
-
-    private val annotationClass: IrClassSymbol = pluginContext.referenceClass(dataApiAnnotationName)!!
 
     override fun visitFunctionNew(declaration: IrFunction): IrStatement {
         log("Reading <$declaration>")

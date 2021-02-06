@@ -13,19 +13,27 @@ import org.jetbrains.kotlin.com.intellij.openapi.project.Project
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.extensions.ProjectExtensionDescriptor
+import org.jetbrains.kotlin.name.FqName
 
 @AutoService(ComponentRegistrar::class)
 class ExtraCareComponentRegistrar : ComponentRegistrar {
 
     override fun registerProjectComponents(project: MockProject, configuration: CompilerConfiguration) {
-        if (configuration[CompilerOptions.ENABLED] == false)
+        if (configuration[CompilerOptions.ENABLED] != true)
             return
 
-        // TODO: Use ClassBuilderInterceptorExtension, ExpressionCodegenExtension, or both?
-
+        val dataApiAnnotationName = FqName(checkNotNull(configuration[CompilerOptions.DATA_API_ANNOTATION]))
         val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
-        ExpressionCodegenExtension.registerExtensionAsFirst(project, DataApiCodegenExtension(messageCollector))
-        IrGenerationExtension.registerExtensionAsFirst(project, DataApiIrGenerationExtension(messageCollector))
+
+        // TODO: Use ClassBuilderInterceptorExtension, ExpressionCodegenExtension, or both?
+        ExpressionCodegenExtension.registerExtensionAsFirst(
+            project,
+            DataApiCodegenExtension(dataApiAnnotationName, messageCollector)
+        )
+        IrGenerationExtension.registerExtensionAsFirst(
+            project,
+            DataApiIrGenerationExtension(dataApiAnnotationName, messageCollector)
+        )
     }
 
     private fun <T : Any> ProjectExtensionDescriptor<T>.registerExtensionAsFirst(project: Project, extension: T) {
