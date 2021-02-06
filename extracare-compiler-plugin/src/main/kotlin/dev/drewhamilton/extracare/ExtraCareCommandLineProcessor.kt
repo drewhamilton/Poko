@@ -13,7 +13,8 @@ class ExtraCareCommandLineProcessor : CommandLineProcessor {
     override val pluginId = "extracare-compiler-plugin"
 
     override val pluginOptions: Collection<AbstractCliOption> = listOf(
-        CliOption(CompilerOptions.ENABLED.toString(), "<true|false>", "", required = true)
+        CliOption(CompilerOptions.ENABLED.toString(), "<true|false>", "", required = true),
+        CliOption(CompilerOptions.DATA_API_ANNOTATION.toString(), "Annotation class name", "", required = true),
     )
 
     override fun processOption(
@@ -22,6 +23,7 @@ class ExtraCareCommandLineProcessor : CommandLineProcessor {
         configuration: CompilerConfiguration
     ) = when (option.optionName) {
         CompilerOptions.ENABLED.toString() -> configuration.put(CompilerOptions.ENABLED, value.toBoolean())
+        CompilerOptions.DATA_API_ANNOTATION.toString() -> configuration.put(CompilerOptions.DATA_API_ANNOTATION, value)
         else -> throw IllegalArgumentException("Unknown plugin option: ${option.optionName}")
     }
 }

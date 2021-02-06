@@ -9,7 +9,6 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.SubpluginArtifact
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
-@Suppress("unused") // Referenced in extracare-gradle-plugin/build.gradle
 class ExtraCareGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun apply(target: Project) {
@@ -34,16 +33,23 @@ class ExtraCareGradlePlugin : KotlinCompilerPluginSupportPlugin {
         val project = kotlinCompilation.target.project
         val extension = project.extensions.getByType(ExtraCarePluginExtension::class.java)
 
-        // Add annotations as a dependency
-        project.dependencies.add(
-            "implementation",
-            "${ArtifactInfo.GROUP}:${ArtifactInfo.ANNOTATIONS_ARTIFACT}:${ArtifactInfo.VERSION}"
-        )
+        if (extension.dataApiAnnotation.get() == DEFAULT_DATA_API_ANNOTATION) {
+            // Add default annotation as a dependency
+            project.dependencies.add(
+                "implementation",
+                "${ArtifactInfo.GROUP}:${ArtifactInfo.ANNOTATIONS_ARTIFACT}:${ArtifactInfo.VERSION}"
+            )
+        }
 
         return project.provider {
             listOf(
-                SubpluginOption(key = "enabled", value = extension.enabled.get().toString())
+                SubpluginOption(key = "enabled", value = extension.enabled.get().toString()),
+                SubpluginOption(key = "dataApiAnnotation", value = extension.dataApiAnnotation.get().toString()),
             )
         }
+    }
+
+    internal companion object {
+        internal const val DEFAULT_DATA_API_ANNOTATION = "dev.drewhamilton.extracare.DataApi"
     }
 }

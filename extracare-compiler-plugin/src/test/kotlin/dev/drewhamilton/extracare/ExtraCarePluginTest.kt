@@ -2,9 +2,13 @@ package dev.drewhamilton.extracare
 
 import com.google.common.truth.Truth.assertThat
 import com.tschuchort.compiletesting.KotlinCompilation
+import com.tschuchort.compiletesting.PluginOption
 import com.tschuchort.compiletesting.SourceFile
+import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
+import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JvmTarget
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -434,6 +438,19 @@ class ExtraCarePluginTest(
     )
     //endregion
 
+    //region Unknown annotation name
+    @Test fun `unknown annotation name produces expected error message`() {
+        assumeTrue("Invalid data API annotation class name does not cause failure for non-IR compiler", useIr)
+        testCompilation(
+            "api/Simple",
+            dataApiAnnotationName = "nonexistent.ClassName",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR,
+        ) {
+            assertThat(it.messages).isEqualTo("e: Could not find class <nonexistent.ClassName>\n")
+        }
+    }
+    //endregion
+
     //region Helpers for all tests
     private inline fun compareTwoInstances(
         sourceFileName: String,
@@ -489,25 +506,31 @@ class ExtraCarePluginTest(
 
     private inline fun testCompilation(
         vararg sourceFileNames: String,
+        dataApiAnnotationName: String = DataApi::class.java.name,
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
         additionalTesting: (KotlinCompilation.Result) -> Unit = {}
     ) = testCompilation(
         *sourceFileNames.map { SourceFile.fromPath("src/test/resources/$it.kt") }.toTypedArray(),
+        dataApiAnnotationName = dataApiAnnotationName,
         expectedExitCode = expectedExitCode,
         additionalTesting = additionalTesting
     )
 
     private inline fun testCompilation(
         vararg sourceFiles: SourceFile,
+        dataApiAnnotationName: String,
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
         additionalTesting: (KotlinCompilation.Result) -> Unit = {}
     ) {
-        val result = prepareCompilation(*sourceFiles).compile()
+        val result = prepareCompilation(*sourceFiles, dataApiAnnotationName = dataApiAnnotationName).compile()
         assertThat(result.exitCode).isEqualTo(expectedExitCode)
         additionalTesting(result)
     }
 
-    private fun prepareCompilation(vararg sourceFiles: SourceFile) = KotlinCompilation().apply {
+    private fun prepareCompilation(
+        vararg sourceFiles: SourceFile,
+        dataApiAnnotationName: String,
+    ) = KotlinCompilation().apply {
         workingDir = temporaryFolder.root
         compilerPlugins = listOf<ComponentRegistrar>(ExtraCareComponentRegistrar())
         inheritClassPath = true
@@ -515,7 +538,20 @@ class ExtraCarePluginTest(
         verbose = false
         jvmTarget = compilerJvmTarget.description
         useIR = useIr
+
+        val commandLineProcessor = ExtraCareCommandLineProcessor()
+        commandLineProcessors = listOf(commandLineProcessor)
+        pluginOptions = listOf(
+            commandLineProcessor.option(CompilerOptions.ENABLED, true),
+            commandLineProcessor.option(CompilerOptions.DATA_API_ANNOTATION, dataApiAnnotationName)
+        )
     }
+
+    private fun CommandLineProcessor.option(key: CompilerConfigurationKey<*>, value: Any?) = PluginOption(
+        pluginId,
+        key.toString(),
+        value.toString()
+    )
 
     private fun SourceFile.Companion.fromPath(path: String): SourceFile = fromPath(File(path))
     //endregion

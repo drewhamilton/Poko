@@ -4,6 +4,7 @@ apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'dev.drewhamilton.extracare'
 
 extraCare {
+    dataApiAnnotation.set 'dev.drewhamilton.extracare.sample.Poko'
     enabled.set true
 }
 
