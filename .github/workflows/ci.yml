@@ -22,6 +22,6 @@ jobs:
         with:
           java-version: ${{ matrix.ci_java_version }}
       - name: Build Gradle plugin
-        run: cd extracare-gradle-plugin && ./gradlew clean build
+        run: cd extracare-gradle-plugin && ./gradlew clean build && cd ..
       - name: Build compiler plugin
         run: ./gradlew clean build --stacktrace -Puse_ir=${{ matrix.ci_use_ir }}
