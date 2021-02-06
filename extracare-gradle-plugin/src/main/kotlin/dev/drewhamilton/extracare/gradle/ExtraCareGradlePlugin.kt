@@ -29,8 +29,6 @@ class ExtraCareGradlePlugin : KotlinCompilerPluginSupportPlugin {
         version = ArtifactInfo.VERSION
     )
 
-    fun temp(): Nothing = TODO("Remove this")
-
     override fun applyToCompilation(kotlinCompilation: KotlinCompilation<*>): Provider<List<SubpluginOption>> {
         val project = kotlinCompilation.target.project
         val extension = project.extensions.getByType(ExtraCarePluginExtension::class.java)
