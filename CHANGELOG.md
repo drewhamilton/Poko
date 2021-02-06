@@ -5,8 +5,8 @@ _2021-02-06_
 
 Support Kotlin 1.4.30.
 
-Add the ability to specify a custom annotation to trigger Extra Care generation in place of the
-default annotation.
+Add the ability to specify a custom annotation in place of the default annotation to trigger Extra
+Care generation on annotated classes.
 
 ## 0.5.0
 _2021-01-10_
@@ -22,7 +22,7 @@ disabled.
 ## 0.4.0
 _2021-01-01_
 
-Support Kotlin 1.4.20+ (compile with 1.4.21).
+Support Kotlin 1.4.20 and 1.4.21.
 
 ## 0.3.1 (patched to 0.2.4)
 _2020-09-29_
