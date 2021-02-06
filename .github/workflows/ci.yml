@@ -21,7 +21,13 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.ci_java_version }}
-      - name: Assemble
-        run: cd extracare-gradle-plugin && ./gradlew clean && cd .. && ./gradlew clean assemble --stacktrace
-      - name: Build
-        run: ./gradlew build --stacktrace -Puse_ir=${{ matrix.ci_use_ir }}
+      - name: Build Gradle plugin
+        run: cd extracare-gradle-plugin && ./gradlew clean build --stacktrace && cd ..
+      - name: Build compiler plugin
+        run: ./gradlew clean build --stacktrace -Puse_ir=${{ matrix.ci_use_ir }}
+
+env:
+  GRADLE_OPTS: >-
+    -Dorg.gradle.configureondemand=true
+    -Dkotlin.incremental=false
+    -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxPermSize=2048m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=512m"
