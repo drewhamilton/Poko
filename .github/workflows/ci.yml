@@ -25,3 +25,9 @@ jobs:
         run: cd extracare-gradle-plugin && ./gradlew clean build && cd ..
       - name: Build compiler plugin
         run: ./gradlew clean build --stacktrace -Puse_ir=${{ matrix.ci_use_ir }}
+
+env:
+  GRADLE_OPTS: >-
+    -Dorg.gradle.configureondemand=true
+    -Dkotlin.incremental=false
+    -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxPermSize=2048m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=512m"
