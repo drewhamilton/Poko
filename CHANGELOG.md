@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0
+_2021-02-06_
+
+Support Kotlin 1.4.30.
+
+Add the ability to specify a custom annotation to trigger Extra Care generation in place of the
+default annotation.
+
 ## 0.5.0
 _2021-01-10_
 

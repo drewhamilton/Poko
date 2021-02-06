@@ -30,6 +30,18 @@ Mark your class as a `@DataApi class` instead of a `data class`:
 And enjoy the benefits of a readable `toString` and working `equals` and `hashCode`. Unlike normal
 data classes, no `copy` or `componentN` functions are generated.
 
+### Annotation
+By default, the `dev.drewhamilton.extracare.DataApi` annotation is used to mark classes for Extra
+Care generation. If you prefer, you can create a different annotation and supply it to the Gradle
+plugin.
+
+```groovy
+apply plugin: 'dev.drewhamilton.extracare'
+extraCare {
+  dataApiAnnotation.set 'com.example.MyDataAnnotation'
+}
+```
+
 ### Download
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/dev.drewhamilton.extracare/extracare-compiler-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/dev.drewhamilton.extracare/extracare-compiler-plugin)
@@ -38,8 +50,15 @@ Extra Care is available on Maven Central. It is experimental, and the API may un
 changes before version 1.0.0. Kotlin Compiler plugins in general are experimental and new versions
 of Kotlin might break something in this compiler plugin.
 
-Extra Care 0.5 is only compatible with Kotlin 1.4.20+. For Kotlin 1.4.0 and 1.4.10, use Extra Care
-0.3. For Kotlin 1.3.72, use Extra Care 0.2. 
+Since the Kotlin compiler has had frequent breaking changes, different versions of Kotlin are
+exclusively compatible with specific versions of Extra Care.
+
+| Kotlin version  | Extra Care version |
+| --------------- | ------------------ |
+| 1.4.30          | 0.6.0              |
+| 1.4.20 – 1.4.21 | 0.5.0              |
+| 1.4.0 – 1.4.10  | 0.3.1              |
+| 1.3.72          | 0.2.4              |
 
 Snapshots of the development version are available in [Sonatype's Snapshots
 repository](https://oss.sonatype.org/#view-repositories;snapshots~browsestorage).
