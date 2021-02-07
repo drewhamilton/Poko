@@ -26,6 +26,14 @@ poko {
     enabled.set true
 }
 
+String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
+project.tasks.withType(KotlinCompile.class).configureEach {
+    kotlinOptions {
+        jvmTarget = resolvedJvmTarget
+        freeCompilerArgs += ['-progressive']
+    }
+}
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
