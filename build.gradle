@@ -17,19 +17,6 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
         classpath "org.jetbrains.kotlinx:binary-compatibility-validator:$binary_compatibility_validator_version"
-
-        // Gradle plugin applied to :sample from Maven rather than locally:
-        String publishedGradlePluginVersion = publish_version
-        if (!publishedGradlePluginVersion.endsWith('-SNAPSHOT'))
-            publishedGradlePluginVersion += '-SNAPSHOT'
-        // TODO: Switch to Poko
-        classpath("dev.drewhamilton.extracare:extracare-gradle-plugin:$publishedGradlePluginVersion") {
-            changing = true
-        }
-    }
-
-    configurations.all {
-        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
     }
 }
 

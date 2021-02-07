@@ -1,4 +1,4 @@
-package dev.drewhamilton.extracare.sample
+package dev.drewhamilton.poko.sample
 
 @Suppress("unused")
 @Poko class Sample(

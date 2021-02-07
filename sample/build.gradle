@@ -1,10 +1,21 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'dev.drewhamilton.extracare'
+buildscript {
+    repositories {
+        flatDir {
+            dirs "${rootProject.project(':poko-gradle-plugin').buildDir.path}/libs"
+        }
+    }
+    dependencies {
+        classpath name: "$publish_gradle_plugin_artifact-$publish_version"
+    }
+}
 
-extraCare {
-    dataApiAnnotation.set 'dev.drewhamilton.extracare.sample.Poko'
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'dev.drewhamilton.poko'
+
+poko {
+    pokoAnnotation.set 'dev.drewhamilton.poko.sample.Poko'
     enabled.set true
 }
 

@@ -1,4 +1,4 @@
-package dev.drewhamilton.extracare.sample
+package dev.drewhamilton.poko.sample
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
