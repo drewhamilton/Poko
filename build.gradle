@@ -17,7 +17,18 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
         classpath "org.jetbrains.kotlinx:binary-compatibility-validator:$binary_compatibility_validator_version"
-        classpath "$publish_group:$publish_gradle_plugin_artifact:$publish_version"
+
+        // Gradle plugin applied to :sample from Maven rather than locally:
+        String publishedGradlePluginVersion = publish_version
+        if (!publishedGradlePluginVersion.endsWith('-SNAPSHOT'))
+            publishedGradlePluginVersion += '-SNAPSHOT'
+        classpath("$publish_group:$publish_gradle_plugin_artifact:$publishedGradlePluginVersion") {
+            changing = true
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
     }
 }
 
