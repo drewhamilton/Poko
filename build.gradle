@@ -6,7 +6,6 @@ version publish_version
 buildscript {
     repositories {
         mavenCentral()
-        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
 
         // TODO: Remove Bintray dependencies when possible
         maven { url 'https://dl.bintray.com/kotlin/dokka' }
@@ -26,7 +25,6 @@ String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaV
 allprojects {
     repositories {
         mavenCentral()
-        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
 
         // TODO: Remove Bintray dependencies when possible
         maven { url 'https://dl.bintray.com/jetbrains/markdown' }
@@ -40,22 +38,6 @@ allprojects {
             kotlinOptions {
                 jvmTarget = resolvedJvmTarget
                 freeCompilerArgs += ['-progressive']
-            }
-        }
-    }
-}
-
-subprojects {
-    configurations.all {
-        resolutionStrategy {
-            dependencySubstitution {
-                substitute module(
-                    "$publish_group:$publish_compiler_plugin_artifact"
-                ) with project(':poko-compiler-plugin')
-
-                substitute module(
-                    "$publish_group:$publish_annotations_artifact"
-                ) with project(':poko-annotations')
             }
         }
     }
