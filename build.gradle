@@ -5,7 +5,6 @@ version publish_version
 
 buildscript {
     repositories {
-        google()
         mavenCentral()
         maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
 
@@ -30,7 +29,6 @@ apiValidation {
 String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
 allprojects {
     repositories {
-        google()
         mavenCentral()
     }
 
