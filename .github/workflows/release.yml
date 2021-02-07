@@ -18,10 +18,8 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - name: Clean
-        run: cd extracare-gradle-plugin && ./gradlew clean && cd .. && ./gradlew clean
       - name: Assemble for release
-        run: ./gradlew assemble && cd extracare-gradle-plugin && ./gradlew assemble && cd ..
+        run: ./gradlew clean assemble
       - name: Publish
         env:
           ORG_GRADLE_PROJECT_personalSonatypeIssuesUsername: >-
@@ -30,8 +28,4 @@ jobs:
             ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesPassword }}
           ORG_GRADLE_PROJECT_personalGpgKey: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgKey }}
           ORG_GRADLE_PROJECT_personalGpgPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgPassword }}
-        run: >-
-          ./gradlew publishReleasePublicationToMavenCentralRepository
-          && cd extracare-gradle-plugin
-          && ./gradlew publishReleasePublicationToMavenCentralRepository
-          && cd ..
+        run: ./gradlew publishReleasePublicationToMavenCentralRepository

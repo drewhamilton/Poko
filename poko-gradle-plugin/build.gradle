@@ -20,7 +20,7 @@ compileKotlin {
 
 gradlePlugin {
     plugins {
-        extraCarePlugin {
+        pokoPlugin {
             id = 'dev.drewhamilton.poko'
             implementationClass = 'dev.drewhamilton.poko.gradle.PokoGradlePlugin'
         }
