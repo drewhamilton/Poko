@@ -22,7 +22,8 @@ buildscript {
         String publishedGradlePluginVersion = publish_version
         if (!publishedGradlePluginVersion.endsWith('-SNAPSHOT'))
             publishedGradlePluginVersion += '-SNAPSHOT'
-        classpath("$publish_group:$publish_gradle_plugin_artifact:$publishedGradlePluginVersion") {
+        // TODO: Switch to Poko
+        classpath("dev.drewhamilton.extracare:extracare-gradle-plugin:$publishedGradlePluginVersion") {
             changing = true
         }
     }
@@ -41,6 +42,13 @@ String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaV
 allprojects {
     repositories {
         mavenCentral()
+        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+
+        // TODO: Remove Bintray dependencies when possible
+        maven { url 'https://dl.bintray.com/jetbrains/markdown' }
+        maven { url 'https://dl.bintray.com/korlibs/korlibs' }
+        maven { url 'https://dl.bintray.com/kotlin/dokka' }
+        maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
     }
 
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
@@ -59,11 +67,11 @@ subprojects {
             dependencySubstitution {
                 substitute module(
                     "$publish_group:$publish_compiler_plugin_artifact"
-                ) with project(':extracare-compiler-plugin')
+                ) with project(':poko-compiler-plugin')
 
                 substitute module(
                     "$publish_group:$publish_annotations_artifact"
-                ) with project(':data-api-annotations')
+                ) with project(':poko-annotations')
             }
         }
     }

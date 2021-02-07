@@ -1,4 +1,4 @@
-package dev.drewhamilton.extracare.info
+package $basePackage
 
 internal object ArtifactInfo {
     const val GROUP = "$publishGroup"

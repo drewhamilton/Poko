@@ -1,14 +1,11 @@
-// Generates an ArtifactInfo class in any module that applies this
+// Generates an ArtifactInfo class in any module that applies this. Module must define ext.basePackage.
 
-def generatedInfoTemplatesSrcDir = "generated/source/artifact-info-template/kotlin/main"
-sourceSets {
-    main.java.srcDirs += "$buildDir/$generatedInfoTemplatesSrcDir"
-}
-
+def generatedInfoTemplatesSrcDir = 'generated/source/artifact-info-template/main'
 TaskProvider copyInfoTemplateProvider = tasks.register("copyInfoTemplate", Copy) {
     from rootProject.layout.projectDirectory.dir("artifact-info-template")
     into project.layout.buildDirectory.dir(generatedInfoTemplatesSrcDir)
     expand(
+        'basePackage': basePackage,
         'publishGroup': "${project.group}",
         'publishVersion': "${project.version}",
         'annotationsArtifact': "${project.publish_annotations_artifact}",
@@ -16,6 +13,10 @@ TaskProvider copyInfoTemplateProvider = tasks.register("copyInfoTemplate", Copy)
         'gradlePluginArtifact': "${project.publish_gradle_plugin_artifact}"
     )
     filteringCharset = 'UTF-8'
+}
+
+sourceSets {
+    main.java.srcDirs += "$buildDir/$generatedInfoTemplatesSrcDir"
 }
 
 compileKotlin {
