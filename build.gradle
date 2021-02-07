@@ -8,7 +8,10 @@ buildscript {
         google()
         mavenCentral()
         maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
-        jcenter()
+
+        // TODO: Remove Bintray dependencies when possible
+        maven { url 'https://dl.bintray.com/kotlin/dokka' }
+        maven { url 'https://dl.bintray.com/jetbrains/markdown' }
     }
 
     dependencies {
@@ -29,7 +32,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        jcenter()
     }
 
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
