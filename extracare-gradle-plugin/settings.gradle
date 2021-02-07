@@ -1,9 +1,0 @@
-pluginManagement {
-  repositories {
-    gradlePluginPortal()
-    mavenCentral()
-    jcenter()
-  }
-}
-
-rootProject.name = "extracare-gradle-plugin"

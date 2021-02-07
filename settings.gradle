@@ -1,11 +1,5 @@
 rootProject.name = 'Extra Care'
 include ':extracare-compiler-plugin'
 include ':data-api-annotations'
+include ':extracare-gradle-plugin'
 include ':sample'
-
-includeBuild('extracare-gradle-plugin') {
-  dependencySubstitution {
-    substitute module("$publish_group:$publish_gradle_plugin_artifact") with project(':')
-  }
-}
-

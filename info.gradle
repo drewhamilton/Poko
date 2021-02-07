@@ -1,0 +1,23 @@
+// Generates an ArtifactInfo class in any module that applies this
+
+def generatedInfoTemplatesSrcDir = "generated/source/artifact-info-template/kotlin/main"
+sourceSets {
+    main.java.srcDirs += "$buildDir/$generatedInfoTemplatesSrcDir"
+}
+
+TaskProvider copyInfoTemplateProvider = tasks.register("copyInfoTemplate", Copy) {
+    from rootProject.layout.projectDirectory.dir("artifact-info-template")
+    into project.layout.buildDirectory.dir(generatedInfoTemplatesSrcDir)
+    expand(
+        'publishGroup': "${project.group}",
+        'publishVersion': "${project.version}",
+        'annotationsArtifact': "${project.publish_annotations_artifact}",
+        'compilerPluginArtifact': "${project.publish_compiler_plugin_artifact}",
+        'gradlePluginArtifact': "${project.publish_gradle_plugin_artifact}"
+    )
+    filteringCharset = 'UTF-8'
+}
+
+compileKotlin {
+    dependsOn copyInfoTemplateProvider
+}
