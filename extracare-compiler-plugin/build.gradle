@@ -6,6 +6,7 @@ ext {
     pomName = 'Extra Care Compiler Plugin'
 }
 apply from: "../publish.gradle"
+apply from: '../info.gradle'
 
 dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"

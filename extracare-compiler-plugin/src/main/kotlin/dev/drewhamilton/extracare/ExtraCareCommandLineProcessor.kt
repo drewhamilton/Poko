@@ -1,6 +1,7 @@
 package dev.drewhamilton.extracare
 
 import com.google.auto.service.AutoService
+import dev.drewhamilton.extracare.info.ArtifactInfo
 import org.jetbrains.kotlin.compiler.plugin.AbstractCliOption
 import org.jetbrains.kotlin.compiler.plugin.CliOption
 import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
@@ -9,8 +10,7 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 @AutoService(CommandLineProcessor::class)
 class ExtraCareCommandLineProcessor : CommandLineProcessor {
 
-    // TODO: Shared with Gradle plugin; centralize
-    override val pluginId = "extracare-compiler-plugin"
+    override val pluginId = ArtifactInfo.COMPILER_PLUGIN_ARTIFACT
 
     override val pluginOptions: Collection<AbstractCliOption> = listOf(
         CliOption(CompilerOptions.ENABLED.toString(), "<true|false>", "", required = true),
