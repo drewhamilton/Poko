@@ -1,13 +1,20 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
-    repositories {
-        flatDir {
-            dirs "${rootProject.project(':poko-gradle-plugin').buildDir.path}/libs"
-        }
+    // Shared gradle.properties
+    Properties properties = new Properties()
+    file("../gradle.properties").withInputStream { properties.load(it) }
+    properties.each { key, val ->
+        ext.set(key, val)
     }
+
+    repositories {
+        mavenCentral()
+    }
+
     dependencies {
-        classpath name: "$publish_gradle_plugin_artifact-$publish_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "$publish_group:$publish_gradle_plugin_artifact"
     }
 }
 
@@ -24,6 +31,10 @@ dependencies {
 
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'com.google.truth:truth:1.1'
+}
+
+repositories {
+    mavenCentral()
 }
 
 boolean useIr = Boolean.parseBoolean(project.property("use_ir").toString())

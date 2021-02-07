@@ -1,5 +1,5 @@
 rootProject.name = 'Poko'
+
 include ':poko-compiler-plugin'
 include ':poko-annotations'
 include ':poko-gradle-plugin'
-include ':sample'
