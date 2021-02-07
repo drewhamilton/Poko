@@ -21,8 +21,12 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.ci_java_version }}
-      - name: Build
-        run: ./gradlew clean build --stacktrace -Puse_ir=${{ matrix.ci_use_ir }}
+      - name: Build compiler plugin
+        run: ./gradlew clean :poko-annotations:build :poko-compiler-plugin:build --stacktrace
+      - name: Build Gradle plugin
+        run: ./gradlew :poko-gradle-plugin:build --stacktrace
+      - name: Build sample
+        run: ./gradlew :sample:build --stacktrace -Puse_ir=${{ matrix.ci_use_ir }}
 
 env:
   GRADLE_OPTS: >-
