@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0
+_2021-02-08_
+
+Rename the library from "Extra Care" to "Poko". The new artifact names are `poko-compiler-plugin`,
+`poko-gradle-plugin`, and `poko-annotations`. The legacy `dev.drewhamilton.extracare.DataApi`
+is still supported if specified.
+
 ## 0.6.0
 _2021-02-06_
 

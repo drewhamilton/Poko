@@ -42,7 +42,7 @@ publishing {
                 name = pomName
                 description = "A Kotlin compiler plugin for generating equals, hashCode, and toString for plain old Kotlin objects."
 
-                url = 'https://github.com/drewhamilton/ExtraCare'
+                url = 'https://github.com/drewhamilton/Poko'
                 licenses {
                     license {
                         name = 'The Apache Software License, Version 2.0'
@@ -59,9 +59,9 @@ publishing {
                 }
 
                 scm {
-                    connection = 'scm:git:github.com/drewhamilton/ExtraCare.git'
-                    developerConnection = 'scm:git:ssh://github.com/drewhamilton/ExtraCare.git'
-                    url = 'https://github.com/drewhamilton/ExtraCare/tree/main'
+                    connection = 'scm:git:github.com/drewhamilton/Poko.git'
+                    developerConnection = 'scm:git:ssh://github.com/drewhamilton/Poko.git'
+                    url = 'https://github.com/drewhamilton/Poko/tree/main'
                 }
             }
         }
