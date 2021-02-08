@@ -1,0 +1,40 @@
+apply plugin: 'java-gradle-plugin'
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'org.jetbrains.kotlin.kapt'
+apply plugin: 'org.jetbrains.dokka'
+
+ext {
+    artifactName = publish_gradle_plugin_artifact
+    pomName = 'Poko Gradle Plugin'
+    basePackage = 'dev.drewhamilton.poko.gradle'
+}
+apply from: '../publish.gradle'
+apply from: '../info.gradle'
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
+        freeCompilerArgs += ['-progressive']
+    }
+}
+
+gradlePlugin {
+    plugins {
+        pokoPlugin {
+            id = 'dev.drewhamilton.poko'
+            implementationClass = 'dev.drewhamilton.poko.gradle.PokoGradlePlugin'
+        }
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-gradle-plugin-api:$kotlin_version"
+    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+
+    compileOnly "com.google.auto.service:auto-service-annotations:$autoservice_version"
+    kapt "com.google.auto.service:auto-service:$autoservice_version"
+
+    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'com.google.truth:truth:1.1.2'
+}

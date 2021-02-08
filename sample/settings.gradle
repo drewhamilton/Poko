@@ -1,0 +1,14 @@
+rootProject.name = 'Poko sample'
+
+includeBuild('../.') {
+    // Shared gradle.properties
+    Properties settingsProps = new Properties()
+    file("../gradle.properties").withInputStream { settingsProps.load(it) }
+    settingsProps.each { key, val ->
+        ext.set(key, val)
+    }
+    dependencySubstitution {
+        substitute module("$publish_group:$publish_compiler_plugin_artifact") with project(':poko-compiler-plugin')
+        substitute module("$publish_group:$publish_gradle_plugin_artifact") with project(':poko-gradle-plugin')
+    }
+}

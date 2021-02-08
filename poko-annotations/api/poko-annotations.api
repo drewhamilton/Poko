@@ -1,0 +1,3 @@
+public abstract interface annotation class dev/drewhamilton/poko/Poko : java/lang/annotation/Annotation {
+}
+

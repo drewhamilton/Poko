@@ -1,11 +1,37 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'dev.drewhamilton.extracare'
+buildscript {
+    // Shared gradle.properties
+    Properties properties = new Properties()
+    file("../gradle.properties").withInputStream { properties.load(it) }
+    properties.each { key, val ->
+        ext.set(key, val)
+    }
 
-extraCare {
-    dataApiAnnotation.set 'dev.drewhamilton.extracare.sample.Poko'
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "$publish_group:$publish_gradle_plugin_artifact"
+    }
+}
+
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'dev.drewhamilton.poko'
+
+poko {
+    pokoAnnotation.set 'dev.drewhamilton.poko.sample.Poko'
     enabled.set true
+}
+
+String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
+project.tasks.withType(KotlinCompile.class).configureEach {
+    kotlinOptions {
+        jvmTarget = resolvedJvmTarget
+        freeCompilerArgs += ['-progressive']
+    }
 }
 
 dependencies {
@@ -13,6 +39,10 @@ dependencies {
 
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'com.google.truth:truth:1.1'
+}
+
+repositories {
+    mavenCentral()
 }
 
 boolean useIr = Boolean.parseBoolean(project.property("use_ir").toString())

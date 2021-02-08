@@ -10,7 +10,7 @@
  8. Commit the snapshot change.
  9. Push the tag and 2 commits to origin/main.
 10. Wait for the "Release" Action to complete.
-11. `startship release -c dev.drewhamilton.extracare:extracare-compiler-plugin,data-api-annotations,extracare-gradle-plugin:x.y.z`
+11. `startship release -c dev.drewhamilton.poko:poko-compiler-plugin,poko-annotations,poko-gradle-plugin:x.y.z`
 12. Create the release on GitHub with release notes copied from the changelog.
 
 If steps 9, 10, or 11 fail: drop the Sonatype repo, fix the problem, commit, and start again at

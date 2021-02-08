@@ -5,30 +5,32 @@ version publish_version
 
 buildscript {
     repositories {
-        google()
         mavenCentral()
-        jcenter()
+
+        // TODO: Remove Bintray dependencies when possible
+        maven { url 'https://dl.bintray.com/kotlin/dokka' }
+        maven { url 'https://dl.bintray.com/jetbrains/markdown' }
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
         classpath "org.jetbrains.kotlinx:binary-compatibility-validator:$binary_compatibility_validator_version"
-        classpath "$publish_group:$publish_gradle_plugin_artifact"
     }
 }
 
 apply plugin: 'binary-compatibility-validator'
-apiValidation {
-    ignoredProjects += ['sample']
-}
 
 String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
 allprojects {
     repositories {
-        google()
         mavenCentral()
-        jcenter()
+
+        // TODO: Remove Bintray dependencies when possible
+        maven { url 'https://dl.bintray.com/jetbrains/markdown' }
+        maven { url 'https://dl.bintray.com/korlibs/korlibs' }
+        maven { url 'https://dl.bintray.com/kotlin/dokka' }
+        maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
     }
 
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
@@ -36,22 +38,6 @@ allprojects {
             kotlinOptions {
                 jvmTarget = resolvedJvmTarget
                 freeCompilerArgs += ['-progressive']
-            }
-        }
-    }
-}
-
-subprojects {
-    configurations.all {
-        resolutionStrategy {
-            dependencySubstitution {
-                substitute module(
-                    "$publish_group:$publish_compiler_plugin_artifact"
-                ) with project(':extracare-compiler-plugin')
-
-                substitute module(
-                    "$publish_group:$publish_annotations_artifact"
-                ) with project(':data-api-annotations')
             }
         }
     }
