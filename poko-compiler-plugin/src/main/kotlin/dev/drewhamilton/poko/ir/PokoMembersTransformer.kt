@@ -331,16 +331,16 @@ internal class PokoMembersTransformer(
             val irPropertyValue = irGetField(receiver(irFunction), property.backingField!!)
 
             val typeConstructorDescriptor = property.descriptor.type.constructor.declarationDescriptor
-            val irPropertyStringValue =
-                if (
-                    typeConstructorDescriptor is ClassDescriptor &&
-                    KotlinBuiltIns.isArrayOrPrimitiveArray(typeConstructorDescriptor)
-                )
-                    irCall(context.irBuiltIns.dataClassArrayMemberToStringSymbol, context.irBuiltIns.stringType).apply {
-                        putValueArgument(0, irPropertyValue)
-                    }
-                else
-                    irPropertyValue
+            val irPropertyStringValue = if (
+                typeConstructorDescriptor is ClassDescriptor &&
+                KotlinBuiltIns.isArrayOrPrimitiveArray(typeConstructorDescriptor)
+            ) {
+                irCall(context.irBuiltIns.dataClassArrayMemberToStringSymbol, context.irBuiltIns.stringType).apply {
+                    putValueArgument(0, irPropertyValue)
+                }
+            } else {
+                irPropertyValue
+            }
 
             irConcat.addArgument(irPropertyStringValue)
             first = false
