@@ -250,12 +250,19 @@ internal class PokoMembersTransformer(
         }
     }
 
-    // TODO: Figure out what `substituted` was supposed to be for and either fix or remove it
+    // TODO: `substituted` appears to be necessary to bind the correct parent IrFunction to the hashCodeFunctionSymbol.
+    //  Look into rewriting this from LocalClassGenerator => DeclarationGenerator.generateClassOrObjectDeclaration
+    //  => ClassGenerator.generateClass => generateAdditionalMembersForDataClass
     private fun IrBlockBodyBuilder.getHashCodeOf(property: IrProperty, irValue: IrExpression): IrExpression {
         var substituted: FunctionDescriptor? = null
         val hashCodeFunctionSymbol = getHashCodeFunction(property) {
             substituted = it
             pluginContext.symbolTable.referenceSimpleFunction(it.original)
+        }.apply {
+            if (!isBound) {
+                // TODO MISSING: Bind to correct IrFunction
+//                bind(irFunction)
+            }
         }
 
         val hasDispatchReceiver = hashCodeFunctionSymbol.descriptor.dispatchReceiverParameter != null
