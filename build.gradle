@@ -5,6 +5,9 @@ version publish_version
 
 buildscript {
     repositories {
+        // TODO WORKAROUND: https://github.com/JetBrains/markdown/issues/70
+        maven { url 'https://dl.bintray.com/jetbrains/markdown' }
+
         mavenCentral()
 
         // TODO: Remove Bintray dependencies when possible
