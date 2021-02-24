@@ -29,7 +29,7 @@ If you prefer, you can create a different annotation and supply it to the Gradle
 ```groovy
 apply plugin: 'dev.drewhamilton.poko'
 poko {
-  dataApiAnnotation.set 'com.example.MyDataAnnotation'
+  pokoAnnotation.set 'com.example.MyDataAnnotation'
 }
 ```
 
@@ -44,12 +44,12 @@ might break something in this compiler plugin.
 Since the Kotlin compiler has had frequent breaking changes, different versions of Kotlin are
 exclusively compatible with specific versions of Poko.
 
-| Kotlin version  | Poko version             |
-| --------------- | ------------------------ |
-| 1.4.30          | 0.7.0 / Extra Care 0.6.0 |
-| 1.4.20 – 1.4.21 | Extra Care 0.5.0         |
-| 1.4.0 – 1.4.10  | Extra Care 0.3.1         |
-| 1.3.72          | Extra Care 0.2.4         |
+| Kotlin version  | Poko version | Extra Care version |
+| --------------- | ------------ | ------------------ |
+| 1.4.30          | 0.7.1        | 0.6.0              |
+| 1.4.20 – 1.4.21 | N/A          | 0.5.0              |
+| 1.4.0 – 1.4.10  | N/A          | 0.3.1              |
+| 1.3.72          | N/A          | 0.2.4              |
 
 Snapshots of the development version are available in [Sonatype's Snapshots
 repository](https://oss.sonatype.org/#view-repositories;snapshots~browsestorage).

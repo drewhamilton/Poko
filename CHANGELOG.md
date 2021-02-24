@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.1
+_2021-02-24_
+
+Fix a bug that broke compatibility with Jetpack Compose. Poko 0.7.1 is compatible with Jetpack
+Compose 1.0.0-alpha12.
+
 ## 0.7.0
 _2021-02-08_
 
