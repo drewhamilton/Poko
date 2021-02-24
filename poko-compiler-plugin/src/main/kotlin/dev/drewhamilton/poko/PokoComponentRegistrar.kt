@@ -8,11 +8,8 @@ import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
 import org.jetbrains.kotlin.com.intellij.mock.MockProject
-import org.jetbrains.kotlin.com.intellij.openapi.extensions.impl.ExtensionPointImpl
-import org.jetbrains.kotlin.com.intellij.openapi.project.Project
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
-import org.jetbrains.kotlin.extensions.ProjectExtensionDescriptor
 import org.jetbrains.kotlin.name.FqName
 
 @AutoService(ComponentRegistrar::class)
@@ -26,20 +23,13 @@ class PokoComponentRegistrar : ComponentRegistrar {
         val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
 
         // TODO: Use ClassBuilderInterceptorExtension, ExpressionCodegenExtension, or both?
-        ExpressionCodegenExtension.registerExtensionAsFirst(
+        ExpressionCodegenExtension.registerExtension(
             project,
             PokoCodegenExtension(pokoAnnotationName, messageCollector)
         )
-        IrGenerationExtension.registerExtensionAsFirst(
+        IrGenerationExtension.registerExtension(
             project,
             PokoIrGenerationExtension(pokoAnnotationName, messageCollector)
         )
-    }
-
-    private fun <T : Any> ProjectExtensionDescriptor<T>.registerExtensionAsFirst(project: Project, extension: T) {
-        project.extensionArea
-            .getExtensionPoint(extensionPointName)
-            .let { it as ExtensionPointImpl }
-            .registerExtension(extension, project)
     }
 }

@@ -57,6 +57,7 @@ import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtParameter
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.resolve.source.getPsi
 import org.jetbrains.kotlin.types.KotlinType
@@ -250,12 +251,11 @@ internal class PokoMembersTransformer(
         }
     }
 
-    // TODO: Figure out what `substituted` was supposed to be for and either fix or remove it
     private fun IrBlockBodyBuilder.getHashCodeOf(property: IrProperty, irValue: IrExpression): IrExpression {
-        var substituted: FunctionDescriptor? = null
-        val hashCodeFunctionSymbol = getHashCodeFunction(property) {
-            substituted = it
-            pluginContext.symbolTable.referenceSimpleFunction(it.original)
+        val hashCodeFunctionSymbol = getHashCodeFunction(property) { descriptor ->
+            pluginContext.referenceFunctions(descriptor.fqNameSafe).first().also {
+                require(it.isBound) { "$it is not bound" }
+            }
         }
 
         val hasDispatchReceiver = hashCodeFunctionSymbol.descriptor.dispatchReceiverParameter != null
@@ -270,7 +270,6 @@ internal class PokoMembersTransformer(
             } else {
                 putValueArgument(0, irValue)
             }
-//            commitSubstituted(this, substituted ?: hashCodeFunctionSymbol.descriptor)
         }
     }
 
@@ -331,16 +330,16 @@ internal class PokoMembersTransformer(
             val irPropertyValue = irGetField(receiver(irFunction), property.backingField!!)
 
             val typeConstructorDescriptor = property.descriptor.type.constructor.declarationDescriptor
-            val irPropertyStringValue =
-                if (
-                    typeConstructorDescriptor is ClassDescriptor &&
-                    KotlinBuiltIns.isArrayOrPrimitiveArray(typeConstructorDescriptor)
-                )
-                    irCall(context.irBuiltIns.dataClassArrayMemberToStringSymbol, context.irBuiltIns.stringType).apply {
-                        putValueArgument(0, irPropertyValue)
-                    }
-                else
-                    irPropertyValue
+            val irPropertyStringValue = if (
+                typeConstructorDescriptor is ClassDescriptor &&
+                KotlinBuiltIns.isArrayOrPrimitiveArray(typeConstructorDescriptor)
+            ) {
+                irCall(context.irBuiltIns.dataClassArrayMemberToStringSymbol, context.irBuiltIns.stringType).apply {
+                    putValueArgument(0, irPropertyValue)
+                }
+            } else {
+                irPropertyValue
+            }
 
             irConcat.addArgument(irPropertyStringValue)
             first = false
