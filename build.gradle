@@ -24,10 +24,12 @@ apply plugin: 'binary-compatibility-validator'
 String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
 allprojects {
     repositories {
+        // TODO WORKAROUND: https://github.com/JetBrains/markdown/issues/70
+        maven { url 'https://dl.bintray.com/jetbrains/markdown' }
+
         mavenCentral()
 
         // TODO: Remove Bintray dependencies when possible
-        maven { url 'https://dl.bintray.com/jetbrains/markdown' }
         maven { url 'https://dl.bintray.com/korlibs/korlibs' }
         maven { url 'https://dl.bintray.com/kotlin/dokka' }
         maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
