@@ -57,6 +57,7 @@ import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtParameter
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.resolve.source.getPsi
 import org.jetbrains.kotlin.types.KotlinType
@@ -250,18 +251,10 @@ internal class PokoMembersTransformer(
         }
     }
 
-    // TODO: `substituted` appears to be necessary to bind the correct parent IrFunction to the hashCodeFunctionSymbol.
-    //  Look into rewriting this from LocalClassGenerator => DeclarationGenerator.generateClassOrObjectDeclaration
-    //  => ClassGenerator.generateClass => generateAdditionalMembersForDataClass
     private fun IrBlockBodyBuilder.getHashCodeOf(property: IrProperty, irValue: IrExpression): IrExpression {
-        var substituted: FunctionDescriptor? = null
-        val hashCodeFunctionSymbol = getHashCodeFunction(property) {
-            substituted = it
-            pluginContext.symbolTable.referenceSimpleFunction(it.original)
-        }.apply {
-            if (!isBound) {
-                // TODO MISSING: Bind to correct IrFunction
-//                bind(irFunction)
+        val hashCodeFunctionSymbol = getHashCodeFunction(property) { descriptor ->
+            pluginContext.referenceFunctions(descriptor.fqNameSafe).first().also {
+                require(it.isBound) { "$it is not bound" }
             }
         }
 
@@ -277,7 +270,6 @@ internal class PokoMembersTransformer(
             } else {
                 putValueArgument(0, irValue)
             }
-//            commitSubstituted(this, substituted ?: hashCodeFunctionSymbol.descriptor)
         }
     }
 
