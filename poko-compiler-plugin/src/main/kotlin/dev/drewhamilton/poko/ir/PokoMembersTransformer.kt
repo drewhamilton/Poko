@@ -126,8 +126,6 @@ internal class PokoMembersTransformer(
     private inline fun IrFunction.convertToGenerated(
         generateFunctionBody: IrBlockBodyBuilder.(List<IrProperty>) -> Unit
     ) {
-        origin = PokoOrigin
-
         val parent = parent as IrClass
         val properties = parent.properties
             .toList()
@@ -138,6 +136,7 @@ internal class PokoMembersTransformer(
             return
         }
 
+        origin = PokoOrigin
         mutateWithNewDispatchReceiverParameterForParentClass()
 
         body = DeclarationIrBuilder(pluginContext, symbol).irBlockBody {
