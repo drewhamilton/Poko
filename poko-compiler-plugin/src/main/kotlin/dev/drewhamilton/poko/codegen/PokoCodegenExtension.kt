@@ -54,6 +54,11 @@ internal class PokoCodegenExtension(
         val properties: List<PropertyDescriptor> = primaryConstructor.valueParameters.mapNotNull { parameter ->
             codegen.bindingContext.get(BindingContext.VALUE_PARAMETER_AS_PROPERTY, parameter)
         }
+        if (properties.isEmpty()) {
+            log("No primary constructor properties")
+            reportError("Poko classes must have at least one property in the primary constructor", codegen)
+            return
+        }
 
         val toStringFunction = targetClass.findFunction("toString")!!
         // Only generate if it's a fake override (of Any.toString):

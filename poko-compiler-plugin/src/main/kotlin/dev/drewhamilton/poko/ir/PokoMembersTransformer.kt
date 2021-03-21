@@ -126,14 +126,19 @@ internal class PokoMembersTransformer(
     private inline fun IrFunction.convertToGenerated(
         generateFunctionBody: IrBlockBodyBuilder.(List<IrProperty>) -> Unit
     ) {
-        origin = PokoOrigin
-
-        mutateWithNewDispatchReceiverParameterForParentClass()
-
         val parent = parent as IrClass
         val properties = parent.properties
             .toList()
             .filter { it.symbol.descriptor.source.getPsi() is KtParameter }
+        if (properties.isEmpty()) {
+            log("No primary constructor properties")
+            parent.reportError("Poko classes must have at least one property in the primary constructor")
+            return
+        }
+
+        origin = PokoOrigin
+        mutateWithNewDispatchReceiverParameterForParentClass()
+
         body = DeclarationIrBuilder(pluginContext, symbol).irBlockBody {
             generateFunctionBody(properties)
         }

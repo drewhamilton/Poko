@@ -64,6 +64,18 @@ class PokoCompilerPluginTest(
     }
     //endregion
 
+    //region No constructor properties
+    @Test fun `compilation without constructor properties fails`() {
+        testCompilation(
+            "illegal/NoConstructorProperties",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("Poko classes must have at least one property in the primary constructor")
+        }
+    }
+    //endregion
+
     //region Explicit function declarations
     @Test fun `two equivalent compiled ExplicitDeclarations instances are equals`() =
         compareTwoExplicitDeclarationsApiInstances { firstInstance, secondInstance ->
