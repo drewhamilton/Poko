@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.2
+_2021-03-21_
+
+Enforce a minimum of one property in the primary constructor of a Poko class. Previously,
+compilation would succeed but could cause failures down the line with unclear error messages.
+
 ## 0.7.1
 _2021-02-24_
 

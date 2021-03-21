@@ -4,8 +4,7 @@
 Poko is a Kotlin compiler plugin that makes writing and maintaining data model classes for public
 APIs easy. Like with normal Kotlin data classes, all you have to do is provide members in your
 class's constructor. Then give it the `@Poko` annotation and enjoy the generated `toString`,
-`equals`, and `hashCode`. (Builder class for Java consumers and DSL initializer for Kotlin consumers
-to be added.)
+`equals`, and `hashCode`.
 
 Poko supports both IR and non-IR compilation.
 
@@ -21,6 +20,13 @@ Mark your class as a `@Poko class` instead of a `data class`:
 
 And enjoy the benefits of a readable `toString` and working `equals` and `hashCode`. Unlike normal
 data classes, no `copy` or `componentN` functions are generated.
+
+Like normal data classes, Poko classes must have at least one property in their primary constructor.
+Non-property parameters in the primary constructor are ignored, as are non-constructor properties.
+Any of the three generated functions can be overridden manually, in which case Poko will not
+generate that function but will still generate the non-overridden functions. Using array properties
+is not recommended, and if they are used, it is recommended to override `equals` and `hashCode`
+manually.
 
 ### Annotation
 By default, the `dev.drewhamilton.poko.Poko` annotation is used to mark classes for Poko generation.
@@ -46,7 +52,7 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version | Extra Care version |
 | --------------- | ------------ | ------------------ |
-| 1.4.30 – 1.4.31 | 0.7.1        | 0.6.0              |
+| 1.4.30 – 1.4.31 | 0.7.2        | 0.6.0              |
 | 1.4.20 – 1.4.21 | N/A          | 0.5.0              |
 | 1.4.0 – 1.4.10  | N/A          | 0.3.1              |
 | 1.3.72          | N/A          | 0.2.4              |
@@ -93,10 +99,10 @@ poko {
 ``` 
 
 ## To-do
-* Generate the inner Builder class
+* Generate an inner Builder class
 * Propagate the constructor default values to the Builder 
 * Mark the constructor as private
-* Generate the top-level DSL initializer
+* Generate a top-level DSL initializer
 * Write an IDE plugin?
 * Multiplatform support?
 
