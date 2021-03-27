@@ -30,6 +30,10 @@ jobs:
       matrix:
         ci_compile_mode: [ use-ir-false, use-ir-true, jetpack-compose ]
         ci_java_version: [ 1.8, 11, 12, 13, 14, 15 ]
+        # Compose requires Java 11:
+        exclude:
+          - ci_compile_mode: jetpack-compose
+            ci_java_version: 1.8
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
