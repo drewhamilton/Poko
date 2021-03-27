@@ -98,6 +98,9 @@ fabric.properties
 .gradle
 build/
 
+# Local configuration file (sdk path, etc)
+local.properties
+
 # Ignore Gradle GUI config
 gradle-app.setting
 
