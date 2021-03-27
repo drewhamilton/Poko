@@ -29,6 +29,7 @@ jobs:
     strategy:
       matrix:
         ci_compile_mode: [ use-ir-false, use-ir-true, jetpack-compose ]
+        ci_java_version: [ 1.8, 11, 12, 13, 14, 15 ]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
