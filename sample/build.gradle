@@ -8,23 +8,27 @@ buildscript {
         ext.set(key, val)
     }
 
+    String compileMode = project.property('compile_mode').toString()
+    boolean useCompose = compileMode == 'jetpack-compose'
     repositories {
         mavenCentral()
-        google()
+        if (useCompose) {
+            google()
+        }
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "$publish_group:$publish_gradle_plugin_artifact"
 
-        boolean useCompose = Boolean.parseBoolean(project.property("use_compose").toString())
         if (useCompose) {
             classpath 'com.android.tools.build:gradle:7.0.0-alpha12'
         }
     }
 }
 
-boolean useCompose = Boolean.parseBoolean(project.property("use_compose").toString())
+String compileMode = project.property('compile_mode').toString()
+boolean useCompose = compileMode == 'jetpack-compose'
 if (useCompose) {
     apply plugin: 'com.android.library'
     apply plugin: 'org.jetbrains.kotlin.android'
@@ -75,7 +79,7 @@ if (useCompose) {
         }
     }
 } else {
-    boolean useIr = Boolean.parseBoolean(project.property("use_ir").toString())
+    boolean useIr = compileMode == 'use-ir-true'
     logger.lifecycle "$project: useIR = $useIr"
     project.tasks.withType(KotlinCompile.class).configureEach {
         kotlinOptions {
