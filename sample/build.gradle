@@ -22,7 +22,7 @@ buildscript {
         classpath "$publish_group:$publish_gradle_plugin_artifact"
 
         if (useCompose) {
-            classpath 'com.android.tools.build:gradle:7.0.0-alpha12'
+            classpath "com.android.tools.build:gradle:$agp_version"
         }
     }
 }
