@@ -50,7 +50,7 @@ import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.util.defaultType
-import org.jetbrains.kotlin.ir.util.findFirstFunction
+import org.jetbrains.kotlin.ir.util.getSimpleFunction
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isFakeOverride
 import org.jetbrains.kotlin.ir.util.primaryConstructor
@@ -61,7 +61,6 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.resolve.source.getPsi
 import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.types.checker.KotlinTypeChecker
 import org.jetbrains.kotlin.types.isNullable
 import org.jetbrains.kotlin.types.typeUtil.representativeUpperBound
 
@@ -219,18 +218,9 @@ internal class PokoMembersTransformer(
         }
         +irResultVar
 
-        val symbolTable = pluginContext.symbolTable
-        val intClass = pluginContext.builtIns.int
-        val intType = pluginContext.builtIns.intType
-        val intTimesSymbol: IrSimpleFunctionSymbol =
-            intClass.unsubstitutedMemberScope.findFirstFunction("times") {
-                KotlinTypeChecker.DEFAULT.equalTypes(it.valueParameters[0].type, intType)
-            }.let { symbolTable.referenceSimpleFunction(it) }
-        val intPlusSymbol: IrSimpleFunctionSymbol =
-            intClass.unsubstitutedMemberScope.findFirstFunction("plus") {
-                KotlinTypeChecker.DEFAULT.equalTypes(it.valueParameters[0].type, intType)
-            }.let { symbolTable.referenceSimpleFunction(it) }
-
+        val intClass = pluginContext.irBuiltIns.intClass
+        val intTimesSymbol: IrSimpleFunctionSymbol = intClass.getSimpleFunction("times")!!
+        val intPlusSymbol: IrSimpleFunctionSymbol = intClass.getSimpleFunction("plus")!!
         for (property in irProperties.drop(1)) {
             val shiftedResult = irCallOp(intTimesSymbol, irIntType, irGet(irResultVar), irInt(31))
             val irRhs = irCallOp(intPlusSymbol, irIntType, shiftedResult, getHashCodeOfProperty(irFunction, property))
