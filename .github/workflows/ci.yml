@@ -23,8 +23,21 @@ jobs:
           java-version: ${{ matrix.ci_java_version }}
       - name: Build
         run: ./gradlew clean build --stacktrace
+
+  build-sample:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ci_compile_mode: [ use-ir-false, use-ir-true, jetpack-compose ]
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Install JDK ${{ matrix.ci_java_version }}
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.ci_java_version }}
       - name: Build sample
-        run: cd sample && ./gradlew build --stacktrace -Puse_ir=${{ matrix.ci_use_ir }}
+        run: cd sample && ./gradlew build --stacktrace -Pcompile_mode=${{ matrix.ci_compile_mode }}
 
 env:
   GRADLE_OPTS: >-
