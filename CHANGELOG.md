@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.3
+_2021-03-27_
+
+Fix another bug that broke compatibility with Jetpack Compose. Poko is now compatible with Jetpack
+Compose 1.0.0-beta03 and Android Gradle Plugin 7.0.0-alpha12.
+
 ## 0.7.2
 _2021-03-21_
 
@@ -9,8 +15,8 @@ compilation would succeed but could cause failures down the line with unclear er
 ## 0.7.1
 _2021-02-24_
 
-Fix a bug that broke compatibility with Jetpack Compose. Poko 0.7.1 is compatible with Jetpack
-Compose 1.0.0-alpha12.
+Fix a bug that broke compatibility with Jetpack Compose. Poko is now compatible with Jetpack Compose
+1.0.0-alpha12.
 
 ## 0.7.0
 _2021-02-08_

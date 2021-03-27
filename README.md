@@ -2,8 +2,8 @@
 ![](https://github.com/drewhamilton/Poko/workflows/CI/badge.svg?branch=main)
 
 Poko is a Kotlin compiler plugin that makes writing and maintaining data model classes for public
-APIs easy. Like with normal Kotlin data classes, all you have to do is provide members in your
-class's constructor. Then give it the `@Poko` annotation and enjoy the generated `toString`,
+APIs easy. Like with normal Kotlin data classes, all you have to do is provide properties in your
+class's primary constructor. Then give it the `@Poko` annotation and enjoy the generated `toString`,
 `equals`, and `hashCode`.
 
 Poko supports both IR and non-IR compilation.
@@ -14,7 +14,7 @@ Mark your class as a `@Poko class` instead of a `data class`:
 @Poko class MyData(
     val int: Int,
     val requiredString: String,
-    val optionalString: String?
+    val optionalString: String?,
 )
 ```
 
@@ -52,7 +52,7 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version | Extra Care version |
 | --------------- | ------------ | ------------------ |
-| 1.4.30 – 1.4.31 | 0.7.2        | 0.6.0              |
+| 1.4.30 – 1.4.31 | 0.7.3        | 0.6.0              |
 | 1.4.20 – 1.4.21 | N/A          | 0.5.0              |
 | 1.4.0 – 1.4.10  | N/A          | 0.3.1              |
 | 1.3.72          | N/A          | 0.2.4              |
