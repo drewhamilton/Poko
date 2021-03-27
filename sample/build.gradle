@@ -8,17 +8,33 @@ buildscript {
         ext.set(key, val)
     }
 
+    String compileMode = project.property('compile_mode').toString()
+    boolean useCompose = compileMode == 'jetpack-compose'
     repositories {
         mavenCentral()
+        if (useCompose) {
+            google()
+        }
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "$publish_group:$publish_gradle_plugin_artifact"
+
+        if (useCompose) {
+            classpath "com.android.tools.build:gradle:$agp_version"
+        }
     }
 }
 
-apply plugin: 'org.jetbrains.kotlin.jvm'
+String compileMode = project.property('compile_mode').toString()
+boolean useCompose = compileMode == 'jetpack-compose'
+if (useCompose) {
+    apply plugin: 'com.android.library'
+    apply plugin: 'org.jetbrains.kotlin.android'
+} else {
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+}
 apply plugin: 'dev.drewhamilton.poko'
 
 poko {
@@ -27,15 +43,59 @@ poko {
 }
 
 String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
-project.tasks.withType(KotlinCompile.class).configureEach {
-    kotlinOptions {
-        jvmTarget = resolvedJvmTarget
-        freeCompilerArgs += ['-progressive']
+if (useCompose) {
+    android {
+        compileSdkVersion 30
+        buildToolsVersion '30.0.3'
+
+        defaultConfig {
+            minSdkVersion 21
+            targetSdkVersion 30
+        }
+
+        compileOptions {
+            sourceCompatibility resolvedJvmTarget
+            targetCompatibility resolvedJvmTarget
+        }
+
+        kotlinOptions {
+            jvmTarget = resolvedJvmTarget
+            freeCompilerArgs += ['-progressive']
+        }
+
+        buildFeatures {
+            compose true
+
+            // Disable unused AGP features
+            buildConfig false
+            aidl false
+            renderScript false
+            resValues false
+            shaders false
+        }
+
+        composeOptions {
+            kotlinCompilerExtensionVersion compose_version
+        }
+    }
+} else {
+    boolean useIr = compileMode == 'use-ir-true'
+    logger.lifecycle "$project: useIR = $useIr"
+    project.tasks.withType(KotlinCompile.class).configureEach {
+        kotlinOptions {
+            jvmTarget = resolvedJvmTarget
+            freeCompilerArgs += ['-progressive']
+            useIR = useIr
+        }
     }
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    if (useCompose) {
+        implementation "androidx.compose.runtime:runtime:$compose_version"
+    }
 
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'com.google.truth:truth:1.1'
@@ -43,12 +103,8 @@ dependencies {
 
 repositories {
     mavenCentral()
-}
-
-boolean useIr = Boolean.parseBoolean(project.property("use_ir").toString())
-logger.lifecycle "$project: useIR = $useIr"
-tasks.withType(KotlinCompile.class).configureEach {
-    kotlinOptions {
-        useIR = useIr
+    if (useCompose) {
+        google()
+        jcenter()
     }
 }
