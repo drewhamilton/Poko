@@ -60,7 +60,12 @@ if (useCompose) {
 
         kotlinOptions {
             jvmTarget = resolvedJvmTarget
-            freeCompilerArgs += ['-progressive']
+            freeCompilerArgs += [
+                '-progressive',
+                // TODO: Remove these before merge
+                '-P',
+                'plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true',
+            ]
         }
 
         buildFeatures {
