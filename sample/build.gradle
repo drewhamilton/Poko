@@ -105,6 +105,5 @@ repositories {
     mavenCentral()
     if (useCompose) {
         google()
-        jcenter()
     }
 }
