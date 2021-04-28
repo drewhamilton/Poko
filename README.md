@@ -33,9 +33,9 @@ By default, the `dev.drewhamilton.poko.Poko` annotation is used to mark classes 
 If you prefer, you can create a different annotation and supply it to the Gradle  plugin.
 
 ```groovy
-apply plugin: 'dev.drewhamilton.poko'
+apply plugin: "dev.drewhamilton.poko"
 poko {
-  pokoAnnotation.set 'com.example.MyDataAnnotation'
+  pokoAnnotation.set "com.example.MyDataAnnotation"
 }
 ```
 
@@ -52,7 +52,7 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version | Extra Care version |
 | --------------- | ------------ | ------------------ |
-| 1.4.30 – 1.4.31 | 0.7.3        | 0.6.0              |
+| 1.4.30 – 1.4.32 | 0.7.4        | 0.6.0              |
 | 1.4.20 – 1.4.21 | N/A          | 0.5.0              |
 | 1.4.0 – 1.4.10  | N/A          | 0.3.1              |
 | 1.3.72          | N/A          | 0.2.4              |
@@ -69,7 +69,7 @@ buildscript {
 }
 
 // Per module:
-apply plugin: 'dev.drewhamilton.poko'
+apply plugin: "dev.drewhamilton.poko"
 ```
 
 ### Extra Care
@@ -87,14 +87,14 @@ You can continue to use Extra Care's `@DataApi` annotation if desired.
 
 ```groovy
 // Replace this:
-apply plugin: 'dev.drewhamilton.extracare'
+apply plugin: "dev.drewhamilton.extracare"
 
 // With this:
-apply plugin: 'dev.drewhamilton.poko'
+apply plugin: "dev.drewhamilton.poko"
 poko {
   // Add this if you want to use the old annotation
   // Skip this if you want to use the new default Poko annotation
-  pokoAnnotation = 'dev.drewhamilton.extracare.DataApi'
+  pokoAnnotation = "dev.drewhamilton.extracare.DataApi"
 }
 ``` 
 
