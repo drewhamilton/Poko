@@ -32,16 +32,13 @@ class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
         val project = kotlinCompilation.target.project
         val extension = project.extensions.getByType(PokoPluginExtension::class.java)
 
-        val pokoAnnotationName = extension.pokoAnnotation.get()
-        if (pokoAnnotationName == DEFAULT_POKO_ANNOTATION) {
-            // Add default annotation as a dependency
-            project.dependencies.add(
-                "compileOnly",
-                "${ArtifactInfo.GROUP}:${ArtifactInfo.ANNOTATIONS_ARTIFACT}:${ArtifactInfo.VERSION}"
-            )
-        } else if (pokoAnnotationName == LEGACY_DATA_API_ANNOTATION) {
-            // Add legacy default annotation as a dependency
-            project.dependencies.add("implementation", "dev.drewhamilton.extracare:data-api-annotations:0.6.0")
+        val annotationDependency = when (extension.pokoAnnotation.get()) {
+            DEFAULT_POKO_ANNOTATION -> ArtifactInfo.annotationsDependency
+            LEGACY_DATA_API_ANNOTATION -> "dev.drewhamilton.extracare:data-api-annotations:0.6.0"
+            else -> null
+        }
+        if (annotationDependency != null) {
+            project.dependencies.add("implementation", annotationDependency)
         }
 
         return project.provider {
@@ -51,4 +48,7 @@ class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
             )
         }
     }
+
+    private val ArtifactInfo.annotationsDependency: String
+        get() = "$GROUP:$ANNOTATIONS_ARTIFACT:$VERSION"
 }
