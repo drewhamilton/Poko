@@ -4,7 +4,7 @@
 _2021-04-28_
 
 Change the default `poko-annotations` dependency to a runtime dependency when used, rather than a
-compile-only dependency. This ensures it is availabe in alternate configurations, like JVM test and
+compile-only dependency. This ensures it is available in alternate configurations, like JVM test and
 Android test configurations.
 
 ## 0.7.3
