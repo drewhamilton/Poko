@@ -62,7 +62,7 @@ if (useCompose) {
             jvmTarget = resolvedJvmTarget
             freeCompilerArgs += [
                 '-progressive',
-                // TODO: Remove these before merge
+                // TODO: Remove these when Compose catches up to Kotlin 1.5
                 '-P',
                 'plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true',
             ]
