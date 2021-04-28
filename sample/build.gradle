@@ -60,7 +60,9 @@ if (useCompose) {
 
         kotlinOptions {
             jvmTarget = resolvedJvmTarget
-            freeCompilerArgs += ['-progressive']
+            freeCompilerArgs += [
+                '-progressive',
+            ]
         }
 
         buildFeatures {

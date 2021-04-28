@@ -41,7 +41,6 @@ import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
-import org.jetbrains.kotlin.ir.descriptors.WrappedVariableDescriptor
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
@@ -204,15 +203,13 @@ internal class PokoMembersTransformer(
 
         val irIntType = context.irBuiltIns.intType
 
-        val resultVarDescriptor = WrappedVariableDescriptor()
         val irResultVar = IrVariableImpl(
             startOffset, endOffset,
             IrDeclarationOrigin.DEFINED,
-            IrVariableSymbolImpl(resultVarDescriptor),
+            IrVariableSymbolImpl(),
             Name.identifier("result"), irIntType,
             isVar = true, isConst = false, isLateinit = false
         ).also {
-            resultVarDescriptor.bind(it)
             it.parent = irFunction
             it.initializer = getHashCodeOfProperty(irFunction, irProperties[0])
         }
