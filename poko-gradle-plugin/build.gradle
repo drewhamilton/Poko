@@ -34,6 +34,6 @@ dependencies {
     implementation(libs.autoService.annotations)
     ksp(libs.autoService.ksp)
 
-    testImplementation libs.junit
-    testImplementation libs.truth
+    testImplementation(libs.junit)
+    testImplementation(libs.truth)
 }
