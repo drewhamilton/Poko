@@ -18,11 +18,11 @@ buildscript {
     }
 
     dependencies {
-        classpath libs.kotlin.gradlePlugin
-        classpath "$publish_group:$publish_gradle_plugin_artifact"
+        classpath(libs.kotlin.gradlePlugin)
+        classpath("$publish_group:$publish_gradle_plugin_artifact")
 
         if (useCompose) {
-            classpath libs.android.gradlePlugin
+            classpath(libs.android.gradlePlugin)
         }
     }
 }
@@ -94,11 +94,11 @@ if (useCompose) {
 
 dependencies {
     if (useCompose) {
-        implementation "androidx.compose.runtime:runtime:$compose_version"
+        implementation("androidx.compose.runtime:runtime:$compose_version")
     }
 
-    testImplementation libs.junit
-    testImplementation libs.truth
+    testImplementation(libs.junit)
+    testImplementation(libs.truth)
 }
 
 repositories {

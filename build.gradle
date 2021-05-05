@@ -12,11 +12,11 @@ buildscript {
     }
 
     dependencies {
-        classpath libs.kotlin.gradlePlugin
-        classpath libs.dokka.gradlePlugin
-        classpath libs.kotlinx.binaryCompatibilityValidator
+        classpath(libs.kotlin.gradlePlugin)
+        classpath(libs.dokka.gradlePlugin)
+        classpath(libs.kotlinx.binaryCompatibilityValidator)
 
-        classpath libs.ksp.gradlePlugin
+        classpath(libs.ksp.gradlePlugin)
     }
 }
 
