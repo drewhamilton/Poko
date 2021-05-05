@@ -6,12 +6,17 @@ version publish_version
 buildscript {
     repositories {
         mavenCentral()
+
+        // KSP:
+        google()
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
         classpath "org.jetbrains.kotlinx:binary-compatibility-validator:$binary_compatibility_validator_version"
+
+        classpath "com.google.devtools.ksp:symbol-processing-gradle-plugin:1.5.0-1.0.0-alpha09"
     }
 }
 
@@ -21,6 +26,9 @@ String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaV
 allprojects {
     repositories {
         mavenCentral()
+
+        // KSP:
+        google()
     }
 
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
