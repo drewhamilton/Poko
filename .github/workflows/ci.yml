@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         ci_use_ir: [ true, false ]
-        ci_java_version: [ 1.8, 11, 12, 13, 14, 15 ]
+        ci_java_version: [ 1.8, 11, 12, 13, 14, 15, 16 ]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -30,7 +30,7 @@ jobs:
       matrix:
         # TODO: Re-add `jetpack-compose` mode when it supports Kotlin 1.5
         ci_compile_mode: [ use-ir-false, use-ir-true ]
-        ci_java_version: [ 1.8, 11, 12, 13, 14, 15 ]
+        ci_java_version: [ 1.8, 11, 12, 13, 14, 15, 16 ]
         # Compose requires Java 11:
         exclude:
           - ci_compile_mode: jetpack-compose

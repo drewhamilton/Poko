@@ -1,5 +1,5 @@
 apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'org.jetbrains.kotlin.kapt'
+apply plugin: "com.google.devtools.ksp"
 
 ext {
     artifactName = publish_compiler_plugin_artifact
@@ -13,8 +13,8 @@ dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    compileOnly "com.google.auto.service:auto-service-annotations:$auto_service_version"
-    kapt "com.google.auto.service:auto-service:$auto_service_version"
+    implementation("com.google.auto.service:auto-service-annotations:$auto_service_version")
+    ksp("dev.zacsweers.autoservice:auto-service-ksp:$auto_service_ksp_version")
 
     testImplementation project(':poko-annotations')
     testImplementation "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"

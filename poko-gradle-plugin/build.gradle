@@ -1,6 +1,6 @@
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'org.jetbrains.kotlin.kapt'
+apply plugin: "com.google.devtools.ksp"
 apply plugin: 'org.jetbrains.dokka'
 
 ext {
@@ -32,8 +32,8 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-gradle-plugin-api:$kotlin_version"
     compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
-    compileOnly "com.google.auto.service:auto-service-annotations:$auto_service_version"
-    kapt "com.google.auto.service:auto-service:$auto_service_version"
+    implementation("com.google.auto.service:auto-service-annotations:$auto_service_version")
+    ksp("dev.zacsweers.autoservice:auto-service-ksp:$auto_service_ksp_version")
 
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'com.google.truth:truth:1.1.2'
