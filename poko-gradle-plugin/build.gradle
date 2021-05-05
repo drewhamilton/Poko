@@ -28,13 +28,12 @@ gradlePlugin {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation "org.jetbrains.kotlin:kotlin-gradle-plugin-api:$kotlin_version"
-    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    implementation(libs.kotlin.gradlePluginApi)
+    compileOnly(libs.kotlin.gradlePlugin)
 
-    implementation("com.google.auto.service:auto-service-annotations:$auto_service_version")
-    ksp("dev.zacsweers.autoservice:auto-service-ksp:$auto_service_ksp_version")
+    implementation(libs.autoService.annotations)
+    ksp(libs.autoService.ksp)
 
-    testImplementation 'junit:junit:4.13.1'
-    testImplementation 'com.google.truth:truth:1.1.2'
+    testImplementation(libs.junit)
+    testImplementation(libs.truth)
 }

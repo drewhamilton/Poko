@@ -5,7 +5,3 @@ ext {
   pomName = 'Poko Annotations'
 }
 apply from: "../publish.gradle"
-
-dependencies {
-  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-}
