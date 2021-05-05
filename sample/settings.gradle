@@ -12,3 +12,12 @@ includeBuild('../.') {
         substitute module("$publish_group:$publish_gradle_plugin_artifact") with project(':poko-gradle-plugin')
     }
 }
+
+enableFeaturePreview('VERSION_CATALOGS')
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            from(files("../gradle/libs.versions.toml"))
+        }
+    }
+}

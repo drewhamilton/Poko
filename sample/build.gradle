@@ -18,11 +18,11 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath libs.kotlin.gradlePlugin
         classpath "$publish_group:$publish_gradle_plugin_artifact"
 
         if (useCompose) {
-            classpath "com.android.tools.build:gradle:$agp_version"
+            classpath libs.android.gradlePlugin
         }
     }
 }
@@ -93,14 +93,12 @@ if (useCompose) {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-
     if (useCompose) {
         implementation "androidx.compose.runtime:runtime:$compose_version"
     }
 
-    testImplementation 'junit:junit:4.13.1'
-    testImplementation 'com.google.truth:truth:1.1'
+    testImplementation libs.junit
+    testImplementation libs.truth
 }
 
 repositories {
