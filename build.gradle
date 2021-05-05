@@ -12,11 +12,11 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
-        classpath "org.jetbrains.kotlinx:binary-compatibility-validator:$binary_compatibility_validator_version"
+        classpath libs.kotlin.gradlePlugin
+        classpath libs.dokka.gradlePlugin
+        classpath libs.kotlinx.binaryCompatibilityValidator
 
-        classpath "com.google.devtools.ksp:symbol-processing-gradle-plugin:1.5.0-1.0.0-alpha09"
+        classpath libs.ksp.gradlePlugin
     }
 }
 
