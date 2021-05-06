@@ -77,7 +77,7 @@ if (useCompose) {
         }
 
         composeOptions {
-            kotlinCompilerExtensionVersion compose_version
+            kotlinCompilerExtensionVersion libs.versions.compose.get()
         }
     }
 } else {
@@ -94,7 +94,7 @@ if (useCompose) {
 
 dependencies {
     if (useCompose) {
-        implementation("androidx.compose.runtime:runtime:$compose_version")
+        implementation(libs.androidx.compose.runtime)
     }
 
     testImplementation(libs.junit)
