@@ -28,8 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # TODO: Re-add `jetpack-compose` mode when it supports Kotlin 1.5
-        ci_compile_mode: [ use-ir-false, use-ir-true ]
+        ci_compile_mode: [ use-ir-false, use-ir-true, jetpack-compose ]
         ci_java_version: [ 1.8, 11, 12, 13, 14, 15, 16 ]
         # Compose requires Java 11:
         exclude:
