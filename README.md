@@ -1,5 +1,5 @@
 # Poko
-![](https://github.com/drewhamilton/Poko/workflows/CI/badge.svg?branch=main)
+[![](https://github.com/drewhamilton/Poko/workflows/CI/badge.svg?branch=main)](https://github.com/drewhamilton/Poko/actions?query=workflow%3ACI+branch%3Amain)
 
 Poko is a Kotlin compiler plugin that makes writing and maintaining data model classes for public
 APIs easy. Like with normal Kotlin data classes, all you have to do is provide properties in your
@@ -44,7 +44,7 @@ poko {
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/dev.drewhamilton.poko/poko-compiler-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/dev.drewhamilton.poko/poko-compiler-plugin)
 
 Poko is available on Maven Central. It is experimental, and the API may undergo breaking changes
-before version 1.0.0. Kotlin Compiler plugins in general are experimental and new versions of Kotlin
+before version 1.0.0. Kotlin compiler plugins in general are experimental and new versions of Kotlin
 might break something in this compiler plugin.
 
 Since the Kotlin compiler has had frequent breaking changes, different versions of Kotlin are
@@ -52,7 +52,7 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version | Extra Care version |
 | --------------- | ------------ | ------------------ |
-| 1.5.0           | 0.8.0-SNAPSHOT | N/A              |
+| 1.5.0           | 0.8.0        | N/A                |
 | 1.4.30 – 1.4.32 | 0.7.4        | 0.6.0              |
 | 1.4.20 – 1.4.21 | N/A          | 0.5.0              |
 | 1.4.0 – 1.4.10  | N/A          | 0.3.1              |

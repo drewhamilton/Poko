@@ -1,7 +1,8 @@
 # Releasing
 
-***Warning**: Don't release 0.8.0 until Jetpack Compose supports Kotlin 1.5.0, or update the
- related TODOs before releasing.*
+***Note**: Check if
+[Jetpack Compose supports Kotlin 1.5](https://android-review.googlesource.com/c/platform/frameworks/support/+/1651538)
+yet before releasing the next 0.8.x.*
 
  1. Make sure you're on the main branch.
  2. Change `publish_version` in gradle.properties to a non-SNAPSHOT version.

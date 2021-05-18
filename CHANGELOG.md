@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.0
+_2021-05-18_
+
+Support Kotlin 1.5.0. Support Java 16.
+
 ## 0.7.4
 _2021-04-28_
 
