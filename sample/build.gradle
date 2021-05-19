@@ -77,7 +77,7 @@ if (useCompose) {
         }
 
         composeOptions {
-            kotlinCompilerExtensionVersion compose_version
+            kotlinCompilerExtensionVersion libs.versions.androidx.compose.get()
         }
     }
 } else {
@@ -94,7 +94,7 @@ if (useCompose) {
 
 dependencies {
     if (useCompose) {
-        implementation("androidx.compose.runtime:runtime:$compose_version")
+        implementation(libs.androidx.compose.runtime)
     }
 
     testImplementation(libs.junit)
@@ -105,5 +105,10 @@ repositories {
     mavenCentral()
     if (useCompose) {
         google()
+
+        // AndroidX snapshot repository:
+        maven {
+            url "https://androidx.dev/snapshots/builds/${libs.versions.androidx.dev.snapshot.get()}/artifacts/repository"
+        }
     }
 }
