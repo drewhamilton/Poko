@@ -105,7 +105,10 @@ repositories {
     mavenCentral()
     if (useCompose) {
         google()
+
         // AndroidX snapshot repository:
-        maven { url "https://androidx.dev/snapshots/builds/7377145/artifacts/repository" }
+        maven {
+            url "https://androidx.dev/snapshots/builds/${libs.versions.androidx.dev.snapshot.get()}/artifacts/repository"
+        }
     }
 }
