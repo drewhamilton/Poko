@@ -106,6 +106,6 @@ repositories {
     if (useCompose) {
         google()
         // AndroidX snapshot repository:
-        maven { url 'https://androidx.dev/snapshots/builds/7341059/artifacts/repository' }
+        maven { url "https://androidx.dev/snapshots/builds/7377145/artifacts/repository" }
     }
 }
