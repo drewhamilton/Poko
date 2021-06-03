@@ -1,7 +1,6 @@
 [versions]
 
-androidx-compose = "1.0.0-SNAPSHOT"
-androidx-dev-snapshot = "7377145"
+androidx-compose = "1.0.0-beta08"
 kotlin = "1.5.10"
 
 [libraries]
