@@ -28,4 +28,4 @@ jobs:
             ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesPassword }}
           ORG_GRADLE_PROJECT_personalGpgKey: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgKey }}
           ORG_GRADLE_PROJECT_personalGpgPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgPassword }}
-        run: ./gradlew publishReleasePublicationToMavenCentralRepository
+        run: ./gradlew publishAllPublicationsToMavenCentralRepository
