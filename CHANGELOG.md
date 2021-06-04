@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.1
+_2021-06-04_
+
+Publish a Gradle plugin marker ([#54](https://github.com/drewhamilton/Poko/issues/54)). Compile with
+Kotlin 1.5.10.
+
 ## 0.8.0
 _2021-05-18_
 
