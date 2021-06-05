@@ -1,3 +1,6 @@
+// Each published module must declare ext.artifactName and ext.pomName, and then apply this file. If the published
+//  artifact is a Gradle plugin, it must also declare ext.gradlePluginDomainObjectName
+
 group = rootProject.publish_group
 version = rootProject.publish_version
 
@@ -28,17 +31,34 @@ assemble {
 
 apply plugin: 'maven-publish'
 publishing {
-    publications {
-        release(MavenPublication) {
-            groupId group
-            artifactId artifactName
-            version version
+    boolean isGradlePlugin = project.plugins.hasPlugin("java-gradle-plugin")
 
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
+    List<String> publicationNames = []
+    if (isGradlePlugin) {
+        publicationNames.add("pluginMaven")
+        publicationNames.add("${gradlePluginDomainObjectName}PluginMarkerMaven")
+    } else {
+        publicationNames.add("release")
+    }
 
-            pom {
+    publicationNames.forEach { publicationName ->
+        if (!publicationName.contains("PluginMarkerMaven")) {
+            publications.create(publicationName, MavenPublication) {
+                if (!isGradlePlugin) {
+                    groupId group
+                    artifactId artifactName
+                    version version
+
+                    from components.java
+                }
+                artifact sourcesJar
+                artifact javadocJar
+            }
+        }
+
+        // Using afterEvaluate because Plugin Marker publication is created later, by a different plugin:
+        afterEvaluate {
+            publications.findByName(publicationName).pom {
                 name = pomName
                 description = "A Kotlin compiler plugin for generating equals, hashCode, and toString for plain old Kotlin objects."
 
