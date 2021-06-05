@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [main, drew/fix-marker-pom]
+    branches: [main]
     tags: ['*']
 
 jobs:
