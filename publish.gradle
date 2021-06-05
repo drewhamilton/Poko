@@ -50,9 +50,9 @@ publishing {
                     version version
 
                     from components.java
-                    artifact sourcesJar
-                    artifact javadocJar
                 }
+                artifact sourcesJar
+                artifact javadocJar
             }
         }
 
