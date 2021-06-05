@@ -6,6 +6,8 @@ apply plugin: 'org.jetbrains.dokka'
 ext {
     artifactName = publish_gradle_plugin_artifact
     pomName = 'Poko Gradle Plugin'
+    gradlePluginDomainObjectName = "poko"
+
     basePackage = 'dev.drewhamilton.poko.gradle'
 }
 apply from: '../publish.gradle'
@@ -20,7 +22,7 @@ compileKotlin {
 
 gradlePlugin {
     plugins {
-        pokoPlugin {
+        "$gradlePluginDomainObjectName" {
             id = 'dev.drewhamilton.poko'
             implementationClass = 'dev.drewhamilton.poko.gradle.PokoGradlePlugin'
         }
