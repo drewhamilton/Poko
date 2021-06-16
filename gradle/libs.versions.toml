@@ -1,6 +1,6 @@
 [versions]
 
-androidx-compose = "1.0.0-beta08"
+androidx-compose = "1.0.0-beta09"
 kotlin = "1.5.10"
 
 [libraries]
