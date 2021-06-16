@@ -1,11 +1,11 @@
 [versions]
 
-androidx-compose = "1.0.0-beta08"
+androidx-compose = "1.0.0-beta09"
 kotlin = "1.5.10"
 
 [libraries]
 
-android-gradlePlugin = "com.android.tools.build:gradle:7.0.0-beta03"
+android-gradlePlugin = "com.android.tools.build:gradle:7.0.0-beta04"
 
 androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "androidx-compose" }
 
