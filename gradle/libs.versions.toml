@@ -1,6 +1,6 @@
 [versions]
 
-androidx-compose = "1.0.0-rc01"
+androidx-compose = "1.0.0-rc02"
 kotlin = "1.5.21"
 kotlinForCompose = "1.5.10"
 
