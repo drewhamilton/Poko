@@ -1,7 +1,8 @@
 [versions]
 
-androidx-compose = "1.0.0-rc01"
-kotlin = "1.5.10"
+androidx-compose = "1.0.0-rc02"
+kotlin = "1.5.21"
+kotlinForCompose = "1.5.10"
 
 [libraries]
 
@@ -21,8 +22,10 @@ kotlin-embeddableCompiler = { module = "org.jetbrains.kotlin:kotlin-compiler-emb
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-gradlePluginApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
 
+kotlinForCompose-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlinForCompose" }
+
 kotlinx-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = "0.5.0" }
 
-ksp-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version = "1.5.10-1.0.0-beta01" }
+ksp-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version = "1.5.21-1.0.0-beta05" }
 
 truth = { module = "com.google.truth:truth", version = "1.1.2" }
