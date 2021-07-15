@@ -2,6 +2,7 @@
 
 androidx-compose = "1.0.0-rc01"
 kotlin = "1.5.21"
+kotlinForCompose = "1.5.10"
 
 [libraries]
 
@@ -20,6 +21,8 @@ kotlin-compileTesting = { module = "com.github.tschuchortdev:kotlin-compile-test
 kotlin-embeddableCompiler = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-gradlePluginApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
+
+kotlinForCompose-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlinForCompose" }
 
 kotlinx-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = "0.5.0" }
 
