@@ -6,7 +6,7 @@ kotlinForCompose = "1.5.10"
 
 [libraries]
 
-android-gradlePlugin = "com.android.tools.build:gradle:7.0.0-beta05"
+android-gradlePlugin = "com.android.tools.build:gradle:7.0.0"
 
 androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "androidx-compose" }
 
