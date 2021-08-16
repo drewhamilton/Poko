@@ -7,10 +7,13 @@ includeBuild('../.') {
         "../local.properties",
     ]
     propertiesFiles.each {fileName ->
-        Properties properties = new Properties()
-        file(fileName).withInputStream { properties.load(it) }
-        properties.each { key, val ->
-            ext.set(key, val)
+        File file = file(fileName)
+        if (file.exists()) {
+            Properties properties = new Properties()
+            file.withInputStream { properties.load(it) }
+            properties.each { key, val ->
+                ext.set(key, val)
+            }
         }
     }
 
