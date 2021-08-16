@@ -2,11 +2,22 @@ rootProject.name = 'Poko sample'
 
 includeBuild('../.') {
     // Shared gradle.properties
-    Properties settingsProps = new Properties()
-    file("../gradle.properties").withInputStream { settingsProps.load(it) }
-    settingsProps.each { key, val ->
-        ext.set(key, val)
+    List<String> propertiesFiles = [
+        "../gradle.properties",
+        "../local.properties",
+    ]
+    propertiesFiles.each {fileName ->
+        File file = file(fileName)
+        if (file.exists()) {
+            Properties properties = new Properties()
+            file.withInputStream { properties.load(it) }
+            properties.each { key, val ->
+                ext.set(key, val)
+            }
+        }
     }
+
+    // Poko modules
     dependencySubstitution {
         substitute module("$publish_group:$publish_compiler_plugin_artifact") with project(':poko-compiler-plugin')
         substitute module("$publish_group:$publish_gradle_plugin_artifact") with project(':poko-gradle-plugin')

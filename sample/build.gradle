@@ -48,7 +48,6 @@ String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaV
 if (useCompose) {
     android {
         compileSdkVersion 30
-        buildToolsVersion '30.0.3'
 
         defaultConfig {
             minSdkVersion 21
