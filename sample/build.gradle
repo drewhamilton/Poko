@@ -21,10 +21,10 @@ buildscript {
         classpath("$publish_group:$publish_gradle_plugin_artifact")
 
         if (useCompose) {
-            classpath(libs.android.gradlePlugin)
-            classpath(libs.kotlinForCompose.gradlePlugin)
+            classpath(libs.android.gradle)
+            classpath(libs.kotlinForCompose.gradle)
         } else {
-            classpath(libs.kotlin.gradlePlugin)
+            classpath(libs.kotlin.gradle)
         }
     }
 }
