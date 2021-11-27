@@ -52,7 +52,7 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version | Extra Care version |
 | --------------- | ------------ | ------------------ |
-| 1.5.0 – 1.5.21  | 0.8.1        | N/A                |
+| 1.5.0 – 1.5.31  | 0.8.1        | N/A                |
 | 1.4.30 – 1.4.32 | 0.7.4        | 0.6.0              |
 | 1.4.20 – 1.4.21 | N/A          | 0.5.0              |
 | 1.4.0 – 1.4.10  | N/A          | 0.3.1              |
@@ -97,7 +97,7 @@ poko {
   // Skip this if you want to use the new default Poko annotation
   pokoAnnotation = "dev.drewhamilton.extracare.DataApi"
 }
-``` 
+```
 
 ## To-do
 * Generate an inner Builder class
