@@ -267,7 +267,7 @@ internal class PokoMembersTransformer(
 
     private fun IrBlockBodyBuilder.getHashCodeFunction(type: KotlinType): FunctionDescriptor =
         type.memberScope.findHashCodeFunctionOrNull()
-            ?: context.builtIns.any.unsubstitutedMemberScope.findHashCodeFunctionOrNull()!!
+            ?: context.irBuiltIns.anyClass.descriptor.unsubstitutedMemberScope.findHashCodeFunctionOrNull()!!
 
     private fun IrBlockBodyBuilder.getHashCodeFunction(
         type: KotlinType,
