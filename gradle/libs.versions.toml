@@ -1,8 +1,8 @@
 [versions]
 
-androidx-compose = "1.1.0-beta03"
+androidx-compose = "1.1.0-beta04"
 kotlin = "1.6.0"
-kotlinForCompose = "1.5.31"
+kotlinForCompose = "1.6.0"
 
 [libraries]
 
