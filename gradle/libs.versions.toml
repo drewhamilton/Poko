@@ -26,6 +26,6 @@ kotlinForCompose-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin"
 
 kotlinx-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = "0.8.0" }
 
-ksp-gradle = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version = "1.6.0-1.0.1" }
+ksp-gradle = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version = "1.6.10-1.0.2" }
 
 truth = { module = "com.google.truth:truth", version = "1.1.2" }
