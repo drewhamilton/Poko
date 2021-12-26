@@ -1,14 +1,15 @@
 [versions]
 
-androidx-compose = "1.1.0-beta04"
-kotlin = "1.6.0"
-kotlinForCompose = "1.6.0"
+androidx-compose-compiler = "1.1.0-rc02"
+androidx-compose-runtime = "1.1.0-rc01"
+kotlin = "1.6.10"
+kotlinForCompose = "1.6.10"
 
 [libraries]
 
 android-gradle = "com.android.tools.build:gradle:7.0.0"
 
-androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "androidx-compose" }
+androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "androidx-compose-runtime" }
 
 autoService-annotations = { module = "com.google.auto.service:auto-service-annotations", version = "1.0" }
 autoService-ksp = { module = "dev.zacsweers.autoservice:auto-service-ksp", version = "1.0.0" }
@@ -26,6 +27,6 @@ kotlinForCompose-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin"
 
 kotlinx-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = "0.8.0" }
 
-ksp-gradle = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version = "1.6.0-1.0.1" }
+ksp-gradle = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version = "1.6.10-1.0.2" }
 
 truth = { module = "com.google.truth:truth", version = "1.1.2" }
