@@ -1,7 +1,6 @@
 [versions]
 
-androidx-compose-compiler = "1.1.0-rc02"
-androidx-compose-runtime = "1.1.0-rc01"
+androidx-compose = "1.1.0"
 kotlin = "1.6.20-M1"
 kotlinForCompose = "1.6.10"
 
@@ -9,7 +8,7 @@ kotlinForCompose = "1.6.10"
 
 android-gradle = "com.android.tools.build:gradle:7.0.0"
 
-androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "androidx-compose-runtime" }
+androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "androidx-compose" }
 
 autoService-annotations = { module = "com.google.auto.service:auto-service-annotations", version = "1.0" }
 autoService-ksp = { module = "dev.zacsweers.autoservice:auto-service-ksp", version = "1.0.0" }
