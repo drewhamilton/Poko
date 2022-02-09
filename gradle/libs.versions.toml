@@ -2,7 +2,7 @@
 
 androidx-compose-compiler = "1.1.0-rc02"
 androidx-compose-runtime = "1.1.0-rc01"
-kotlin = "1.6.10"
+kotlin = "1.6.20-M1"
 kotlinForCompose = "1.6.10"
 
 [libraries]
@@ -27,6 +27,6 @@ kotlinForCompose-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin"
 
 kotlinx-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = "0.8.0" }
 
-ksp-gradle = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version = "1.6.10-1.0.2" }
+ksp-gradle = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version = "1.6.20-M1-1.0.2" }
 
 truth = { module = "com.google.truth:truth", version = "1.1.2" }
