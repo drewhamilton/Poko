@@ -18,7 +18,7 @@ dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "
 
 junit = { module = "junit:junit", version = "4.13.2" }
 
-kotlin-compileTesting = { module = "com.github.tschuchortdev:kotlin-compile-testing", version = "1.4.8-SNAPSHOT" }
+kotlin-compileTesting = { module = "com.github.tschuchortdev:kotlin-compile-testing", version = "1.4.8-alpha02" }
 kotlin-embeddableCompiler = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-gradleApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
