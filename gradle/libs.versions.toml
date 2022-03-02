@@ -1,14 +1,15 @@
 [versions]
 
-androidx-compose = "1.1.0"
-kotlin = "1.6.20-M1"
-kotlinForCompose = "1.6.10"
+androidx-compose-compiler = "1.2.0-dev-k1.6.20-RC-21f332eaa05"
+androidx-compose-runtime = "1.2.0-alpha04"
+kotlin = "1.6.20-RC"
+ksp = "1.6.20-RC-1.0.4"
 
 [libraries]
 
-android-gradle = "com.android.tools.build:gradle:7.1.0"
+android-gradle = "com.android.tools.build:gradle:7.1.2"
 
-androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "androidx-compose" }
+androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "androidx-compose-runtime" }
 
 autoService-annotations = { module = "com.google.auto.service:auto-service-annotations", version = "1.0" }
 autoService-ksp = { module = "dev.zacsweers.autoservice:auto-service-ksp", version = "1.0.0" }
@@ -22,10 +23,8 @@ kotlin-embeddableCompiler = { module = "org.jetbrains.kotlin:kotlin-compiler-emb
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-gradleApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
 
-kotlinForCompose-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlinForCompose" }
-
 kotlinx-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = "0.8.0" }
 
-ksp-gradle = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version = "1.6.20-M1-1.0.2" }
+ksp-gradle = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
 
 truth = { module = "com.google.truth:truth", version = "1.1.2" }

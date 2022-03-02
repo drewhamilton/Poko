@@ -14,17 +14,16 @@ buildscript {
         mavenCentral()
         if (useCompose) {
             google()
+            maven { url "https://androidx.dev/storage/compose-compiler/repository" }
         }
     }
 
     dependencies {
         classpath("$publish_group:$publish_gradle_plugin_artifact")
+        classpath(libs.kotlin.gradle)
 
         if (useCompose) {
             classpath(libs.android.gradle)
-            classpath(libs.kotlinForCompose.gradle)
-        } else {
-            classpath(libs.kotlin.gradle)
         }
     }
 }
@@ -78,7 +77,7 @@ if (useCompose) {
         }
 
         composeOptions {
-            kotlinCompilerExtensionVersion libs.versions.androidx.compose.get()
+            kotlinCompilerExtensionVersion libs.versions.androidx.compose.compiler.get()
         }
     }
 } else {
@@ -106,5 +105,6 @@ repositories {
     mavenCentral()
     if (useCompose) {
         google()
+        maven { url "https://androidx.dev/storage/compose-compiler/repository" }
     }
 }
