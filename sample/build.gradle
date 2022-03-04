@@ -14,17 +14,16 @@ buildscript {
         mavenCentral()
         if (useCompose) {
             google()
+            maven { url "https://androidx.dev/storage/compose-compiler/repository" }
         }
     }
 
     dependencies {
         classpath("$publish_group:$publish_gradle_plugin_artifact")
+        classpath(libs.kotlin.gradle)
 
         if (useCompose) {
             classpath(libs.android.gradle)
-            classpath(libs.kotlinForCompose.gradle)
-        } else {
-            classpath(libs.kotlin.gradle)
         }
     }
 }
@@ -47,11 +46,11 @@ poko {
 String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
 if (useCompose) {
     android {
-        compileSdkVersion 30
+        compileSdkVersion 31
 
         defaultConfig {
             minSdkVersion 21
-            targetSdkVersion 30
+            targetSdkVersion 31
         }
 
         compileOptions {
@@ -106,5 +105,6 @@ repositories {
     mavenCentral()
     if (useCompose) {
         google()
+        maven { url "https://androidx.dev/storage/compose-compiler/repository" }
     }
 }

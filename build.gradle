@@ -29,6 +29,10 @@ allprojects {
 
         // KSP:
         google()
+
+        // Compile testing snapshot:
+        maven { url = "https://oss.sonatype.org/content/repositories/snapshots" }
+        maven { url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
     }
 
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
