@@ -107,6 +107,9 @@ repositories {
     mavenCentral()
     if (useCompose) {
         google()
-        maven { url "https://androidx.dev/storage/compose-compiler/repository" }
+        if (android.composeOptions.kotlinCompilerExtensionVersion.contains("dev")) {
+            logger.lifecycle("Adding Compose compiler dev repository")
+            maven { url "https://androidx.dev/storage/compose-compiler/repository" }
+        }
     }
 }
