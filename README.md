@@ -50,14 +50,15 @@ might break something in this compiler plugin.
 Since the Kotlin compiler has had frequent breaking changes, different versions of Kotlin are
 exclusively compatible with specific versions of Poko.
 
-| Kotlin version  | Poko version | Extra Care version |
-| --------------- | ------------ | ------------------ |
-| 1.6.0 – 1.6.20  | 0.9.0        | -                  |
-| 1.5.0 – 1.5.31  | 0.8.1        | -                  |
-| 1.4.30 – 1.4.32 | 0.7.4        | 0.6.0              |
-| 1.4.20 – 1.4.21 | -            | 0.5.0              |
-| 1.4.0 – 1.4.10  | -            | 0.3.1              |
-| 1.3.72          | -            | 0.2.4              |
+| Kotlin version  | Poko version |
+| --------------- | ------------ |
+| 1.6.20          | 0.10.0       | 
+| 1.6.0 – 1.6.10  | 0.9.0        |
+| 1.5.0 – 1.5.31  | 0.8.1        |
+| 1.4.30 – 1.4.32 | 0.7.4        |
+| 1.4.20 – 1.4.21 | 0.5.0*       |
+| 1.4.0 – 1.4.10  | 0.3.1*       |
+| 1.3.72          | 0.2.4*       |
 
 Snapshots of the development version are available in [Sonatype's Snapshots
 repository](https://oss.sonatype.org/#view-repositories;snapshots~browsestorage).
@@ -74,31 +75,8 @@ buildscript {
 apply plugin: "dev.drewhamilton.poko"
 ```
 
-### Extra Care
-
-Prior to version 0.7.0, this library was called "Extra Care".
-
-> Using Kotlin types whose properties will change over time in public API requires extra care to
-> maintain source and binary compatibility as well as an idiomatic API for each language.
-
-— Jake Wharton,
-[Public API challenges in Kotlin](https://jakewharton.com/public-api-challenges-in-kotlin/)
-
-Updating from a previous version of Extra Care to Poko will require changes to your Gradle scripts.
-You can continue to use Extra Care's `@DataApi` annotation if desired.
-
-```groovy
-// Replace this:
-apply plugin: "dev.drewhamilton.extracare"
-
-// With this:
-apply plugin: "dev.drewhamilton.poko"
-poko {
-  // Add this if you want to use the old annotation
-  // Skip this if you want to use the new default Poko annotation
-  pokoAnnotation = "dev.drewhamilton.extracare.DataApi"
-}
-```
+\*Versions prior to 0.7.0 are available at `dev.drewhamilton.extracare:extracare-gradle-plugin` and
+use plugin name `dev.drewhamilton.extracare`.
 
 ## To-do
 * Generate an inner Builder class
