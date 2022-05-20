@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     apply from: "properties.gradle"
-    boolean isCi = true//System.getenv().get("ci_java_version") != null
+    boolean isCi = System.getenv().get("CI") == "true"
 
     String compileMode = project.property('compile_mode').toString()
     boolean useCompose = compileMode == 'jetpack-compose'

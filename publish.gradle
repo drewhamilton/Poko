@@ -106,7 +106,7 @@ publishing {
 }
 
 apply plugin: 'signing'
-boolean isCi = System.getenv().get("ci_java_version") != null
+boolean isCi = System.getenv().get("CI") == "true"
 if (!isCi) {
     ext."signing.keyId" = findProperty("personalGpgKeyId") ?: "x"
     ext."signing.password" = findProperty("personalGpgPassword") ?: "x"

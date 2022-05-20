@@ -3,7 +3,7 @@ rootProject.name = 'Poko sample'
 includeBuild('../.') {
     apply from: "properties.gradle"
 
-    boolean isCi = true// System.getenv().get("ci_java_version") != null
+    boolean isCi = System.getenv().get("CI") == "true"
     if (!isCi) {
         // Use local Poko modules for non-CI builds:
         logger.lifecycle("Replacing Poko module dependencies with local projects")
