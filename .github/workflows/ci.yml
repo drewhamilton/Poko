@@ -8,9 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        ci_use_ir: [ true, false ]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
