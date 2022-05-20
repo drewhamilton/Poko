@@ -22,7 +22,6 @@ buildscript {
 
 apply plugin: 'binary-compatibility-validator'
 
-String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
 allprojects {
     repositories {
         mavenCentral()
@@ -43,7 +42,7 @@ allprojects {
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
         project.tasks.withType(KotlinCompile.class).configureEach {
             kotlinOptions {
-                jvmTarget = resolvedJvmTarget
+                jvmTarget = JavaVersion.VERSION_1_8.toString()
                 freeCompilerArgs += ['-progressive']
             }
         }

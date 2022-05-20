@@ -573,20 +573,18 @@ class PokoCompilerPluginTest(
         @JvmStatic fun data(): Collection<Array<Any>> = listOf(arrayOf(true), arrayOf(false))
 
         private val compilerJvmTarget: JvmTarget by lazy {
-            val ciEnvVariable = System.getProperty("ci_java_version")
-            val resolvedJvmDescription = ciEnvVariable ?: getJavaRuntimeVersion()
-
+            val resolvedJvmDescription = getJavaRuntimeVersion()
             val resolvedJvmTarget = JvmTarget.fromString(resolvedJvmDescription)
             val default = JvmTarget.JVM_1_8
 
-            val message = when {
-                ciEnvVariable != null -> "$ciEnvVariable specified by CI environment variable"
-                resolvedJvmTarget != null -> "${resolvedJvmTarget.description} determined from test runtime JVM"
-                else -> "${default.description} because test runtime JVM version <${getJavaRuntimeVersion()}> was not valid"
+            val message = if (resolvedJvmTarget == null) {
+                "${default.description} because test runtime JVM version <$resolvedJvmDescription> was not valid"
+            } else {
+                "${resolvedJvmTarget.description} determined from test runtime JVM"
             }
             println("${PokoCompilerPluginTest::class.java.simpleName}: Using jvmTarget $message")
 
-            resolvedJvmTarget ?: JvmTarget.JVM_1_8
+            resolvedJvmTarget ?: default
         }
 
         private fun getJavaRuntimeVersion(): String {

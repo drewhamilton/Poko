@@ -33,3 +33,20 @@ compileTestKotlin {
         freeCompilerArgs = ["-Xinline-classes"]
     }
 }
+
+// https://jakewharton.com/build-on-latest-java-test-through-lowest-java/
+(8..15).each { javaVersion ->
+    def jdkTest = tasks.register("testJdk$javaVersion", Test) {
+        javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(javaVersion)
+        }
+
+        description = "Runs the test suite on JDK $javaVersion"
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+
+        def testTask = tasks.getByName("test")
+        classpath = testTask.classpath
+        testClassesDirs = testTask.testClassesDirs
+    }
+    tasks.named("check").configure { dependsOn(jdkTest) }
+}

@@ -15,7 +15,6 @@ apply from: '../info.gradle'
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
         freeCompilerArgs += ['-progressive']
     }
 }
