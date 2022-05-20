@@ -19,8 +19,8 @@ includeBuild('../.') {
 
     // Poko modules
     dependencySubstitution {
-        substitute module("$publish_group:$publish_compiler_plugin_artifact") with project(':poko-compiler-plugin')
-        substitute module("$publish_group:$publish_gradle_plugin_artifact") with project(':poko-gradle-plugin')
+        substitute(module("$publish_group:$publish_compiler_plugin_artifact")).using(project(':poko-compiler-plugin'))
+        substitute(module("$publish_group:$publish_gradle_plugin_artifact")).using(project(':poko-gradle-plugin'))
     }
 }
 
