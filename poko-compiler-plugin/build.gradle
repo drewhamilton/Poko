@@ -36,6 +36,11 @@ compileTestKotlin {
 
 // https://jakewharton.com/build-on-latest-java-test-through-lowest-java/
 (8..15).each { javaVersion ->
+    // GitHub Actions fails to download JDK 9 for some reason:
+    if (javaVersion == 9) {
+        return
+    }
+
     def jdkTest = tasks.register("testJdk$javaVersion", Test) {
         javaLauncher = javaToolchains.launcherFor {
             languageVersion = JavaLanguageVersion.of(javaVersion)
