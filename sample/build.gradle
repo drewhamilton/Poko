@@ -1,16 +1,21 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
-    // Shared gradle.properties
-    Properties properties = new Properties()
-    file("../gradle.properties").withInputStream { properties.load(it) }
-    properties.each { key, val ->
-        ext.set(key, val)
-    }
+    apply from: "properties.gradle"
+    boolean isCi = true//System.getenv().get("ci_java_version") != null
 
     String compileMode = project.property('compile_mode').toString()
     boolean useCompose = compileMode == 'jetpack-compose'
     repositories {
+        if (isCi) {
+            // Use artifacts from previous CI jobs, rather than re-compiling Poko:
+            logger.lifecycle("Expecting Poko dependencies to resolve from MavenLocal")
+            // FIXME: Delete
+            fileTree("../build/ci/m2").visit { FileVisitDetails details ->
+                logger.lifecycle(details.file.path)
+            }
+            maven { url "../build/ci/m2" }
+        }
         mavenCentral()
         if (useCompose) {
             google()
@@ -43,7 +48,8 @@ poko {
     enabled.set true
 }
 
-String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
+String ciJavaVersion = System.getenv().get("ci_java_version")
+String resolvedJavaVersion = ciJavaVersion ?: JavaVersion.VERSION_1_8.toString()
 if (useCompose) {
     android {
         compileSdkVersion 31
@@ -54,12 +60,12 @@ if (useCompose) {
         }
 
         compileOptions {
-            sourceCompatibility resolvedJvmTarget
-            targetCompatibility resolvedJvmTarget
+            sourceCompatibility resolvedJavaVersion
+            targetCompatibility resolvedJavaVersion
         }
 
         kotlinOptions {
-            jvmTarget = resolvedJvmTarget
+            jvmTarget = resolvedJavaVersion
             freeCompilerArgs += [
                 '-progressive',
                 "-P",
@@ -87,7 +93,7 @@ if (useCompose) {
     logger.lifecycle "$project: useIR = $useIr"
     project.tasks.withType(KotlinCompile.class).configureEach {
         kotlinOptions {
-            jvmTarget = resolvedJvmTarget
+            jvmTarget = resolvedJavaVersion
             freeCompilerArgs += ['-progressive']
             useIR = useIr
         }

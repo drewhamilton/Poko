@@ -106,9 +106,17 @@ publishing {
 }
 
 apply plugin: 'signing'
+boolean isCi = System.getenv().get("ci_java_version") != null
+if (!isCi) {
+    ext."signing.keyId" = findProperty("personalGpgKeyId") ?: "x"
+    ext."signing.password" = findProperty("personalGpgPassword") ?: "x"
+    ext."signing.secretKeyRingFile" = findProperty("personalGpgKeyringFile") ?: "x"
+}
 signing {
-    def key = findProperty('personalGpgKey')
-    def password = findProperty('personalGpgPassword')
-    useInMemoryPgpKeys(key, password)
+    if (isCi) {
+        def key = findProperty("personalGpgKey")
+        def password = findProperty("personalGpgPassword")
+        useInMemoryPgpKeys(key, password)
+    }
     sign publishing.publications
 }
