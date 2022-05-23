@@ -1,26 +1,19 @@
 rootProject.name = 'Poko sample'
 
-includeBuild('../.') {
-    // Shared gradle.properties
-    List<String> propertiesFiles = [
-        "../gradle.properties",
-        "../local.properties",
-    ]
-    propertiesFiles.each {fileName ->
-        File file = file(fileName)
-        if (file.exists()) {
-            Properties properties = new Properties()
-            file.withInputStream { properties.load(it) }
-            properties.each { key, val ->
-                ext.set(key, val)
-            }
+apply from: "properties.gradle"
+boolean isCi = System.getenv().get("CI") == "true"
+if (!isCi) {
+    // Use local Poko modules for non-CI builds:
+    includeBuild('../.') {
+        logger.lifecycle("Replacing Poko module dependencies with local projects")
+        dependencySubstitution {
+            substitute(module("$publish_group:$publish_compiler_plugin_artifact"))
+                .using(project(':poko-compiler-plugin'))
+                .because("Developers can see local changes reflected in the sample project")
+            substitute(module("$publish_group:$publish_gradle_plugin_artifact"))
+                .using(project(':poko-gradle-plugin'))
+                .because("Developers can see local changes reflected in the sample project")
         }
-    }
-
-    // Poko modules
-    dependencySubstitution {
-        substitute module("$publish_group:$publish_compiler_plugin_artifact") with project(':poko-compiler-plugin')
-        substitute module("$publish_group:$publish_gradle_plugin_artifact") with project(':poko-gradle-plugin')
     }
 }
 

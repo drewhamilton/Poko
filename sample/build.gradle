@@ -1,16 +1,19 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
-    // Shared gradle.properties
-    Properties properties = new Properties()
-    file("../gradle.properties").withInputStream { properties.load(it) }
-    properties.each { key, val ->
-        ext.set(key, val)
-    }
+    apply from: "properties.gradle"
+    boolean isCi = System.getenv().get("CI") == "true"
 
     String compileMode = project.property('compile_mode').toString()
     boolean useCompose = compileMode == 'jetpack-compose'
     repositories {
+        if (isCi) {
+            logger.lifecycle("Resolving buildscript Poko dependencies from MavenLocal")
+            exclusiveContent {
+                forRepository { mavenLocal() }
+                filter { includeGroup publish_group }
+            }
+        }
         mavenCentral()
         if (useCompose) {
             google()
@@ -19,7 +22,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("$publish_group:$publish_gradle_plugin_artifact")
+        classpath("$publish_group:$publish_gradle_plugin_artifact:$publish_version")
         classpath(libs.kotlin.gradle)
 
         if (useCompose) {
@@ -28,6 +31,7 @@ buildscript {
     }
 }
 
+boolean isCi = System.getenv().get("CI") == "true"
 String compileMode = project.property('compile_mode').toString()
 boolean useCompose = compileMode == 'jetpack-compose'
 if (useCompose) {
@@ -43,7 +47,8 @@ poko {
     enabled.set true
 }
 
-String resolvedJvmTarget = System.getenv().getOrDefault('ci_java_version', JavaVersion.VERSION_1_8.toString())
+String ciJavaVersion = System.getenv().get("ci_java_version")
+String resolvedJavaVersion = ciJavaVersion ?: JavaVersion.VERSION_1_8.toString()
 if (useCompose) {
     android {
         compileSdkVersion 31
@@ -54,12 +59,12 @@ if (useCompose) {
         }
 
         compileOptions {
-            sourceCompatibility resolvedJvmTarget
-            targetCompatibility resolvedJvmTarget
+            sourceCompatibility resolvedJavaVersion
+            targetCompatibility resolvedJavaVersion
         }
 
         kotlinOptions {
-            jvmTarget = resolvedJvmTarget
+            jvmTarget = resolvedJavaVersion
             freeCompilerArgs += [
                 '-progressive',
                 "-P",
@@ -87,7 +92,7 @@ if (useCompose) {
     logger.lifecycle "$project: useIR = $useIr"
     project.tasks.withType(KotlinCompile.class).configureEach {
         kotlinOptions {
-            jvmTarget = resolvedJvmTarget
+            jvmTarget = resolvedJavaVersion
             freeCompilerArgs += ['-progressive']
             useIR = useIr
         }
@@ -104,6 +109,13 @@ dependencies {
 }
 
 repositories {
+    if (isCi) {
+        logger.lifecycle("Resolving Poko dependencies from MavenLocal")
+        exclusiveContent {
+            forRepository { mavenLocal() }
+            filter { includeGroup publish_group }
+        }
+    }
     mavenCentral()
     if (useCompose) {
         google()
