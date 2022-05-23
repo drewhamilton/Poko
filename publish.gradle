@@ -114,6 +114,7 @@ if (!isCi) {
 }
 signing {
     if (isCi) {
+        logger.lifecycle("Signing on CI")
         def key = findProperty("personalGpgKey")
         def password = findProperty("personalGpgPassword")
         useInMemoryPgpKeys(key, password)
