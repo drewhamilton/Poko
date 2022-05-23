@@ -1,11 +1,10 @@
 rootProject.name = 'Poko sample'
 
-includeBuild('../.') {
-    apply from: "properties.gradle"
-
-    boolean isCi = System.getenv().get("CI") == "true"
-    if (!isCi) {
-        // Use local Poko modules for non-CI builds:
+apply from: "properties.gradle"
+boolean isCi = System.getenv().get("CI") == "true"
+if (!isCi) {
+    // Use local Poko modules for non-CI builds:
+    includeBuild('../.') {
         logger.lifecycle("Replacing Poko module dependencies with local projects")
         dependencySubstitution {
             substitute(module("$publish_group:$publish_compiler_plugin_artifact"))

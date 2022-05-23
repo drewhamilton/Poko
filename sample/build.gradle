@@ -8,13 +8,11 @@ buildscript {
     boolean useCompose = compileMode == 'jetpack-compose'
     repositories {
         if (isCi) {
-            // Use artifacts from previous CI jobs, rather than re-compiling Poko:
-            logger.lifecycle("Expecting Poko dependencies to resolve from MavenLocal")
-            // FIXME: Delete
-            fileTree("../build/ci/m2/repository").visit { FileVisitDetails details ->
-                logger.lifecycle(details.file.path)
+            logger.lifecycle("Resolving Poko dependencies from MavenLocal")
+            exclusiveContent {
+                forRepository { mavenLocal() }
+                filter { includeGroup publish_group }
             }
-            maven { url "../build/ci/m2/repository" }
         }
         mavenCentral()
         if (useCompose) {
@@ -24,7 +22,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("$publish_group:$publish_gradle_plugin_artifact")
+        classpath("$publish_group:$publish_gradle_plugin_artifact:$publish_version")
         classpath(libs.kotlin.gradle)
 
         if (useCompose) {
@@ -118,4 +116,18 @@ repositories {
             maven { url "https://androidx.dev/storage/compose-compiler/repository" }
         }
     }
+}
+
+boolean isCi = true//System.getenv().get("CI") == "true"
+if (isCi) {
+    project.configurations.each { configuration ->
+        configuration.allDependencies.each { dependency ->
+            if (dependency.name.contains("poko")) {
+                logger.lifecycle("Poko! $configuration / $dependency")
+            }
+        }
+    }
+//    Configuration compilerPluginConfiguration =
+//        project.configurations.getByName("kotlinCompilerPluginClasspathRelease")
+//    logger.lifecycle("$compilerPluginConfiguration.allDependencies")
 }
