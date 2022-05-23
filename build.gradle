@@ -40,9 +40,14 @@ allprojects {
     }
 
     pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+        JavaVersion javaVersion = JavaVersion.VERSION_1_8
+        project.tasks.withType(JavaCompile.class).configureEach {
+            sourceCompatibility = javaVersion
+            targetCompatibility = javaVersion
+        }
         project.tasks.withType(KotlinCompile.class).configureEach {
             kotlinOptions {
-                jvmTarget = JavaVersion.VERSION_1_8.toString()
+                jvmTarget = javaVersion.toString()
                 freeCompilerArgs += ['-progressive']
             }
         }

@@ -117,17 +117,3 @@ repositories {
         }
     }
 }
-
-boolean isCi = true//System.getenv().get("CI") == "true"
-if (isCi) {
-    project.configurations.each { configuration ->
-        configuration.allDependencies.each { dependency ->
-            if (dependency.name.contains("poko")) {
-                logger.lifecycle("Poko! $configuration / $dependency")
-            }
-        }
-    }
-//    Configuration compilerPluginConfiguration =
-//        project.configurations.getByName("kotlinCompilerPluginClasspathRelease")
-//    logger.lifecycle("$compilerPluginConfiguration.allDependencies")
-}
