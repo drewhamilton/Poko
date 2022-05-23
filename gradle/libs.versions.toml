@@ -3,8 +3,8 @@
 # https://androidx.dev/storage/compose-compiler/repository for versions matching new Kotlin versions:
 androidx-compose-compiler = "1.2.0-beta02"
 androidx-compose-runtime = "1.2.0-beta02"
-kotlin = "1.6.21"
-ksp = "1.6.21-1.0.5"
+kotlin = "1.7.0-RC"
+ksp = "1.7.0-RC-1.0.5"
 
 [libraries]
 
