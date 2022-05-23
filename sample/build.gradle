@@ -11,10 +11,10 @@ buildscript {
             // Use artifacts from previous CI jobs, rather than re-compiling Poko:
             logger.lifecycle("Expecting Poko dependencies to resolve from MavenLocal")
             // FIXME: Delete
-            fileTree("../build/ci/m2").visit { FileVisitDetails details ->
+            fileTree("../build/ci/m2/repository").visit { FileVisitDetails details ->
                 logger.lifecycle(details.file.path)
             }
-            maven { url "../build/ci/m2" }
+            maven { url "../build/ci/m2/repository" }
         }
         mavenCentral()
         if (useCompose) {

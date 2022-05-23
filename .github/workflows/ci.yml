@@ -27,7 +27,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: MavenLocal
-          path: ~/.m2/dev/drewhamilton/poko/
+          path: ~/.m2/repository/dev/drewhamilton/poko/
           if-no-files-found: error
 
   build-sample:
@@ -52,7 +52,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: MavenLocal
-          path: ./build/ci/m2/dev/drewhamilton/poko/
+          path: ./build/ci/m2/repository/dev/drewhamilton/poko/
       - name: Build sample
         run: cd sample && ./gradlew build --stacktrace -Pcompile_mode=${{ matrix.ci_compile_mode }}
 
