@@ -36,17 +36,18 @@ jobs:
     strategy:
       matrix:
         ci_compile_mode: [ use-ir-true, jetpack-compose ]
-        ci_java_version: [ 1.8, 11, 12, 13, 14, 15, 16 ]
+        ci_java_version: [ 8, 11, 12, 13, 14, 15, 16 ]
         # Compose requires Java 11:
         exclude:
           - ci_compile_mode: jetpack-compose
-            ci_java_version: 1.8
+            ci_java_version: 8
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Install JDK ${{ matrix.ci_java_version }}
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
+          distribution: zulu
           java-version: ${{ matrix.ci_java_version }}
       - name: Download MavenLocal
         uses: actions/download-artifact@v3
