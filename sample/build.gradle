@@ -17,7 +17,6 @@ buildscript {
         mavenCentral()
         if (useCompose) {
             google()
-            maven { url "https://androidx.dev/storage/compose-compiler/repository" }
         }
     }
 
@@ -88,13 +87,10 @@ if (useCompose) {
         }
     }
 } else {
-    boolean useIr = compileMode == 'use-ir-true'
-    logger.lifecycle "$project: useIR = $useIr"
     project.tasks.withType(KotlinCompile.class).configureEach {
         kotlinOptions {
             jvmTarget = resolvedJavaVersion
             freeCompilerArgs += ['-progressive']
-            useIR = useIr
         }
     }
 }

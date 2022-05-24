@@ -41,7 +41,10 @@ import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
+import org.jetbrains.kotlin.ir.declarations.isMultiFieldValueClass
+import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
 import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.expressions.addArgument
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
@@ -101,9 +104,9 @@ internal class PokoMembersTransformer(
             reportError("Poko does not support data classes")
             false
         }
-        isInline -> {
-            log("Inline class")
-            reportError("Poko does not support inline classes")
+        isSingleFieldValueClass || isMultiFieldValueClass -> {
+            log("Value class")
+            reportError("Poko does not support value classes")
             false
         }
         isInner -> {
@@ -164,7 +167,7 @@ internal class PokoMembersTransformer(
         val irType = irClass.defaultType
         fun irOther(): IrExpression = IrGetValueImpl(irFunction.valueParameters[0])
 
-        if (!irClass.isInline) {
+        if (!irClass.isSingleFieldValueClass) {
             +irIfThenReturnTrue(irEqeqeq(receiver(irFunction), irOther()))
         }
         +irIfThenReturnFalse(irNotIs(irOther(), irType))

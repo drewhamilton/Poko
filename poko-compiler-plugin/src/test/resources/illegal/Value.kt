@@ -3,6 +3,6 @@ package illegal
 import dev.drewhamilton.poko.Poko
 
 @Suppress("unused")
-@Poko inline class Inline(
+@Poko @JvmInline value class Value(
     val id: String
 )

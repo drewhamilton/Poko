@@ -42,13 +42,13 @@ class PokoCompilerPluginTest(
     }
     //endregion
 
-    //region inline class
-    @Test fun `compilation of inline class fails`() {
+    //region value class
+    @Test fun `compilation of value class fails`() {
         testCompilation(
-            "illegal/Inline",
+            "illegal/Value",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            assertThat(result.messages).contains("Poko does not support inline classes")
+            assertThat(result.messages).contains("Poko does not support value classes")
         }
     }
     //endregion
