@@ -87,13 +87,10 @@ if (useCompose) {
         }
     }
 } else {
-    boolean useIr = compileMode == 'use-ir-true'
-    logger.lifecycle "$project: useIR = $useIr"
     project.tasks.withType(KotlinCompile.class).configureEach {
         kotlinOptions {
             jvmTarget = resolvedJavaVersion
             freeCompilerArgs += ['-progressive']
-            useIR = useIr
         }
     }
 }
