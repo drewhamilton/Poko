@@ -4,6 +4,7 @@
 androidx-compose-compiler = "1.2.0-dev-k1.7.0-RC-18edd6c819e"
 androidx-compose-runtime = "1.2.0-beta02"
 kotlin = "1.7.0-RC"
+kotlinCompileTesting = "1.4.9-SNAPSHOT"
 ksp = "1.7.0-RC-1.0.5"
 
 [libraries]
@@ -19,7 +20,7 @@ dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "
 
 junit = { module = "junit:junit", version = "4.13.2" }
 
-kotlin-compileTesting = { module = "com.github.tschuchortdev:kotlin-compile-testing", version = "1.4.8" }
+kotlin-compileTesting = { module = "com.github.tschuchortdev:kotlin-compile-testing", version.ref = "kotlinCompileTesting" }
 kotlin-embeddableCompiler = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-gradleApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
