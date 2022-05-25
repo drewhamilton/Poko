@@ -1,10 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'dev.drewhamilton.poko'
+apply plugin: "org.jetbrains.kotlin.jvm"
+apply plugin: "dev.drewhamilton.poko"
 
 poko {
-    pokoAnnotation.set 'dev.drewhamilton.poko.sample.Poko'
+    pokoAnnotation.set "dev.drewhamilton.poko.sample.jvm.Poko"
     enabled.set true
 }
 
@@ -14,15 +14,11 @@ String resolvedJavaVersion = ciJavaVersion ?: JavaVersion.VERSION_1_8.toString()
 project.tasks.withType(KotlinCompile.class).configureEach {
     kotlinOptions {
         jvmTarget = resolvedJavaVersion
-        freeCompilerArgs += ['-progressive']
+        freeCompilerArgs += ["-progressive"]
     }
 }
 
 dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.truth)
-}
-
-repositories {
-    mavenCentral()
 }

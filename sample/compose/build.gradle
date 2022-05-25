@@ -3,7 +3,7 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "dev.drewhamilton.poko"
 
 poko {
-    pokoAnnotation.set 'dev.drewhamilton.poko.sample.Poko'
+    pokoAnnotation.set "dev.drewhamilton.poko.sample.compose.Poko"
     enabled.set true
 }
 
@@ -25,7 +25,7 @@ android {
     kotlinOptions {
         jvmTarget = resolvedJavaVersion
         freeCompilerArgs += [
-            '-progressive',
+            "-progressive",
             "-P",
             "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true",
         ]
