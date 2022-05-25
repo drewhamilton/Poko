@@ -1,11 +1,7 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 buildscript {
     apply from: "properties.gradle"
     boolean isCi = System.getenv().get("CI") == "true"
 
-    String compileMode = project.property('compile_mode').toString()
-    boolean useCompose = compileMode == 'jetpack-compose'
     repositories {
         if (isCi) {
             logger.lifecycle("Resolving buildscript Poko dependencies from MavenLocal")
@@ -15,109 +11,27 @@ buildscript {
             }
         }
         mavenCentral()
-        if (useCompose) {
-            google()
-        }
+        google()
     }
 
     dependencies {
         classpath("$publish_group:$publish_gradle_plugin_artifact:$publish_version")
         classpath(libs.kotlin.gradle)
-
-        if (useCompose) {
-            classpath(libs.android.gradle)
-        }
+        classpath(libs.android.gradle)
     }
 }
 
 boolean isCi = System.getenv().get("CI") == "true"
-String compileMode = project.property('compile_mode').toString()
-boolean useCompose = compileMode == 'jetpack-compose'
-if (useCompose) {
-    apply plugin: 'com.android.library'
-    apply plugin: 'org.jetbrains.kotlin.android'
-} else {
-    apply plugin: 'org.jetbrains.kotlin.jvm'
-}
-apply plugin: 'dev.drewhamilton.poko'
 
-poko {
-    pokoAnnotation.set 'dev.drewhamilton.poko.sample.Poko'
-    enabled.set true
-}
-
-String ciJavaVersion = System.getenv().get("ci_java_version")
-String resolvedJavaVersion = ciJavaVersion ?: JavaVersion.VERSION_1_8.toString()
-if (useCompose) {
-    android {
-        compileSdkVersion 31
-
-        defaultConfig {
-            minSdkVersion 21
-            targetSdkVersion 31
+allprojects {
+    repositories {
+        if (isCi) {
+            logger.lifecycle("Resolving Poko dependencies from MavenLocal")
+            exclusiveContent {
+                forRepository { mavenLocal() }
+                filter { includeGroup publish_group }
+            }
         }
-
-        compileOptions {
-            sourceCompatibility resolvedJavaVersion
-            targetCompatibility resolvedJavaVersion
-        }
-
-        kotlinOptions {
-            jvmTarget = resolvedJavaVersion
-            freeCompilerArgs += [
-                '-progressive',
-                "-P",
-                "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true",
-            ]
-        }
-
-        buildFeatures {
-            compose true
-
-            // Disable unused AGP features
-            buildConfig false
-            aidl false
-            renderScript false
-            resValues false
-            shaders false
-        }
-
-        composeOptions {
-            kotlinCompilerExtensionVersion libs.versions.androidx.compose.compiler.get()
-        }
-    }
-} else {
-    project.tasks.withType(KotlinCompile.class).configureEach {
-        kotlinOptions {
-            jvmTarget = resolvedJavaVersion
-            freeCompilerArgs += ['-progressive']
-        }
-    }
-}
-
-dependencies {
-    if (useCompose) {
-        implementation(libs.androidx.compose.runtime)
-    }
-
-    testImplementation(libs.junit)
-    testImplementation(libs.truth)
-}
-
-repositories {
-    if (isCi) {
-        logger.lifecycle("Resolving Poko dependencies from MavenLocal")
-        exclusiveContent {
-            forRepository { mavenLocal() }
-            filter { includeGroup publish_group }
-        }
-    }
-    mavenCentral()
-    if (useCompose) {
-        google()
-        if (android.composeOptions.kotlinCompilerExtensionVersion.contains("dev")) {
-            logger.lifecycle("Adding Compose compiler dev repository")
-            maven { url "https://androidx.dev/storage/compose-compiler/repository" }
-        }
+        mavenCentral()
     }
 }
