@@ -2,7 +2,7 @@ buildscript {
     apply from: "properties.gradle"
     ext.isCi = System.getenv().get("CI") == "true"
     ext.ciJavaVersion = System.getenv().get("ci_java_version")
-    ext.resolvedJavaVersion = ciJavaVersion ?: JavaVersion.VERSION_1_8.toString()
+    ext.resolvedJavaVersion = JavaVersion.toVersion(ciJavaVersion) ?: JavaVersion.VERSION_1_8
     logger.lifecycle("Targeting Java version $resolvedJavaVersion")
 
     repositories {
@@ -30,10 +30,10 @@ buildscript {
     }
 }
 
-allprojects {
+allprojects { project ->
     repositories {
         if (isCi) {
-            logger.lifecycle("Resolving Poko dependencies from MavenLocal")
+            logger.lifecycle("Resolving $project Poko dependencies from MavenLocal")
             exclusiveContent {
                 forRepository { mavenLocal() }
                 filter { includeGroup publish_group }
