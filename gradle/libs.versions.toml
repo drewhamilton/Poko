@@ -16,7 +16,7 @@ androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", versio
 autoService-annotations = { module = "com.google.auto.service:auto-service-annotations", version = "1.0" }
 autoService-ksp = { module = "dev.zacsweers.autoservice:auto-service-ksp", version = "1.0.0" }
 
-dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.4.32" }
+dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.6.21" }
 
 junit = { module = "junit:junit", version = "4.13.2" }
 
