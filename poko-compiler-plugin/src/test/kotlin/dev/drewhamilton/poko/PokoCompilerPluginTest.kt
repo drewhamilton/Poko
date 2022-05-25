@@ -4,23 +4,17 @@ import com.google.common.truth.Truth.assertThat
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.PluginOption
 import com.tschuchort.compiletesting.SourceFile
+import java.io.File
+import java.math.BigDecimal
 import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JvmTarget
-import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
-import java.io.File
-import java.math.BigDecimal
 
-@RunWith(Parameterized::class)
-class PokoCompilerPluginTest(
-    private val useIr: Boolean
-) {
+class PokoCompilerPluginTest {
 
     @JvmField
     @Rule var temporaryFolder: TemporaryFolder = TemporaryFolder()
@@ -452,7 +446,6 @@ class PokoCompilerPluginTest(
 
     //region Unknown annotation name
     @Test fun `unknown annotation name produces expected error message`() {
-        assumeTrue("Invalid data API annotation class name does not cause failure for non-IR compiler", useIr)
         testCompilation(
             "api/Simple",
             pokoAnnotationName = "nonexistent.ClassName",
@@ -549,7 +542,7 @@ class PokoCompilerPluginTest(
         sources = sourceFiles.asList()
         verbose = false
         jvmTarget = compilerJvmTarget.description
-        useIR = useIr
+        useIR = true
 
         val commandLineProcessor = PokoCommandLineProcessor()
         commandLineProcessors = listOf(commandLineProcessor)
@@ -569,8 +562,6 @@ class PokoCompilerPluginTest(
     //endregion
 
     companion object {
-        @Parameterized.Parameters(name = "useIr={0}")
-        @JvmStatic fun data(): Collection<Array<Any>> = listOf(arrayOf(true), arrayOf(false))
 
         private val compilerJvmTarget: JvmTarget by lazy {
             val resolvedJvmDescription = getJavaRuntimeVersion()
