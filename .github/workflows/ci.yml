@@ -51,6 +51,8 @@ jobs:
           path: ~/.m2/repository/dev/drewhamilton/poko/
       - name: Build sample
         run: cd sample && ./gradlew build --stacktrace
+        env:
+          ci_java_version: ${{ ci_java_version }}
 
 env:
   GRADLE_OPTS: >-
