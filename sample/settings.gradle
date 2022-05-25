@@ -1,12 +1,10 @@
-import javax.annotation.Nullable
-
 rootProject.name = 'Poko sample'
 
 include ":jvm"
 
 // Compose requires Java 11; skip it on CI tests for lower JDKs
-@Nullable Integer ciJavaVersion = System.getenv().get("ci_java_version")
-if (ciJavaVersion == null || ciJavaVersion >= 11) {
+String ciJavaVersion = System.getenv().get("ci_java_version")
+if (ciJavaVersion == null || Integer.valueOf(ciJavaVersion) >= 11) {
     include ":compose"
 }
 
