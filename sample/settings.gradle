@@ -1,6 +1,14 @@
+import javax.annotation.Nullable
+
 rootProject.name = 'Poko sample'
 
-include ":compose", ":jvm"
+include ":jvm"
+
+// Compose requires Java 11; skip it on CI tests for lower JDKs
+@Nullable Integer ciJavaVersion = System.getenv().get("ci_java_version")
+if (ciJavaVersion == null || ciJavaVersion >= 11) {
+    include ":compose"
+}
 
 apply from: "properties.gradle"
 boolean isCi = System.getenv().get("CI") == "true"
