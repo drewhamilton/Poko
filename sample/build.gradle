@@ -3,6 +3,7 @@ buildscript {
     ext.isCi = System.getenv().get("CI") == "true"
     ext.ciJavaVersion = System.getenv().get("ci_java_version")
     ext.resolvedJavaVersion = ciJavaVersion ?: JavaVersion.VERSION_1_8.toString()
+    logger.lifecycle("Targeting Java version $ciJavaVersion")
 
     repositories {
         if (isCi) {
