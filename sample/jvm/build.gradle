@@ -10,7 +10,7 @@ poko {
 
 project.tasks.withType(KotlinCompile.class).configureEach {
     kotlinOptions {
-        jvmTarget = resolvedJavaVersion
+        jvmTarget = kotlinJvmTarget
         freeCompilerArgs += ["-progressive"]
     }
 }
