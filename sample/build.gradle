@@ -1,6 +1,7 @@
 buildscript {
     apply from: "properties.gradle"
-    boolean isCi = System.getenv().get("CI") == "true"
+    ext.isCi = System.getenv().get("CI") == "true"
+    ext.resolvedJavaVersion = System.getenv().get("ci_java_version") ?: JavaVersion.VERSION_1_8.toString()
 
     repositories {
         if (isCi) {
@@ -20,8 +21,6 @@ buildscript {
         classpath(libs.android.gradle)
     }
 }
-
-boolean isCi = System.getenv().get("CI") == "true"
 
 allprojects {
     repositories {

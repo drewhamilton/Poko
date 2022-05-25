@@ -7,8 +7,6 @@ poko {
     enabled.set true
 }
 
-String ciJavaVersion = System.getenv().get("ci_java_version")
-String resolvedJavaVersion = ciJavaVersion ?: JavaVersion.VERSION_1_8.toString()
 android {
     compileSdkVersion 31
 
