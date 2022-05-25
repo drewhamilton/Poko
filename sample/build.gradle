@@ -1,7 +1,8 @@
 buildscript {
     apply from: "properties.gradle"
     ext.isCi = System.getenv().get("CI") == "true"
-    ext.resolvedJavaVersion = System.getenv().get("ci_java_version") ?: JavaVersion.VERSION_1_8.toString()
+    ext.ciJavaVersion = System.getenv().get("ci_java_version") as Integer
+    ext.resolvedJavaVersion = (ciJavaVersion ?: JavaVersion.VERSION_1_8).toString()
 
     repositories {
         if (isCi) {
@@ -18,7 +19,11 @@ buildscript {
     dependencies {
         classpath("$publish_group:$publish_gradle_plugin_artifact:$publish_version")
         classpath(libs.kotlin.gradle)
-        classpath(libs.android.gradle)
+
+        // AGP requires Java 11; skip Android stuff on tests for lower JDKs
+        if (ciJavaVersion == null || ciJavaVersion >= 11) {
+            classpath(libs.android.gradle)
+        }
     }
 }
 
