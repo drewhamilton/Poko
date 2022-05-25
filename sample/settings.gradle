@@ -6,6 +6,8 @@ include ":jvm"
 String ciJavaVersion = System.getenv().get("ci_java_version")
 if (ciJavaVersion == null || Integer.valueOf(ciJavaVersion) >= 11) {
     include ":compose"
+} else {
+    logger.lifecycle("Testing on JDK $ciJavaVersion; skipping :compose module")
 }
 
 apply from: "properties.gradle"
