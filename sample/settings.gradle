@@ -1,5 +1,15 @@
 rootProject.name = 'Poko sample'
 
+include ":jvm"
+
+// Compose requires Java 11; skip it on CI tests for lower JDKs
+String ciJavaVersion = System.getenv().get("ci_java_version")
+if (ciJavaVersion == null || Integer.valueOf(ciJavaVersion) >= 11) {
+    include ":compose"
+} else {
+    logger.lifecycle("Testing on JDK $ciJavaVersion; skipping :compose module")
+}
+
 apply from: "properties.gradle"
 boolean isCi = System.getenv().get("CI") == "true"
 if (!isCi) {

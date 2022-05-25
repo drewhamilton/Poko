@@ -1,4 +1,4 @@
-package dev.drewhamilton.poko.sample
+package dev.drewhamilton.poko.sample.compose
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test

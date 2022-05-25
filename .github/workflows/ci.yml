@@ -35,12 +35,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        ci_compile_mode: [ use-ir-true, jetpack-compose ]
-        ci_java_version: [ 8, 11, 12, 13, 14, 15, 16 ]
-        # Compose requires Java 11:
-        exclude:
-          - ci_compile_mode: jetpack-compose
-            ci_java_version: 8
+        ci_java_version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16 ]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -55,7 +50,9 @@ jobs:
           name: MavenLocal
           path: ~/.m2/repository/dev/drewhamilton/poko/
       - name: Build sample
-        run: cd sample && ./gradlew build --stacktrace -Pcompile_mode=${{ matrix.ci_compile_mode }}
+        run: cd sample && ./gradlew build --stacktrace
+        env:
+          ci_java_version: ${{ matrix.ci_java_version }}
 
 env:
   GRADLE_OPTS: >-

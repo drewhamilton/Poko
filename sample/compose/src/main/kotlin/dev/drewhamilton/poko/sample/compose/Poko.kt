@@ -1,4 +1,4 @@
-package dev.drewhamilton.poko.sample
+package dev.drewhamilton.poko.sample.compose
 
 /**
  * Annotation used for Poko compiler plugin, which generates [equals], [hashCode], and [toString] for the annotated
