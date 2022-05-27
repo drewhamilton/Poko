@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: zulu
-          java-version: 16
+          java-version: 18
       - name: Build
         run: ./gradlew clean build publishToMavenLocal --stacktrace
         env:
@@ -35,7 +35,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        ci_java_version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16 ]
+        ci_java_version: [ 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 ]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2

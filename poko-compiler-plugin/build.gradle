@@ -35,7 +35,7 @@ compileTestKotlin {
 }
 
 // https://jakewharton.com/build-on-latest-java-test-through-lowest-java/
-(8..15).each { javaVersion ->
+(8..17).each { javaVersion ->
     def jdkTest = tasks.register("testJdk$javaVersion", Test) {
         javaLauncher = javaToolchains.launcherFor {
             languageVersion = JavaLanguageVersion.of(javaVersion)
