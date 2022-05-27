@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 group publish_group
 version publish_version
 
@@ -22,7 +20,7 @@ buildscript {
 
 apply plugin: 'binary-compatibility-validator'
 
-allprojects {
+allprojects { project ->
     repositories {
         mavenCentral()
 
@@ -30,11 +28,11 @@ allprojects {
         google()
 
         if (rootProject.snapshot_dependencies_enabled == "true") {
-            logger.lifecycle("Adding snapshots repository")
+            logger.lifecycle("Adding snapshots repository for $project")
             maven { url = "https://oss.sonatype.org/content/repositories/snapshots" }
         }
         if (rootProject.kotlin_dev_version_enabled == "true") {
-            logger.lifecycle("Adding Kotlin dev repository")
+            logger.lifecycle("Adding Kotlin dev repository for $project")
             maven { url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
         }
     }
@@ -45,7 +43,7 @@ allprojects {
             sourceCompatibility = javaVersion
             targetCompatibility = javaVersion
         }
-        project.tasks.withType(KotlinCompile.class).configureEach {
+        project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
             kotlinOptions {
                 jvmTarget = javaVersion.toString()
                 freeCompilerArgs += ['-progressive']

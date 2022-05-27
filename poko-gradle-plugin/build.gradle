@@ -38,3 +38,8 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.truth)
 }
+
+//noinspection UnnecessaryQualifiedReference
+dependsOnCopyInfoTemplate(org.jetbrains.dokka.gradle.DokkaTask)
+dependsOnCopyInfoTemplate(Jar)
+dependsOnCopyInfoTemplate(com.google.devtools.ksp.gradle.KspTask)

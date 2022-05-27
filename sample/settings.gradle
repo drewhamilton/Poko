@@ -27,7 +27,6 @@ if (!isCi) {
     }
 }
 
-enableFeaturePreview('VERSION_CATALOGS')
 dependencyResolutionManagement {
     versionCatalogs {
         libs {

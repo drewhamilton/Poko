@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 apply plugin: "org.jetbrains.kotlin.jvm"
 apply plugin: "dev.drewhamilton.poko"
 
@@ -8,7 +6,7 @@ poko {
     enabled.set true
 }
 
-project.tasks.withType(KotlinCompile.class).configureEach {
+project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
         jvmTarget = kotlinJvmTarget
         freeCompilerArgs += ["-progressive"]

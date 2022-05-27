@@ -24,7 +24,7 @@ dependencies {
 
 compileKotlin {
     kotlinOptions {
-        freeCompilerArgs += ['-Xopt-in=kotlin.RequiresOptIn']
+        freeCompilerArgs += ['-opt-in=kotlin.RequiresOptIn']
     }
 }
 
@@ -50,3 +50,8 @@ compileTestKotlin {
     }
     tasks.named("check").configure { dependsOn(jdkTest) }
 }
+
+//noinspection UnnecessaryQualifiedReference
+dependsOnCopyInfoTemplate(org.jetbrains.dokka.gradle.DokkaTask)
+dependsOnCopyInfoTemplate(Jar)
+dependsOnCopyInfoTemplate(com.google.devtools.ksp.gradle.KspTask)
