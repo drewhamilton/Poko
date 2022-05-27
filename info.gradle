@@ -22,3 +22,7 @@ sourceSets {
 compileKotlin {
     dependsOn copyInfoTemplateProvider
 }
+
+ext.dependsOnCopyInfoTemplate = { taskType ->
+    project.tasks.withType(taskType) { it.dependsOn("copyInfoTemplate") }
+}
