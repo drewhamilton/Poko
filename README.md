@@ -6,8 +6,6 @@ APIs easy. Like with normal Kotlin data classes, all you have to do is provide p
 class's primary constructor. Then give it the `@Poko` annotation and enjoy the generated `toString`,
 `equals`, and `hashCode`.
 
-Poko supports both IR and non-IR compilation.
-
 ## Use
 Mark your class as a `@Poko class` instead of a `data class`:
 ```kotlin
@@ -47,12 +45,13 @@ Poko is available on Maven Central. It is experimental, and the API may undergo 
 before version 1.0.0. Kotlin compiler plugins in general are experimental and new versions of Kotlin
 might break something in this compiler plugin.
 
-Since the Kotlin compiler has had frequent breaking changes, different versions of Kotlin are
+Since the Kotlin compiler has frequent breaking changes, different versions of Kotlin are
 exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version |
 | --------------- | ------------ |
-| 1.6.20          | 0.10.0       | 
+| 1.7.0           | 0.11.0       |
+| 1.6.20 – 1.6.21 | 0.10.0       | 
 | 1.6.0 – 1.6.10  | 0.9.0        |
 | 1.5.0 – 1.5.31  | 0.8.1        |
 | 1.4.30 – 1.4.32 | 0.7.4        |

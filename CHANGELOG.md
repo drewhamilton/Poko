@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.0
+_2022-06-13_
+
+Support Kotlin 1.7.0. Support Java 18.
+
+Drop support for non-IR compilation (which does not exist in Kotlin 1.7.0).
+
 ## 0.10.0
 _2022-04-15_
 
