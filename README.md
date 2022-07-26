@@ -50,7 +50,7 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version |
 | --------------- | ------------ |
-| 1.7.0           | 0.11.0       |
+| 1.7.0 – 1.7.10  | 0.11.0       |
 | 1.6.20 – 1.6.21 | 0.10.0       | 
 | 1.6.0 – 1.6.10  | 0.9.0        |
 | 1.5.0 – 1.5.31  | 0.8.1        |
