@@ -1,6 +1,7 @@
 package dev.drewhamilton.poko.ir
 
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
+import org.jetbrains.kotlin.backend.common.extensions.FirIncompatiblePluginAPI
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
@@ -67,6 +68,7 @@ import org.jetbrains.kotlin.types.isNullable
 import org.jetbrains.kotlin.types.typeUtil.representativeUpperBound
 
 @OptIn(ObsoleteDescriptorBasedAPI::class)
+@FirIncompatiblePluginAPI // TODO: Support FIR
 internal class PokoMembersTransformer(
     private val annotationClass: IrClassSymbol,
     private val pluginContext: IrPluginContext,
