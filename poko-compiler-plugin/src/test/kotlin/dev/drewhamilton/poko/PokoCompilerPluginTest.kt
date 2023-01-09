@@ -541,7 +541,7 @@ class PokoCompilerPluginTest {
         pokoAnnotationName: String,
     ) = KotlinCompilation().apply {
         workingDir = temporaryFolder.root
-        compilerPlugins = listOf<ComponentRegistrar>(PokoComponentRegistrar())
+        componentRegistrars = listOf<ComponentRegistrar>(PokoComponentRegistrar())
         inheritClassPath = true
         sources = sourceFiles.asList()
         verbose = false
