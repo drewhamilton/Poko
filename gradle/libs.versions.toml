@@ -3,9 +3,10 @@
 # https://androidx.dev/storage/compose-compiler/repository for versions matching new Kotlin versions:
 androidx-compose-compiler = "1.3.2"
 androidx-compose-runtime = "1.2.1"
-kotlin = "1.7.20"
+kotlin = "1.8.0"
 kotlinCompileTesting = "1.4.9"
-ksp = "1.7.20-1.0.6"
+kotlinCompileTestingFork = "0.2.0"
+ksp = "1.8.0-1.0.8"
 
 [libraries]
 
@@ -21,6 +22,8 @@ dokka-gradle = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "
 junit = { module = "junit:junit", version = "4.13.2" }
 
 kotlin-compileTesting = { module = "com.github.tschuchortdev:kotlin-compile-testing", version.ref = "kotlinCompileTesting" }
+kotlin-compileTestingFork = { module = "dev.zacsweers.kctfork:core", version.ref = "kotlinCompileTestingFork" }
+
 kotlin-embeddableCompiler = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-gradleApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }

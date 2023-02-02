@@ -6,14 +6,17 @@ import com.tschuchort.compiletesting.PluginOption
 import com.tschuchort.compiletesting.SourceFile
 import java.io.File
 import java.math.BigDecimal
+import org.jetbrains.kotlin.backend.common.extensions.FirIncompatiblePluginAPI
 import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
+@OptIn(ExperimentalCompilerApi::class)
 class PokoCompilerPluginTest {
 
     @JvmField
@@ -532,12 +535,13 @@ class PokoCompilerPluginTest {
         additionalTesting(result)
     }
 
+    @OptIn(FirIncompatiblePluginAPI::class)
     private fun prepareCompilation(
         vararg sourceFiles: SourceFile,
         pokoAnnotationName: String,
     ) = KotlinCompilation().apply {
         workingDir = temporaryFolder.root
-        compilerPlugins = listOf<ComponentRegistrar>(PokoComponentRegistrar())
+        componentRegistrars = listOf<ComponentRegistrar>(PokoComponentRegistrar())
         inheritClassPath = true
         sources = sourceFiles.asList()
         verbose = false
