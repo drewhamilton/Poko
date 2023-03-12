@@ -6,19 +6,20 @@ import org.jetbrains.kotlin.backend.common.extensions.FirIncompatiblePluginAPI
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
-import org.jetbrains.kotlin.com.intellij.mock.MockProject
-import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
+import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.name.ClassId
 
-// TODO: implement K2 support and switch to CompilerPluginRegistrar
-@AutoService(ComponentRegistrar::class)
-@FirIncompatiblePluginAPI
 @ExperimentalCompilerApi
-class PokoComponentRegistrar : ComponentRegistrar {
+@FirIncompatiblePluginAPI // TODO: Support FIR
+@AutoService(CompilerPluginRegistrar::class)
+class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
-    override fun registerProjectComponents(project: MockProject, configuration: CompilerConfiguration) {
+    // TODO: Support K2
+    override val supportsK2: Boolean = false
+
+    override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
         if (configuration[CompilerOptions.ENABLED] != true)
             return
 
@@ -28,7 +29,6 @@ class PokoComponentRegistrar : ComponentRegistrar {
         val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
 
         IrGenerationExtension.registerExtension(
-            project,
             PokoIrGenerationExtension(pokoAnnotationName, messageCollector)
         )
     }
