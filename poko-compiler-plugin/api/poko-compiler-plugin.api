@@ -5,8 +5,9 @@ public final class dev/drewhamilton/poko/PokoCommandLineProcessor : org/jetbrain
 	public fun processOption (Lorg/jetbrains/kotlin/compiler/plugin/AbstractCliOption;Ljava/lang/String;Lorg/jetbrains/kotlin/config/CompilerConfiguration;)V
 }
 
-public final class dev/drewhamilton/poko/PokoComponentRegistrar : org/jetbrains/kotlin/compiler/plugin/ComponentRegistrar {
+public final class dev/drewhamilton/poko/PokoCompilerPluginRegistrar : org/jetbrains/kotlin/compiler/plugin/CompilerPluginRegistrar {
 	public fun <init> ()V
-	public fun registerProjectComponents (Lorg/jetbrains/kotlin/com/intellij/mock/MockProject;Lorg/jetbrains/kotlin/config/CompilerConfiguration;)V
+	public fun getSupportsK2 ()Z
+	public fun registerExtensions (Lorg/jetbrains/kotlin/compiler/plugin/CompilerPluginRegistrar$ExtensionStorage;Lorg/jetbrains/kotlin/config/CompilerConfiguration;)V
 }
 
