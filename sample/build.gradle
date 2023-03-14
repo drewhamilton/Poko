@@ -2,7 +2,7 @@ buildscript {
     apply from: "properties.gradle"
     ext.isCi = System.getenv().get("CI") == "true"
     ext.ciJavaVersion = System.getenv().get("ci_java_version")
-    ext.resolvedJavaVersion = ciJavaVersion ?: JavaVersion.VERSION_1_8.toString()
+    ext.resolvedJavaVersion = ciJavaVersion ?: JavaVersion.VERSION_11.toString()
     logger.lifecycle("Targeting Java version $resolvedJavaVersion")
     ext.kotlinJvmTarget = resolvedJavaVersion == "8" ? "1.8" : resolvedJavaVersion
 
