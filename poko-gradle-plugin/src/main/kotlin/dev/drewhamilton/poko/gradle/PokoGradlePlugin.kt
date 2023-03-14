@@ -43,7 +43,7 @@ class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
         return project.provider {
             listOf(
                 SubpluginOption(key = "enabled", value = extension.enabled.get().toString()),
-                SubpluginOption(key = "pokoAnnotation", value = extension.pokoAnnotation.get().toString()),
+                SubpluginOption(key = "pokoAnnotation", value = extension.pokoAnnotation.get()),
             )
         }
     }

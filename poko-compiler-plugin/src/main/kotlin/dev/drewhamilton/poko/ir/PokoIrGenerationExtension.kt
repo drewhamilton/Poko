@@ -17,13 +17,12 @@ internal class PokoIrGenerationExtension(
 ) : IrGenerationExtension {
 
     override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
-        val pokoAnnotationClass = pluginContext.referenceClass(pokoAnnotationName)
-        if (pokoAnnotationClass == null) {
+        if (pluginContext.referenceClass(pokoAnnotationName) == null) {
             moduleFragment.reportError("Could not find class <$pokoAnnotationName>")
             return
         }
 
-        val pokoMembersTransformer = PokoMembersTransformer(pokoAnnotationClass, pluginContext, messageCollector)
+        val pokoMembersTransformer = PokoMembersTransformer(pokoAnnotationName, pluginContext, messageCollector)
         moduleFragment.transform(pokoMembersTransformer, null)
     }
 

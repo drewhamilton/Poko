@@ -47,7 +47,6 @@ import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.addArgument
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
-import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
@@ -58,6 +57,7 @@ import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isFakeOverride
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
+import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
@@ -70,7 +70,7 @@ import org.jetbrains.kotlin.types.typeUtil.representativeUpperBound
 @OptIn(ObsoleteDescriptorBasedAPI::class)
 @FirIncompatiblePluginAPI // TODO: Support FIR
 internal class PokoMembersTransformer(
-    private val annotationClass: IrClassSymbol,
+    private val pokoAnnotationName: FqName,
     private val pluginContext: IrPluginContext,
     private val messageCollector: MessageCollector,
 ) : IrElementTransformerVoidWithContext() {
@@ -97,7 +97,7 @@ internal class PokoMembersTransformer(
     }
 
     private fun IrClass.isPokoClass(): Boolean = when {
-        !hasAnnotation(annotationClass) -> {
+        !hasAnnotation(pokoAnnotationName) -> {
             log("Not Poko class")
             false
         }
