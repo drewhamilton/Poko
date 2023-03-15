@@ -23,7 +23,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = kotlinJvmTarget
+        jvmTarget = kotlinJvmTarget.toString().replace("JVM_", "").replace("_", ".")
         freeCompilerArgs += [
             "-progressive",
             "-P",

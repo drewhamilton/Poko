@@ -41,9 +41,13 @@ if (!isCi) {
     includeBuild("../.") {
         logger.lifecycle("Replacing Poko module dependencies with local projects")
         @Suppress("LocalVariableName") val publish_group: String by extra
+        @Suppress("LocalVariableName") val publish_annotations_artifact: String by extra
         @Suppress("LocalVariableName") val publish_compiler_plugin_artifact: String by extra
         @Suppress("LocalVariableName") val publish_gradle_plugin_artifact: String by extra
         dependencySubstitution {
+            substitute(module("$publish_group:$publish_annotations_artifact"))
+                .using(project(":poko-annotations"))
+                .because("Developers can see local changes reflected in the sample project")
             substitute(module("$publish_group:$publish_compiler_plugin_artifact"))
                 .using(project(":poko-compiler-plugin"))
                 .because("Developers can see local changes reflected in the sample project")

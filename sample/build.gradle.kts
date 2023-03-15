@@ -1,15 +1,9 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 buildscript {
     apply(from = "properties.gradle")
 
     extra["ciJavaVersion"] = System.getenv()["ci_java_version"]
-    val ciJavaVersion: String? by extra
-
-    extra["resolvedJavaVersion"] = ciJavaVersion ?: JavaVersion.VERSION_11.toString()
-    val resolvedJavaVersion: String by extra
-    logger.lifecycle("Targeting Java version $resolvedJavaVersion")
-
-    extra["kotlinJvmTarget"] = if (resolvedJavaVersion == "8") "1.8" else resolvedJavaVersion
-
     extra["isCi"] = System.getenv()["CI"] == "true"
     val isCi: Boolean by extra
     @Suppress("LocalVariableName") val publish_group: String by extra
@@ -30,6 +24,16 @@ buildscript {
     dependencies {
         classpath("$publish_group:$publish_gradle_plugin_artifact:$publish_version")
     }
+}
+
+private val ciJavaVersion: String? by extra
+extra["resolvedJavaVersion"] = ciJavaVersion ?: JavaVersion.VERSION_11.toString()
+private val resolvedJavaVersion: String by extra
+logger.lifecycle("Targeting Java version $resolvedJavaVersion")
+
+extra["kotlinJvmTarget"] = when (resolvedJavaVersion) {
+    "8" -> JvmTarget.JVM_1_8
+    else -> JvmTarget.valueOf("JVM_$resolvedJavaVersion")
 }
 
 val isCi: Boolean by extra
