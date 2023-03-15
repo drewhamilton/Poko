@@ -1,7 +1,0 @@
-apply plugin: 'org.jetbrains.kotlin.jvm'
-
-ext {
-  artifactName = publish_annotations_artifact
-  pomName = 'Poko Annotations'
-}
-apply from: "../publish.gradle"
