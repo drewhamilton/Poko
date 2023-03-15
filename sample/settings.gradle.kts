@@ -1,6 +1,5 @@
 pluginManagement {
     val isCi = System.getenv()["CI"] == "true"
-    extra["isCi"] = isCi
 
     apply(from = "properties.gradle")
     if (!isCi) {
@@ -29,14 +28,13 @@ include(":jvm")
 
 // Compose requires Java 11; skip it on CI tests for lower JDKs
 private val ciJavaVersion = System.getenv()["ci_java_version"]
-extra["ciJavaVersion"] = ciJavaVersion
 if (ciJavaVersion == null || Integer.valueOf(ciJavaVersion) >= 11) {
     include(":compose")
 } else {
     logger.lifecycle("Testing on JDK $ciJavaVersion; skipping :compose module")
 }
 
-private val isCi: Boolean by extra
+private val isCi = System.getenv()["CI"] == "true"
 if (!isCi) {
     // Use local Poko modules for non-CI builds:
     includeBuild("../.") {

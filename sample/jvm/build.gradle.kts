@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove in Gradle 8.1
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -9,20 +7,6 @@ plugins {
 poko {
     pokoAnnotation.set("dev/drewhamilton/poko/sample/jvm/Poko")
     enabled.set(true)
-}
-
-java {
-    val resolvedJavaVersion: JavaVersion by rootProject.extra
-    sourceCompatibility = resolvedJavaVersion
-    targetCompatibility = resolvedJavaVersion
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    compilerOptions {
-        val kotlinJvmTarget: JvmTarget by rootProject.extra
-        jvmTarget.set(kotlinJvmTarget)
-        freeCompilerArgs.add("-progressive")
-    }
 }
 
 dependencies {
