@@ -20,11 +20,13 @@ buildscript {
 
     dependencies {
         classpath("$publish_group:$publish_gradle_plugin_artifact:$publish_version")
-        classpath(libs.kotlin.gradle)
+        // TODO: Use libs reference
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0")
 
         // AGP requires Java 11; skip Android stuff on tests for lower JDKs
         if (ciJavaVersion == null || Integer.valueOf(ciJavaVersion) >= 11) {
-            classpath(libs.android.gradle)
+            // TODO: Use libs reference
+            classpath("com.android.tools.build:gradle:7.2.2")
         } else {
             logger.lifecycle("Testing on JDK $ciJavaVersion; skipping AGP")
         }

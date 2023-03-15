@@ -1,3 +1,14 @@
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+pluginManagement {
+    repositories {
+        mavenCentral()
+
+        // KSP:
+        google()
+    }
+}
+
 rootProject.name = "Poko"
 
 include(

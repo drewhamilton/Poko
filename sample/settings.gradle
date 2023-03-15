@@ -1,4 +1,4 @@
-rootProject.name = 'Poko sample'
+rootProject.name = "sample"
 
 include ":jvm"
 

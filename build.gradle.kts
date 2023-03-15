@@ -4,21 +4,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = rootProject.property("publish_group")!!
 version = rootProject.property("publish_version")!!
 
-buildscript {
-    repositories {
-        mavenCentral()
-
-        // KSP:
-        google()
-    }
-
-    dependencies {
-        classpath(libs.kotlin.gradle)
-        classpath(libs.dokka.gradle)
-        classpath(libs.kotlinx.binaryCompatibilityValidator)
-
-        classpath(libs.ksp.gradle)
-    }
+@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove in Gradle 8.1
+plugins {
+    alias(libs.plugins.kotlin) apply false
+    alias(libs.plugins.dokka) apply false
+    alias(libs.plugins.kotlinx.binaryCompatibilityValidator) apply false
+    alias(libs.plugins.ksp) apply false
 }
 
 apply(plugin = "binary-compatibility-validator")
