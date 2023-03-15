@@ -27,13 +27,18 @@ buildscript {
 }
 
 private val ciJavaVersion: String? by extra
-extra["resolvedJavaVersion"] = ciJavaVersion ?: JavaVersion.VERSION_11.toString()
-private val resolvedJavaVersion: String by extra
+extra["resolvedJavaVersion"] = when (ciJavaVersion) {
+    null -> JavaVersion.VERSION_11
+    "8", "9", "10" -> JavaVersion.valueOf("VERSION_1_$ciJavaVersion")
+    else -> JavaVersion.valueOf("VERSION_$ciJavaVersion")
+}
+
+private val resolvedJavaVersion: JavaVersion by extra
 logger.lifecycle("Targeting Java version $resolvedJavaVersion")
 
 extra["kotlinJvmTarget"] = when (resolvedJavaVersion) {
-    "8" -> JvmTarget.JVM_1_8
-    else -> JvmTarget.valueOf("JVM_$resolvedJavaVersion")
+    JavaVersion.VERSION_1_8 -> JvmTarget.JVM_1_8
+    else -> JvmTarget.valueOf("JVM_${resolvedJavaVersion.majorVersion}")
 }
 
 val isCi: Boolean by extra

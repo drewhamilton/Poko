@@ -11,6 +11,12 @@ poko {
     enabled.set(true)
 }
 
+java {
+    val resolvedJavaVersion: JavaVersion by rootProject.extra
+    sourceCompatibility = resolvedJavaVersion
+    targetCompatibility = resolvedJavaVersion
+}
+
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
         val kotlinJvmTarget: JvmTarget by rootProject.extra
