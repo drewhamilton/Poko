@@ -29,8 +29,8 @@ allprojects {
             exclusiveContent {
                 forRepository { mavenLocal() }
                 filter {
-                    @Suppress("LocalVariableName") val publish_group: String by extra
-                    includeGroup(publish_group)
+                    val publishGroup: String by extra
+                    includeGroup(publishGroup)
                 }
             }
         }

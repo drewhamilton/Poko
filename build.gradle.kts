@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-group = rootProject.property("publish_group")!!
-version = rootProject.property("publish_version")!!
+group = rootProject.property("publishGroup")!!
+version = rootProject.property("publishVersion")!!
 
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove in Gradle 8.1
 plugins {

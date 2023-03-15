@@ -1,8 +1,8 @@
 // Each published module must declare ext.artifactName and ext.pomName, and then apply this file. If the published
 //  artifact is a Gradle plugin, it must also declare ext.gradlePluginDomainObjectName
 
-group = rootProject.publish_group
-version = rootProject.publish_version
+group = rootProject.publishGroup
+version = rootProject.publishVersion
 
 task sourcesJar(type: Jar) {
     archiveClassifier.set 'sources'

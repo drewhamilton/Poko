@@ -4,7 +4,7 @@ plugins {
 }
 
 extra.apply {
-  set("artifactName", project.property("publish_annotations_artifact")!!)
+  set("artifactName", project.property("publishAnnotationsArtifact")!!)
   set("pomName", "Poko Annotations")
 }
 apply(from = "../publish.gradle")

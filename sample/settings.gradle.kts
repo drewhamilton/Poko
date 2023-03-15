@@ -12,8 +12,8 @@ pluginManagement {
             exclusiveContent {
                 forRepository { mavenLocal() }
                 filter {
-                    @Suppress("LocalVariableName") val publish_group: String by extra
-                    includeGroup(publish_group)
+                    val publishGroup: String by extra
+                    includeGroup(publishGroup)
                 }
             }
         }
@@ -39,18 +39,18 @@ if (!isCi) {
     // Use local Poko modules for non-CI builds:
     includeBuild("../.") {
         logger.lifecycle("Replacing Poko module dependencies with local projects")
-        @Suppress("LocalVariableName") val publish_group: String by extra
-        @Suppress("LocalVariableName") val publish_annotations_artifact: String by extra
-        @Suppress("LocalVariableName") val publish_compiler_plugin_artifact: String by extra
-        @Suppress("LocalVariableName") val publish_gradle_plugin_artifact: String by extra
+        val publishGroup: String by extra
+        val publishAnnotationsArtifact: String by extra
+        val publishCompilerPluginArtifact: String by extra
+        val publishGradlePluginArtifact: String by extra
         dependencySubstitution {
-            substitute(module("$publish_group:$publish_annotations_artifact"))
+            substitute(module("$publishGroup:$publishAnnotationsArtifact"))
                 .using(project(":poko-annotations"))
                 .because("Developers can see local changes reflected in the sample project")
-            substitute(module("$publish_group:$publish_compiler_plugin_artifact"))
+            substitute(module("$publishGroup:$publishCompilerPluginArtifact"))
                 .using(project(":poko-compiler-plugin"))
                 .because("Developers can see local changes reflected in the sample project")
-            substitute(module("$publish_group:$publish_gradle_plugin_artifact"))
+            substitute(module("$publishGroup:$publishGradlePluginArtifact"))
                 .using(project(":poko-gradle-plugin"))
                 .because("Developers can see local changes reflected in the sample project")
         }

@@ -12,7 +12,7 @@ plugins {
 }
 
 extra.apply {
-    set("artifactName", project.property("publish_gradle_plugin_artifact"))
+    set("artifactName", project.property("publishGradlePluginArtifact")!!)
     set("pomName", "Poko Gradle Plugin")
     set("gradlePluginDomainObjectName", "poko")
 

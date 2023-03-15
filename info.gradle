@@ -8,9 +8,9 @@ TaskProvider copyInfoTemplateProvider = tasks.register("copyInfoTemplate", Copy)
         'basePackage': basePackage,
         'publishGroup': "${project.group}",
         'publishVersion': "${project.version}",
-        'annotationsArtifact': "${project.publish_annotations_artifact}",
-        'compilerPluginArtifact': "${project.publish_compiler_plugin_artifact}",
-        'gradlePluginArtifact': "${project.publish_gradle_plugin_artifact}"
+        'annotationsArtifact': "${project.publishAnnotationsArtifact}",
+        'compilerPluginArtifact': "${project.publishCompilerPluginArtifact}",
+        'gradlePluginArtifact': "${project.publishGradlePluginArtifact}"
     )
     filteringCharset = 'UTF-8'
 }

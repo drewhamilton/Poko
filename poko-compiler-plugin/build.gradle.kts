@@ -10,7 +10,7 @@ plugins {
 }
 
 extra.apply {
-    set("artifactName", project.property("publish_compiler_plugin_artifact")!!)
+    set("artifactName", project.property("publishCompilerPluginArtifact")!!)
     set("pomName", "Poko Compiler Plugin")
     set("basePackage", "dev.drewhamilton.poko")
 }
