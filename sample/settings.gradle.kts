@@ -1,17 +1,43 @@
+pluginManagement {
+    val isCi = System.getenv()["CI"] == "true"
+    extra["isCi"] = isCi
+
+    val ciJavaVersion = System.getenv()["ci_java_version"]
+    extra["ciJavaVersion"] = ciJavaVersion
+
+    val resolvedJavaVersion = ciJavaVersion ?: JavaVersion.VERSION_11.toString()
+    logger.lifecycle("Targeting Java version $resolvedJavaVersion")
+    extra["kotlinJvmTarget"] = if (resolvedJavaVersion == "8") "1.8" else resolvedJavaVersion
+
+    apply(from = "properties.gradle")
+    @Suppress("LocalVariableName") val publish_group: String by extra
+
+    repositories {
+        if (isCi) {
+            logger.lifecycle("Resolving buildscript Poko dependencies from MavenLocal")
+            exclusiveContent {
+                forRepository { mavenLocal() }
+                filter { includeGroup(publish_group) }
+            }
+        }
+        mavenCentral()
+        google()
+    }
+}
+
 rootProject.name = "sample"
 
 include(":jvm")
 
 // Compose requires Java 11; skip it on CI tests for lower JDKs
-val ciJavaVersion = System.getenv()["ci_java_version"]
+val ciJavaVersion: String? by extra
 if (ciJavaVersion == null || Integer.valueOf(ciJavaVersion) >= 11) {
     include(":compose")
 } else {
     logger.lifecycle("Testing on JDK $ciJavaVersion; skipping :compose module")
 }
 
-apply(from = "properties.gradle")
-val isCi = System.getenv()["CI"] == "true"
+val isCi: Boolean by extra
 if (!isCi) {
     // Use local Poko modules for non-CI builds:
     includeBuild("../.") {
