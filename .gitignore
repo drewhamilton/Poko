@@ -18,6 +18,7 @@
 .idea/**/jarRepositories.xml
 .idea/.name
 .idea/**/compiler.xml
+.idea/misc.xml
 
 # Generated files
 .idea/**/contentModel.xml
