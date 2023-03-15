@@ -2,10 +2,10 @@ pluginManagement {
     val isCi = System.getenv()["CI"] == "true"
     extra["isCi"] = isCi
 
-    val ciJavaVersion = System.getenv()["ci_java_version"]
-    extra["ciJavaVersion"] = ciJavaVersion
-
     apply(from = "properties.gradle")
+    if (!isCi) {
+        includeBuild("../.")
+    }
 
     repositories {
         if (isCi) {
@@ -28,14 +28,15 @@ rootProject.name = "sample"
 include(":jvm")
 
 // Compose requires Java 11; skip it on CI tests for lower JDKs
-val ciJavaVersion: String? by extra
+private val ciJavaVersion = System.getenv()["ci_java_version"]
+extra["ciJavaVersion"] = ciJavaVersion
 if (ciJavaVersion == null || Integer.valueOf(ciJavaVersion) >= 11) {
     include(":compose")
 } else {
     logger.lifecycle("Testing on JDK $ciJavaVersion; skipping :compose module")
 }
 
-val isCi: Boolean by extra
+private val isCi: Boolean by extra
 if (!isCi) {
     // Use local Poko modules for non-CI builds:
     includeBuild("../.") {
@@ -59,7 +60,6 @@ if (!isCi) {
 }
 
 dependencyResolutionManagement {
-    @Suppress("UnstableApiUsage") // TODO: Remove in Gradle 8.0
     versionCatalogs {
         create("libs") {
             from(files("../gradle/libs.versions.toml"))

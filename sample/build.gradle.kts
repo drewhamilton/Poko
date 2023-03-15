@@ -1,39 +1,15 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-buildscript {
-    apply(from = "properties.gradle")
-
-    extra["ciJavaVersion"] = System.getenv()["ci_java_version"]
-    extra["isCi"] = System.getenv()["CI"] == "true"
-    val isCi: Boolean by extra
-    @Suppress("LocalVariableName") val publish_group: String by extra
-    @Suppress("LocalVariableName") val publish_gradle_plugin_artifact: String by extra
-    @Suppress("LocalVariableName") val publish_version: String by extra
-    repositories {
-        if (isCi) {
-            logger.lifecycle("Resolving buildscript Poko dependencies from MavenLocal")
-            exclusiveContent {
-                forRepository { mavenLocal() }
-                filter { includeGroup(publish_group) }
-            }
-        }
-        mavenCentral()
-    }
-
-    // FIXME: Apply in plugins block
-    dependencies {
-        classpath("$publish_group:$publish_gradle_plugin_artifact:$publish_version")
-    }
+plugins {
+    id("dev.drewhamilton.poko") apply false
 }
 
-private val ciJavaVersion: String? by extra
-extra["resolvedJavaVersion"] = when (ciJavaVersion) {
+private val resolvedJavaVersion = when (val ciJavaVersion = System.getenv()["ci_java_version"]) {
     null -> JavaVersion.VERSION_11
     "8", "9", "10" -> JavaVersion.valueOf("VERSION_1_$ciJavaVersion")
     else -> JavaVersion.valueOf("VERSION_$ciJavaVersion")
 }
-
-private val resolvedJavaVersion: JavaVersion by extra
+extra["resolvedJavaVersion"] = resolvedJavaVersion
 logger.lifecycle("Targeting Java version $resolvedJavaVersion")
 
 extra["kotlinJvmTarget"] = when (resolvedJavaVersion) {
@@ -41,10 +17,9 @@ extra["kotlinJvmTarget"] = when (resolvedJavaVersion) {
     else -> JvmTarget.valueOf("JVM_${resolvedJavaVersion.majorVersion}")
 }
 
-val isCi: Boolean by extra
 allprojects {
     repositories {
-        if (isCi) {
+        if (System.getenv()["CI"] == "true") {
             logger.lifecycle("Resolving ${this@allprojects} Poko dependencies from MavenLocal")
             exclusiveContent {
                 forRepository { mavenLocal() }
