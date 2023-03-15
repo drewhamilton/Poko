@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.com.intellij.mock.MockProject
 import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
-import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.ClassId
 
 // TODO: implement K2 support and switch to CompilerPluginRegistrar
 @AutoService(ComponentRegistrar::class)
@@ -22,7 +22,9 @@ class PokoComponentRegistrar : ComponentRegistrar {
         if (configuration[CompilerOptions.ENABLED] != true)
             return
 
-        val pokoAnnotationName = FqName(checkNotNull(configuration[CompilerOptions.POKO_ANNOTATION]))
+        val pokoAnnotationString = checkNotNull(configuration[CompilerOptions.POKO_ANNOTATION])
+        val pokoAnnotationClassId = ClassId.fromString(pokoAnnotationString)
+        val pokoAnnotationName = pokoAnnotationClassId.asSingleFqName()
         val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
 
         IrGenerationExtension.registerExtension(

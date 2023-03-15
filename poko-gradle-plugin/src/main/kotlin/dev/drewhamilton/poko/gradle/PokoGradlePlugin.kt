@@ -34,7 +34,6 @@ class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
         val annotationDependency = when (extension.pokoAnnotation.get()) {
             DEFAULT_POKO_ANNOTATION -> ArtifactInfo.annotationsDependency
-            LEGACY_DATA_API_ANNOTATION -> "dev.drewhamilton.extracare:data-api-annotations:0.6.0"
             else -> null
         }
         if (annotationDependency != null) {
@@ -44,7 +43,7 @@ class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
         return project.provider {
             listOf(
                 SubpluginOption(key = "enabled", value = extension.enabled.get().toString()),
-                SubpluginOption(key = "pokoAnnotation", value = extension.pokoAnnotation.get().toString()),
+                SubpluginOption(key = "pokoAnnotation", value = extension.pokoAnnotation.get()),
             )
         }
     }
