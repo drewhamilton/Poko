@@ -5,19 +5,17 @@ pluginManagement {
     val ciJavaVersion = System.getenv()["ci_java_version"]
     extra["ciJavaVersion"] = ciJavaVersion
 
-    val resolvedJavaVersion = ciJavaVersion ?: JavaVersion.VERSION_11.toString()
-    logger.lifecycle("Targeting Java version $resolvedJavaVersion")
-    extra["kotlinJvmTarget"] = if (resolvedJavaVersion == "8") "1.8" else resolvedJavaVersion
-
     apply(from = "properties.gradle")
-    @Suppress("LocalVariableName") val publish_group: String by extra
 
     repositories {
         if (isCi) {
             logger.lifecycle("Resolving buildscript Poko dependencies from MavenLocal")
             exclusiveContent {
                 forRepository { mavenLocal() }
-                filter { includeGroup(publish_group) }
+                filter {
+                    @Suppress("LocalVariableName") val publish_group: String by extra
+                    includeGroup(publish_group)
+                }
             }
         }
         mavenCentral()

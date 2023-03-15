@@ -6,8 +6,8 @@ version = rootProject.property("publish_version")!!
 
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove in Gradle 8.1
 plugins {
-    alias(libs.plugins.kotlin) apply false
     alias(libs.plugins.dokka) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator) apply false
     alias(libs.plugins.ksp) apply false
 }

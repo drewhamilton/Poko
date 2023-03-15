@@ -1,4 +1,6 @@
-apply plugin: "org.jetbrains.kotlin.jvm"
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+}
 apply plugin: "dev.drewhamilton.poko"
 
 poko {
