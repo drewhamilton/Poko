@@ -34,6 +34,15 @@ pluginManagement {
         mavenCentral()
         google()
     }
+
+    resolutionStrategy {
+        val publishVersion: String by extra
+        eachPlugin {
+            if (requested.id.id == "dev.drewhamilton.poko") {
+                useVersion(publishVersion)
+            }
+        }
+    }
 }
 
 rootProject.name = "Sample"
