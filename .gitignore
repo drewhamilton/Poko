@@ -97,7 +97,7 @@ fabric.properties
 ### Gradle ###
 .gradle
 build/
-!src/**/build/
+!**/src/**/build/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -113,8 +113,5 @@ gradle-app.setting
 
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
-
-### Gradle Patch ###
-**/build/
 
 # End of https://www.gitignore.io/api/gradle,intellij

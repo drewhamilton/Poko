@@ -1,5 +1,5 @@
 import com.google.devtools.ksp.gradle.KspTask
-import groovy.lang.Closure
+import dev.drewhamilton.poko.build.generateArtifactInfo
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -12,10 +12,13 @@ plugins {
 extra.apply {
     set("artifactName", project.property("publishCompilerPluginArtifact")!!)
     set("pomName", "Poko Compiler Plugin")
-    set("basePackage", "dev.drewhamilton.poko")
 }
 apply(from = "../publish.gradle")
-apply(from = "../info.gradle")
+
+generateArtifactInfo<KotlinCompile>(
+    basePackage = "dev.drewhamilton.poko",
+    DokkaTask::class, Jar::class, KspTask::class,
+)
 
 dependencies {
     compileOnly(libs.kotlin.embeddableCompiler)
@@ -61,8 +64,3 @@ for (javaVersion in 8..17) {
     }
     tasks.named("check").configure { dependsOn(jdkTest) }
 }
-
-val dependsOnCopyInfoTemplate: (Closure<*>) by extra
-dependsOnCopyInfoTemplate(DokkaTask::class.java)
-dependsOnCopyInfoTemplate(Jar::class.java)
-dependsOnCopyInfoTemplate(KspTask::class.java)

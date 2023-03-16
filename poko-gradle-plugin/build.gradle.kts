@@ -1,5 +1,5 @@
 import com.google.devtools.ksp.gradle.KspTask
-import groovy.lang.Closure
+import dev.drewhamilton.poko.build.generateArtifactInfo
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -15,11 +15,13 @@ extra.apply {
     set("artifactName", project.property("publishGradlePluginArtifact")!!)
     set("pomName", "Poko Gradle Plugin")
     set("gradlePluginDomainObjectName", "poko")
-
-    set("basePackage", "dev.drewhamilton.poko.gradle")
 }
 apply(from = "../publish.gradle")
-apply(from = "../info.gradle")
+
+generateArtifactInfo<KotlinCompile>(
+    basePackage = "dev.drewhamilton.poko.gradle",
+    DokkaTask::class, Jar::class, KspTask::class,
+)
 
 tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {
@@ -47,8 +49,3 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.truth)
 }
-
-val dependsOnCopyInfoTemplate: (Closure<*>) by extra
-dependsOnCopyInfoTemplate(DokkaTask::class.java)
-dependsOnCopyInfoTemplate(Jar::class.java)
-dependsOnCopyInfoTemplate(KspTask::class.java)
