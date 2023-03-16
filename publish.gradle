@@ -4,7 +4,7 @@
 group = rootProject.publishGroup
 version = rootProject.publishVersion
 
-task sourcesJar(type: Jar) {
+tasks.register("sourcesJar", Jar) {
     archiveClassifier.set 'sources'
     from sourceSets.main.allSource
 }
@@ -14,7 +14,8 @@ dokkaJavadoc {
     inputs.dir 'src/main/kotlin'
 }
 
-task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+tasks.register("javadocJar", Jar) {
+    dependsOn dokkaJavadoc
     archiveClassifier.set 'javadoc'
     from dokkaJavadoc.outputDirectory
 }
