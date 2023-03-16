@@ -6,11 +6,14 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.SourceSetContainer
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 /**
- * Generates an `ArtifactInfo` class in [basePackage] in the Project that applies this.
+ * Generates an `ArtifactInfo` class with information about the Poko artifacts in [basePackage] in the calling Project.
+ * Tasks of type [KotlinCompilationTask] will depend on the generation task's provider, and each of [dependentTasks]
+ * will depend on the generation task directly.
  */
-inline fun <reified KotlinCompile : Task> Project.generateArtifactInfo(
+fun Project.generateArtifactInfo(
     basePackage: String,
     vararg dependentTasks: KClass<out Task>,
 ) {
@@ -26,7 +29,7 @@ inline fun <reified KotlinCompile : Task> Project.generateArtifactInfo(
         getByName("main").java.srcDir("$buildDir/$genDir")
     }
 
-    tasks.withType(KotlinCompile::class.java).configureEach {
+    tasks.withType(KotlinCompilationTask::class.java).configureEach {
         dependsOn(generateArtifactInfoProvider)
     }
 

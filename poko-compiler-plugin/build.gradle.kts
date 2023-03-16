@@ -15,7 +15,7 @@ extra.apply {
 }
 apply(from = "../publish.gradle")
 
-generateArtifactInfo<KotlinCompile>(
+generateArtifactInfo(
     basePackage = "dev.drewhamilton.poko",
     DokkaTask::class, Jar::class, KspTask::class,
 )
