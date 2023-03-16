@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     id("dev.drewhamilton.poko") apply false
 }
+apply(from = "properties.gradle")
 
 val resolvedJavaVersion = when (val ciJavaVersion = System.getenv()["ci_java_version"]) {
     null -> JavaVersion.VERSION_11
@@ -29,8 +30,7 @@ allprojects {
             exclusiveContent {
                 forRepository { mavenLocal() }
                 filter {
-                    val publishGroup: String by extra
-                    includeGroup(publishGroup)
+                    includeGroup(property("publishGroup") as String)
                 }
             }
         }
