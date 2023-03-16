@@ -32,7 +32,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = "Sample"
+rootProject.name = "PokoSample"
 
 include(":jvm")
 
