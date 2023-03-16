@@ -36,7 +36,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = "sample"
+rootProject.name = "Sample"
 
 include(":jvm")
 
