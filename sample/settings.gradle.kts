@@ -1,7 +1,21 @@
 pluginManagement {
     val isCi = System.getenv()["CI"] == "true"
 
-    apply(from = "properties.gradle")
+    // Copy main project Gradle properties:
+    listOf(
+        "../gradle.properties",
+        "../local.properties",
+    ).forEach { fileName ->
+        val file = file(fileName)
+        if (file.exists()) {
+            val properties = java.util.Properties()
+            file.inputStream().use { properties.load(it) }
+            properties.forEach { key, value ->
+                extra.set(key.toString(), value)
+            }
+        }
+    }
+
     if (!isCi) {
         includeBuild("../.")
     }
