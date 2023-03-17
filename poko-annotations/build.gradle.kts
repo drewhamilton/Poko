@@ -17,11 +17,6 @@ extra.apply {
 group = rootProject.property("publishGroup") as String
 version = rootProject.property("publishVersion") as String
 
-tasks.register<Jar>("sourcesJar") {
-  archiveClassifier.set("sources")
-  from(sourceSets.main.get().allSource)
-}
-
 //apply(plugin = "org.jetbrains.dokka")
 tasks.withType<DokkaTask>().configureEach {
   inputs.dir("src/main/kotlin")
