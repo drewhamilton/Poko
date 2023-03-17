@@ -39,12 +39,6 @@ tasks.withType<KotlinCompile>().configureEach {
     }
 }
 
-//compileTestKotlin {
-//    kotlinOptions {
-//        freeCompilerArgs = ["-Xinline-classes"]
-//    }
-//}
-
 // https://jakewharton.com/build-on-latest-java-test-through-lowest-java/
 for (javaVersion in 8..17) {
     val jdkTest = tasks.register<Test>("testJdk$javaVersion") {
