@@ -37,7 +37,7 @@ rootProject.name = "PokoSample"
 include(":jvm")
 
 // Compose requires Java 11; skip it on CI tests for lower JDKs
-private val ciJavaVersion = System.getenv()["ci_java_version"]
+private val ciJavaVersion = "10"//System.getenv()["ci_java_version"]
 if (ciJavaVersion == null || Integer.valueOf(ciJavaVersion) >= 11) {
     include(":compose")
 } else {

@@ -13,7 +13,7 @@ plugins {
 }
 apply(from = "properties.gradle")
 
-val ciJavaVersion = System.getenv()["ci_java_version"]
+val ciJavaVersion = "10"//System.getenv()["ci_java_version"]
 val resolvedJavaVersion = when (ciJavaVersion) {
     null -> JavaVersion.VERSION_11
     "8", "9", "10" -> JavaVersion.valueOf("VERSION_1_$ciJavaVersion")

@@ -50,7 +50,7 @@ jobs:
           name: MavenLocal
           path: ~/.m2/repository/dev/drewhamilton/poko/
       - name: Build sample
-        run: cd sample && ./gradlew build --stacktrace
+        run: cd tempname && ./gradlew build --stacktrace
         env:
           ci_java_version: ${{ matrix.ci_java_version }}
 
