@@ -6,7 +6,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove in Gradle 8.1
 plugins {
-    alias(libs.plugins.android.library) apply false
+    val ciJavaVersion = System.getenv()["ci_java_version"]
+    if (ciJavaVersion == null || ciJavaVersion.toInt() >= 11) {
+        alias(libs.plugins.android.library) apply false
+    }
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     id("dev.drewhamilton.poko") apply false
