@@ -1,4 +1,6 @@
-// Copy main project Gradle properties to sample project:
+// Copies main project Gradle properties to sample project. Can't use buildSrc because settings.gradle
+// must access these properties.
+
 List<String> propertiesFiles = [
     "../gradle.properties",
     "../local.properties",
@@ -9,8 +11,14 @@ propertiesFiles.each { fileName ->
     if (file.exists()) {
         Properties properties = new Properties()
         file.withInputStream { properties.load(it) }
-        properties.each { key, val ->
-            ext.set(key, val)
+        properties.each { key, value ->
+            try {
+                properties.set(key, value)
+            } catch (MissingMethodException ignored) {
+                // We are in a pluginManagement block that can't set properties, so set an extra instead:
+                ext.set(key, value)
+            }
         }
     }
+
 }
