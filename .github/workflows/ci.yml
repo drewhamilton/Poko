@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1
       - name: Install JDK
@@ -38,7 +38,7 @@ jobs:
         ci_java_version: [ 8, 9, 11, 12, 13, 14, 15, 16, 17, 18 ]
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install JDK ${{ matrix.ci_java_version }}
         uses: actions/setup-java@v2
         with:
