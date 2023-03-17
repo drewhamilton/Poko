@@ -1,5 +1,7 @@
 import com.android.build.gradle.LibraryExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove in Gradle 8.1
@@ -11,7 +13,8 @@ plugins {
 }
 apply(from = "properties.gradle")
 
-val resolvedJavaVersion = when (val ciJavaVersion = System.getenv()["ci_java_version"]) {
+val ciJavaVersion = System.getenv()["ci_java_version"]
+val resolvedJavaVersion = when (ciJavaVersion) {
     null -> JavaVersion.VERSION_11
     "8", "9", "10" -> JavaVersion.valueOf("VERSION_1_$ciJavaVersion")
     else -> JavaVersion.valueOf("VERSION_$ciJavaVersion")
@@ -23,6 +26,7 @@ val kotlinJvmTarget = when (resolvedJavaVersion) {
     else -> JvmTarget.valueOf("JVM_${resolvedJavaVersion.majorVersion}")
 }
 
+val jvmToolchainLanguageVersion = ciJavaVersion?.let { JavaLanguageVersion.of(ciJavaVersion.toInt()) }
 allprojects {
     repositories {
         if (System.getenv()["CI"] == "true") {
@@ -37,19 +41,31 @@ allprojects {
         mavenCentral()
     }
 
-    plugins.withId("com.android.library") {
-        with(extensions.getByType<LibraryExtension>()) {
-            compileOptions {
-                sourceCompatibility(resolvedJavaVersion)
-                targetCompatibility(resolvedJavaVersion)
+    plugins.withId("org.jetbrains.kotlin.android") {
+        if (jvmToolchainLanguageVersion == null) {
+            with(extensions.getByType<LibraryExtension>()) {
+                compileOptions {
+                    sourceCompatibility(resolvedJavaVersion)
+                    targetCompatibility(resolvedJavaVersion)
+                }
+            }
+        } else {
+            extensions.getByType<KotlinTopLevelExtension>().jvmToolchain {
+                languageVersion.set(jvmToolchainLanguageVersion)
             }
         }
     }
 
     plugins.withId("org.jetbrains.kotlin.jvm") {
-        with(extensions.getByType<JavaPluginExtension>()) {
-            sourceCompatibility = resolvedJavaVersion
-            targetCompatibility = resolvedJavaVersion
+        if (jvmToolchainLanguageVersion == null) {
+            with(extensions.getByType<JavaPluginExtension>()) {
+                sourceCompatibility = resolvedJavaVersion
+                targetCompatibility = resolvedJavaVersion
+            }
+        } else {
+            extensions.getByType<KotlinJvmProjectExtension>().jvmToolchain {
+                languageVersion.set(jvmToolchainLanguageVersion)
+            }
         }
     }
 
