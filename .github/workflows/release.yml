@@ -2,8 +2,8 @@ name: Release
 
 on:
   push:
-    branches: [main]
-    tags: ['*']
+    branches: [ main ]
+    tags: [ "*" ]
 
 jobs:
   release:
@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: zulu
-          java-version: 18
+          java-version: 19
       - name: Assemble for release
         run: ./gradlew clean assemble
       - name: Publish
