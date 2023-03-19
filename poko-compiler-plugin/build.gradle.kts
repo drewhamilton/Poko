@@ -1,5 +1,6 @@
 import com.google.devtools.ksp.gradle.KspTask
 import dev.drewhamilton.poko.build.generateArtifactInfo
+import dev.drewhamilton.poko.build.setUpPublication
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -7,13 +8,15 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.dokka)
+    `maven-publish`
+    signing
 }
 
-extra.apply {
-    set("artifactName", project.property("publishCompilerPluginArtifact")!!)
-    set("pomName", "Poko Compiler Plugin")
-}
-apply(from = "../publish.gradle")
+setUpPublication(
+    artifactName = project.property("publishCompilerPluginArtifact") as String,
+    pomName = "Poko Compiler Plugin",
+)
 
 generateArtifactInfo(
     basePackage = "dev.drewhamilton.poko",
