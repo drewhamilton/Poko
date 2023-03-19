@@ -8,7 +8,6 @@ import java.io.File
 import java.math.BigDecimal
 import org.jetbrains.kotlin.backend.common.extensions.FirIncompatiblePluginAPI
 import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
-import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JvmTarget
@@ -541,7 +540,7 @@ class PokoCompilerPluginTest {
         pokoAnnotationName: String,
     ) = KotlinCompilation().apply {
         workingDir = temporaryFolder.root
-        componentRegistrars = listOf<ComponentRegistrar>(PokoComponentRegistrar())
+        compilerPluginRegistrars = listOf(PokoCompilerPluginRegistrar())
         inheritClassPath = true
         sources = sourceFiles.asList()
         verbose = false
