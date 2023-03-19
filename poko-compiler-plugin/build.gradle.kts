@@ -43,7 +43,7 @@ tasks.withType<KotlinCompile>().configureEach {
 }
 
 // https://jakewharton.com/build-on-latest-java-test-through-lowest-java/
-for (javaVersion in 8..17) {
+for (javaVersion in 8..18) {
     val jdkTest = tasks.register<Test>("testJdk$javaVersion") {
         val javaToolchains  = project.extensions.getByType<JavaToolchainService>()
         javaLauncher.set(
