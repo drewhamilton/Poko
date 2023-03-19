@@ -1,10 +1,14 @@
+import dev.drewhamilton.poko.build.setUpPublication
+
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove in Gradle 8.1
 plugins {
   alias(libs.plugins.kotlin.jvm)
+  alias(libs.plugins.dokka)
+  `maven-publish`
+  signing
 }
 
-extra.apply {
-  set("artifactName", project.property("publishAnnotationsArtifact")!!)
-  set("pomName", "Poko Annotations")
-}
-apply(from = "../publish.gradle")
+setUpPublication(
+  artifactName = project.property("publishAnnotationsArtifact") as String,
+  pomName = "Poko Annotations",
+)
