@@ -31,7 +31,7 @@ dependencies {
 
     testImplementation(project(":poko-annotations"))
     testImplementation(libs.kotlin.embeddableCompiler)
-    testImplementation(libs.kotlin.compileTestingFork)
+    testImplementation(libs.kotlin.compileTesting)
     testImplementation(libs.junit)
     testImplementation(libs.truth)
 }
