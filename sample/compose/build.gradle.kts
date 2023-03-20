@@ -22,28 +22,24 @@ if (jvmToolchainLanguageVersion != null) {
 }
 
 android {
-    compileSdkVersion(32)
+    namespace = "dev.drewhamilton.poko.sample.compose"
+    compileSdk = 33
 
     defaultConfig {
-        minSdkVersion(21)
-        targetSdkVersion(32)
+        minSdk = 21
     }
 
-    if (jvmToolchainLanguageVersion == null) {
-        compileOptions {
-            sourceCompatibility(resolvedJavaVersion)
-            targetCompatibility(resolvedJavaVersion)
-        }
+    // TODO: Wrap in `if(jvmToolchainLanguageVersion == null)` from AGP 8.1
+    compileOptions {
+        sourceCompatibility(resolvedJavaVersion)
+        targetCompatibility(resolvedJavaVersion)
     }
 
     kotlinOptions {
-        freeCompilerArgs = listOf(
-            "-progressive",
-            "-P",
-            "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true",
-        )
+        freeCompilerArgs = listOf("-progressive")
     }
 
+    @Suppress("UnstableApiUsage")
     buildFeatures {
         compose = true
 
@@ -55,6 +51,7 @@ android {
         shaders = false
     }
 
+    @Suppress("UnstableApiUsage")
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
     }
@@ -69,6 +66,7 @@ dependencies {
 
 repositories {
     google()
+    @Suppress("UnstableApiUsage")
     if (android.composeOptions.kotlinCompilerExtensionVersion!!.contains("dev")) {
         logger.lifecycle("Adding Compose compiler dev repository")
         maven { url = uri("https://androidx.dev/storage/compose-compiler/repository") }
