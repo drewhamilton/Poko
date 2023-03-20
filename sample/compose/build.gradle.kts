@@ -22,6 +22,7 @@ if (jvmToolchainLanguageVersion != null) {
 }
 
 android {
+    namespace = "dev.drewhamilton.poko.sample.compose"
     compileSdkVersion(32)
 
     defaultConfig {
