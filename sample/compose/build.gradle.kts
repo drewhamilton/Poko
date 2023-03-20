@@ -29,11 +29,10 @@ android {
         minSdk = 21
     }
 
-    if (jvmToolchainLanguageVersion == null) {
-        compileOptions {
-            sourceCompatibility(resolvedJavaVersion)
-            targetCompatibility(resolvedJavaVersion)
-        }
+    // TODO: Wrap in `if(jvmToolchainLanguageVersion == null)` from AGP 8.1
+    compileOptions {
+        sourceCompatibility(resolvedJavaVersion)
+        targetCompatibility(resolvedJavaVersion)
     }
 
     kotlinOptions {
