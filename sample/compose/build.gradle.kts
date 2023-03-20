@@ -37,11 +37,7 @@ android {
     }
 
     kotlinOptions {
-        freeCompilerArgs = listOf(
-            "-progressive",
-            "-P",
-            "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true",
-        )
+        freeCompilerArgs = listOf("-progressive")
     }
 
     @Suppress("UnstableApiUsage")
