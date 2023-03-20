@@ -23,11 +23,10 @@ if (jvmToolchainLanguageVersion != null) {
 
 android {
     namespace = "dev.drewhamilton.poko.sample.compose"
-    compileSdkVersion(32)
+    compileSdk = 33
 
     defaultConfig {
-        minSdkVersion(21)
-        targetSdkVersion(32)
+        minSdk = 21
     }
 
     if (jvmToolchainLanguageVersion == null) {
@@ -45,6 +44,7 @@ android {
         )
     }
 
+    @Suppress("UnstableApiUsage")
     buildFeatures {
         compose = true
 
@@ -56,6 +56,7 @@ android {
         shaders = false
     }
 
+    @Suppress("UnstableApiUsage")
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
     }
@@ -70,6 +71,7 @@ dependencies {
 
 repositories {
     google()
+    @Suppress("UnstableApiUsage")
     if (android.composeOptions.kotlinCompilerExtensionVersion!!.contains("dev")) {
         logger.lifecycle("Adding Compose compiler dev repository")
         maven { url = uri("https://androidx.dev/storage/compose-compiler/repository") }
