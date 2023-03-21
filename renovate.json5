@@ -16,5 +16,10 @@
         "org.jetbrains.kotlinx:binary-compatibility-validator",
       ],
     },
-  ]
+  ],
+  "ignoreDeps": [
+    "org.jetbrains.kotlin:kotlin-compiler-embeddable",
+    "org.jetbrains.kotlin:kotlin-gradle-plugin",
+    "org.jetbrains.kotlin:kotlin-gradle-plugin-api",
+  ],
 }
