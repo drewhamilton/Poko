@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
+import org.jetbrains.kotlin.ir.builders.IrGeneratorContext
 import org.jetbrains.kotlin.ir.builders.irAs
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irCall
@@ -47,9 +48,11 @@ import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.addArgument
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
+import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
+import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.getSimpleFunction
@@ -57,6 +60,7 @@ import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isFakeOverride
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
+import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtParameter
@@ -326,11 +330,8 @@ internal class PokoMembersTransformer(
 
             val irPropertyValue = irGetField(receiver(irFunction), property.backingField!!)
 
-            val typeConstructorDescriptor = property.descriptor.type.constructor.declarationDescriptor
-            val irPropertyStringValue = if (
-                typeConstructorDescriptor is ClassDescriptor &&
-                KotlinBuiltIns.isArrayOrPrimitiveArray(typeConstructorDescriptor)
-            ) {
+            val classifier = property.type.classifierOrNull
+            val irPropertyStringValue = if (classifier.isArrayOrPrimitiveArray(context)) {
                 irCall(context.irBuiltIns.dataClassArrayMemberToStringSymbol, context.irBuiltIns.stringType).apply {
                     putValueArgument(0, irPropertyValue)
                 }
@@ -343,6 +344,15 @@ internal class PokoMembersTransformer(
         }
         irConcat.addArgument(irString(")"))
         +irReturn(irConcat)
+    }
+
+    private val IrProperty.type
+        get() = this.backingField?.type
+            ?: this.getter?.returnType
+            ?: error("Can't find type of ${this.render()}")
+
+    private fun IrClassifierSymbol?.isArrayOrPrimitiveArray(context: IrGeneratorContext): Boolean {
+        return this == context.irBuiltIns.arrayClass || this in context.irBuiltIns.primitiveArraysToPrimitiveTypes
     }
     //endregion
 
