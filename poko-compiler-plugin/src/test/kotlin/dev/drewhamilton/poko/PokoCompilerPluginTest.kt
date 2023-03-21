@@ -450,10 +450,10 @@ class PokoCompilerPluginTest {
     @Test fun `unknown annotation name produces expected error message`() {
         testCompilation(
             "api/Simple",
-            pokoAnnotationName = "nonexistent.ClassName",
+            pokoAnnotationName = "nonexistent/ClassName",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR,
         ) {
-            assertThat(it.messages).isEqualTo("e: Could not find class <nonexistent.ClassName>\n")
+            assertThat(it.messages).isEqualTo("e: Could not find class <nonexistent/ClassName>\n")
         }
     }
     //endregion

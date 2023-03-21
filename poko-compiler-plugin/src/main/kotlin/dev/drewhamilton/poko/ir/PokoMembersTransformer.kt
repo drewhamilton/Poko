@@ -62,15 +62,14 @@ import org.jetbrains.kotlin.ir.util.isInterface
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
 import org.jetbrains.kotlin.ir.util.render
-import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.resolve.source.getPsi
 
 @OptIn(ObsoleteDescriptorBasedAPI::class)
-//@FirIncompatiblePluginAPI // TODO: Support FIR
 internal class PokoMembersTransformer(
-    private val pokoAnnotationName: FqName,
+    private val pokoAnnotationName: ClassId,
     private val pluginContext: IrPluginContext,
     private val messageCollector: MessageCollector,
 ) : IrElementTransformerVoidWithContext() {
@@ -97,7 +96,7 @@ internal class PokoMembersTransformer(
     }
 
     private fun IrClass.isPokoClass(): Boolean = when {
-        !hasAnnotation(pokoAnnotationName) -> {
+        !hasAnnotation(pokoAnnotationName.asSingleFqName()) -> {
             log("Not Poko class")
             false
         }
