@@ -20,8 +20,15 @@ jobs:
           distribution: zulu
           java-version: 19
       - name: Assemble for release
-        run: ./gradlew clean assemble
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: wrapper
+          arguments: assemble
       - name: Publish
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: wrapper
+          arguments: publishAllPublicationsToMavenCentralRepository
         env:
           ORG_GRADLE_PROJECT_personalSonatypeIssuesUsername: >-
             ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesUsername }}
@@ -29,4 +36,3 @@ jobs:
             ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesPassword }}
           ORG_GRADLE_PROJECT_personalGpgKey: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgKey }}
           ORG_GRADLE_PROJECT_personalGpgPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgPassword }}
-        run: ./gradlew publishAllPublicationsToMavenCentralRepository

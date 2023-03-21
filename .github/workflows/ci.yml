@@ -19,7 +19,10 @@ jobs:
           distribution: zulu
           java-version: 19
       - name: Build
-        run: ./gradlew clean build publishToMavenLocal --stacktrace
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: wrapper
+          arguments: build publishToMavenLocal --stacktrace
         env:
           ORG_GRADLE_PROJECT_personalGpgKey: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgKey }}
           ORG_GRADLE_PROJECT_personalGpgPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgPassword }}
@@ -50,7 +53,11 @@ jobs:
           name: MavenLocal
           path: ~/.m2/repository/dev/drewhamilton/poko/
       - name: Build sample
-        run: cd sample && ./gradlew build --stacktrace
+        uses: gradle/gradle-build-action@v2
+        with:
+          build-root-directory: sample
+          gradle-version: wrapper
+          arguments: build --stacktrace
         env:
           ci_java_version: ${{ matrix.ci_java_version }}
 
