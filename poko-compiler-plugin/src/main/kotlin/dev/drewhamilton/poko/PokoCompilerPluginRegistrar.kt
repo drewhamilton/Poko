@@ -2,7 +2,6 @@ package dev.drewhamilton.poko
 
 import com.google.auto.service.AutoService
 import dev.drewhamilton.poko.ir.PokoIrGenerationExtension
-import org.jetbrains.kotlin.backend.common.extensions.FirIncompatiblePluginAPI
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -12,7 +11,6 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.name.ClassId
 
 @ExperimentalCompilerApi
-@FirIncompatiblePluginAPI // TODO: Support FIR
 @AutoService(CompilerPluginRegistrar::class)
 class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
@@ -25,11 +23,10 @@ class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
         val pokoAnnotationString = checkNotNull(configuration[CompilerOptions.POKO_ANNOTATION])
         val pokoAnnotationClassId = ClassId.fromString(pokoAnnotationString)
-        val pokoAnnotationName = pokoAnnotationClassId.asSingleFqName()
         val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
 
         IrGenerationExtension.registerExtension(
-            PokoIrGenerationExtension(pokoAnnotationName, messageCollector)
+            PokoIrGenerationExtension(pokoAnnotationClassId, messageCollector)
         )
     }
 }

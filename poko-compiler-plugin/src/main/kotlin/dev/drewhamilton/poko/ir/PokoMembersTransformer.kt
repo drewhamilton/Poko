@@ -1,21 +1,16 @@
 package dev.drewhamilton.poko.ir
 
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
-import org.jetbrains.kotlin.backend.common.extensions.FirIncompatiblePluginAPI
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.cli.common.messages.MessageUtil
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
 import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
-import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
+import org.jetbrains.kotlin.ir.builders.IrGeneratorContext
 import org.jetbrains.kotlin.ir.builders.irAs
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irCall
@@ -39,6 +34,7 @@ import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
+import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
@@ -47,30 +43,33 @@ import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.addArgument
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
+import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
+import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
+import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
+import org.jetbrains.kotlin.ir.types.classOrNull
+import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
+import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.defaultType
-import org.jetbrains.kotlin.ir.util.getSimpleFunction
+import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.util.hasAnnotation
+import org.jetbrains.kotlin.ir.util.isAnnotationClass
 import org.jetbrains.kotlin.ir.util.isFakeOverride
+import org.jetbrains.kotlin.ir.util.isInterface
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
-import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.ir.util.render
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtParameter
-import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
-import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.resolve.source.getPsi
-import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.types.isNullable
-import org.jetbrains.kotlin.types.typeUtil.representativeUpperBound
 
 @OptIn(ObsoleteDescriptorBasedAPI::class)
-@FirIncompatiblePluginAPI // TODO: Support FIR
 internal class PokoMembersTransformer(
-    private val pokoAnnotationName: FqName,
+    private val pokoAnnotationName: ClassId,
     private val pluginContext: IrPluginContext,
     private val messageCollector: MessageCollector,
 ) : IrElementTransformerVoidWithContext() {
@@ -97,7 +96,7 @@ internal class PokoMembersTransformer(
     }
 
     private fun IrClass.isPokoClass(): Boolean = when {
-        !hasAnnotation(pokoAnnotationName) -> {
+        !hasAnnotation(pokoAnnotationName.asSingleFqName()) -> {
             log("Not Poko class")
             false
         }
@@ -158,7 +157,7 @@ internal class PokoMembersTransformer(
     }
 
     /**
-     * Generate the body of the equals method. Copied from
+     * Generate the body of the equals method. Adapted from
      * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateEqualsMethodBody].
      */
     private fun IrBlockBodyBuilder.generateEqualsMethodBody(
@@ -191,7 +190,7 @@ internal class PokoMembersTransformer(
                 valueParameters.isEmpty()
 
     /**
-     * Generate the body of the hashCode method. Copied from
+     * Generate the body of the hashCode method. Adapted from
      * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateHashCodeMethodBody].
      */
     private fun IrBlockBodyBuilder.generateHashCodeMethodBody(
@@ -220,12 +219,9 @@ internal class PokoMembersTransformer(
         }
         +irResultVar
 
-        val intClass = pluginContext.irBuiltIns.intClass
-        val intTimesSymbol: IrSimpleFunctionSymbol = intClass.getSimpleFunction("times")!!
-        val intPlusSymbol: IrSimpleFunctionSymbol = intClass.getSimpleFunction("plus")!!
         for (property in irProperties.drop(1)) {
-            val shiftedResult = irCallOp(intTimesSymbol, irIntType, irGet(irResultVar), irInt(31))
-            val irRhs = irCallOp(intPlusSymbol, irIntType, shiftedResult, getHashCodeOfProperty(irFunction, property))
+            val shiftedResult = irCallOp(context.irBuiltIns.intTimesSymbol, irIntType, irGet(irResultVar), irInt(31))
+            val irRhs = irCallOp(context.irBuiltIns.intPlusSymbol, irIntType, shiftedResult, getHashCodeOfProperty(irFunction, property))
             +irSet(irResultVar.symbol, irRhs)
         }
 
@@ -238,7 +234,7 @@ internal class PokoMembersTransformer(
     ): IrExpression {
         val field = irProperty.backingField!!
         return when {
-            irProperty.descriptor.type.isNullable() -> irIfNull(
+            irProperty.type.isNullable() -> irIfNull(
                 context.irBuiltIns.intType,
                 irGetField(receiver(irFunction), field),
                 irInt(0),
@@ -248,11 +244,19 @@ internal class PokoMembersTransformer(
         }
     }
 
+    /**
+     * Symbol-retrieval adapted from [org.jetbrains.kotlin.fir.backend.generators.DataClassMembersGenerator].
+     */
     private fun IrBlockBodyBuilder.getHashCodeOf(property: IrProperty, irValue: IrExpression): IrExpression {
-        val hashCodeFunctionSymbol = getHashCodeFunction(property) { descriptor ->
-            pluginContext.referenceFunctions(descriptor.fqNameSafe).first().also {
-                require(it.isBound) { "$it is not bound" }
+        val hashCodeFunctionSymbol = property.type.classifierOrNull.let { classifier ->
+            when {
+                classifier.isArrayOrPrimitiveArray(context) -> context.irBuiltIns.dataClassArrayMemberHashCodeSymbol
+                classifier is IrClassSymbol -> getHashCodeFunction(classifier.owner)
+                classifier is IrTypeParameterSymbol -> getHashCodeFunction(classifier.owner.erasedUpperBound)
+                else -> error("Unknown classifier kind $classifier")
             }
+        }.also {
+            require(it.isBound) { "$it is not bound" }
         }
 
         val hasDispatchReceiver = hashCodeFunctionSymbol.descriptor.dispatchReceiverParameter != null
@@ -270,35 +274,29 @@ internal class PokoMembersTransformer(
         }
     }
 
-    private fun IrBlockBodyBuilder.getHashCodeFunction(type: KotlinType): FunctionDescriptor =
-        type.memberScope.findHashCodeFunctionOrNull()
-            ?: context.irBuiltIns.anyClass.descriptor.unsubstitutedMemberScope.findHashCodeFunctionOrNull()!!
+    private fun IrBlockBodyBuilder.getHashCodeFunction(irClass: IrClass): IrSimpleFunctionSymbol {
+        return irClass.functions.singleOrNull {
+            it.name.asString() == "hashCode" && it.valueParameters.isEmpty() && it.extensionReceiverParameter == null
+        }?.symbol ?: context.irBuiltIns.anyClass.functions.single { it.owner.name.asString() == "hashCode" }
+    }
 
-    private fun IrBlockBodyBuilder.getHashCodeFunction(
-        type: KotlinType,
-        symbolResolve: (FunctionDescriptor) -> IrSimpleFunctionSymbol
-    ): IrSimpleFunctionSymbol =
-        when (val typeConstructorDescriptor = type.constructor.declarationDescriptor) {
-            is ClassDescriptor ->
-                if (KotlinBuiltIns.isArrayOrPrimitiveArray(typeConstructorDescriptor))
-                    context.irBuiltIns.dataClassArrayMemberHashCodeSymbol
-                else
-                    symbolResolve(getHashCodeFunction(type))
+    private val IrTypeParameter.erasedUpperBound: IrClass
+        get() {
+            // Pick the (necessarily unique) non-interface upper bound if it exists
+            for (type in superTypes) {
+                val irClass = type.classOrNull?.owner ?: continue
+                if (!irClass.isInterface && !irClass.isAnnotationClass) return irClass
+            }
 
-            is TypeParameterDescriptor ->
-                getHashCodeFunction(typeConstructorDescriptor.representativeUpperBound, symbolResolve)
-
-            else -> throw AssertionError("Unexpected type: $type")
+            // Otherwise, choose either the first IrClass supertype or recurse.
+            // In the first case, all supertypes are interface types and the choice was arbitrary.
+            // In the second case, there is only a single supertype.
+            return when (val firstSuper = superTypes.first().classifierOrNull?.owner) {
+                is IrClass -> firstSuper
+                is IrTypeParameter -> firstSuper.erasedUpperBound
+                else -> error("unknown supertype kind $firstSuper")
+            }
         }
-
-    private fun IrBlockBodyBuilder.getHashCodeFunction(
-        property: IrProperty,
-        symbolResolve: (FunctionDescriptor) -> IrSimpleFunctionSymbol
-    ): IrSimpleFunctionSymbol = getHashCodeFunction(property.descriptor.type, symbolResolve)
-
-    private fun MemberScope.findHashCodeFunctionOrNull() =
-        getContributedFunctions(Name.identifier("hashCode"), NoLookupLocation.FROM_BACKEND)
-            .find { it.valueParameters.isEmpty() }
     //endregion
 
     //region toString
@@ -308,7 +306,7 @@ internal class PokoMembersTransformer(
                 valueParameters.isEmpty()
 
     /**
-     * Generate the body of the toString method. Copied from
+     * Generate the body of the toString method. Adapted from
      * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateToStringMethodBody].
      */
     private fun IrBlockBodyBuilder.generateToStringMethodBody(
@@ -326,11 +324,8 @@ internal class PokoMembersTransformer(
 
             val irPropertyValue = irGetField(receiver(irFunction), property.backingField!!)
 
-            val typeConstructorDescriptor = property.descriptor.type.constructor.declarationDescriptor
-            val irPropertyStringValue = if (
-                typeConstructorDescriptor is ClassDescriptor &&
-                KotlinBuiltIns.isArrayOrPrimitiveArray(typeConstructorDescriptor)
-            ) {
+            val classifier = property.type.classifierOrNull
+            val irPropertyStringValue = if (classifier.isArrayOrPrimitiveArray(context)) {
                 irCall(context.irBuiltIns.dataClassArrayMemberToStringSymbol, context.irBuiltIns.stringType).apply {
                     putValueArgument(0, irPropertyValue)
                 }
@@ -385,6 +380,15 @@ internal class PokoMembersTransformer(
             isAccessible = true
             setBoolean(this@reflectivelySetFakeOverride, isFakeOverride)
         }
+    }
+
+    private val IrProperty.type
+        get() = this.backingField?.type
+            ?: this.getter?.returnType
+            ?: error("Can't find type of ${this.render()}")
+
+    private fun IrClassifierSymbol?.isArrayOrPrimitiveArray(context: IrGeneratorContext): Boolean {
+        return this == context.irBuiltIns.arrayClass || this in context.irBuiltIns.primitiveArraysToPrimitiveTypes
     }
     //endregion
 
