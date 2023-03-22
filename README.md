@@ -49,8 +49,9 @@ Since the Kotlin compiler has frequent breaking changes, different versions of K
 exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version |
-| --------------- | ------------ |
-| 1.7.0 – 1.7.10  | 0.11.0       |
+|-----------------|--------------|
+| 1.8.0 – 1.8.10  | 0.12.0       |
+| 1.7.0 – 1.7.21  | 0.11.0       |
 | 1.6.20 – 1.6.21 | 0.10.0       | 
 | 1.6.0 – 1.6.10  | 0.9.0        |
 | 1.5.0 – 1.5.31  | 0.8.1        |
@@ -62,20 +63,20 @@ exclusively compatible with specific versions of Poko.
 Snapshots of the development version are available in [Sonatype's Snapshots
 repository](https://oss.sonatype.org/#view-repositories;snapshots~browsestorage).
 
-To use Poko, include the following in your Gradle dependencies:
-```groovy
-buildscript {
-    dependencies {
-        classpath "dev.drewhamilton.poko:poko-gradle-plugin:$version"
-    }
+To use Poko, apply the Gradle plugin in your project:
+```kotlin
+// Root project:
+plugins {
+    id("dev.drewhamilton.poko") apply false
 }
 
 // Per module:
-apply plugin: "dev.drewhamilton.poko"
+plugins {
+    id("dev.drewhamilton.poko")
+}
 ```
 
-\*Versions prior to 0.7.0 are available at `dev.drewhamilton.extracare:extracare-gradle-plugin` and
-use plugin name `dev.drewhamilton.extracare`.
+\*Versions prior to 0.7.0 use plugin name `dev.drewhamilton.extracare`.
 
 ## To-do
 * Generate an inner Builder class

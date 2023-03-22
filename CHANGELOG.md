@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.12.0
+_2023-03-21_
+
+Support Kotlin 1.8.0 and 1.8.10. Support Java 19.
+
+The `pokoAnnotation` configuration property's format changes; package names are now separated by `/`
+instead of `.`. For example, an inner annotation class definition would look like
+`"com/example/MyClass.Inner"`.
+
+The primary entry point is now `PokoCompilerPluginRegistrar`, replacing `PokoComponentRegistrar`.
+This change is transparent to consumers of the Gradle plugin.
+
+Automatic inclusion of the legacy `@dev.drewhamilton.extracare.DataApi` artifact is removed. The
+consumer can still manually depend on
+`implementation("dev.drewhamilton.extracare:data-api-annotations:0.6.0")` if desired.
+
 ## 0.11.0
 _2022-06-13_
 
