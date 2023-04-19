@@ -50,7 +50,6 @@ android {
         shaders = false
     }
 
-    @Suppress("UnstableApiUsage")
     composeOptions {
         kotlinCompilerExtensionVersion = libs.androidx.compose.compiler.get().version
     }
@@ -65,7 +64,6 @@ dependencies {
 
 repositories {
     google()
-    @Suppress("UnstableApiUsage")
     if (android.composeOptions.kotlinCompilerExtensionVersion!!.contains("dev")) {
         logger.lifecycle("Adding Compose compiler dev repository")
         maven { url = uri("https://androidx.dev/storage/compose-compiler/repository") }
