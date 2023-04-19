@@ -1,12 +1,12 @@
 [versions]
 
 # https://androidx.dev/storage/compose-compiler/repository for versions matching new Kotlin versions:
-androidx-compose-compiler = "1.4.4-dev-k1.8.20-f6ae19e64ff"
+androidx-compose-compiler = "1.4.6"
 androidx-compose-runtime = "1.4.2"
 kotlin = "1.8.20"
 kotlinCompileTesting = "1.5.0"
 kotlinCompileTestingFork = "0.2.1"
-ksp = "1.8.20-1.0.10"
+ksp = "1.8.20-1.0.11"
 
 [libraries]
 
@@ -33,5 +33,5 @@ android-library = { id = "com.android.library", version = "7.4.2" }
 dokka = { id = "org.jetbrains.dokka", version = "1.8.10" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlinx-binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version = "0.13.0" }
+kotlinx-binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version = "0.13.1" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
