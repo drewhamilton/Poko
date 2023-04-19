@@ -4,7 +4,6 @@ import dev.drewhamilton.poko.sample.build.resolvedJavaVersion
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove in Gradle 8.1
 plugins {
     val ciJavaVersion = dev.drewhamilton.poko.sample.build.ciJavaVersion
     if (ciJavaVersion == null || ciJavaVersion >= 17) {
