@@ -1,7 +1,6 @@
 import dev.drewhamilton.poko.sample.build.jvmToolchainLanguageVersion
 import dev.drewhamilton.poko.sample.build.resolvedJavaVersion
 
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove in Gradle 8.1
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -29,7 +28,7 @@ android {
         minSdk = 21
     }
 
-    // TODO: Wrap in `if(jvmToolchainLanguageVersion == null)` from AGP 8.1
+    // TODO: Wrap in `if (jvmToolchainLanguageVersion == null)` from AGP 8.1
     compileOptions {
         sourceCompatibility(resolvedJavaVersion)
         targetCompatibility(resolvedJavaVersion)
