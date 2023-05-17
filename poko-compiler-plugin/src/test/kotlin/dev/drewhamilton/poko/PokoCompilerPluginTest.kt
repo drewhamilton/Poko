@@ -446,6 +446,61 @@ class PokoCompilerPluginTest {
     )
     //endregion
 
+    //region Array content
+    @Test fun `two equivalent compiled ArrayHolder instances are equals`() =
+        compareTwoArrayHolderApiInstances { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+
+    @Test fun `two equivalent compiled ArrayHolder instances have same hashCode`() =
+        compareTwoArrayHolderApiInstances { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+
+    @Test fun `two equivalent compiled ArrayHolder instances have same toString`() =
+        compareTwoArrayHolderApiInstances { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+
+    @Test fun `two inequivalent compiled ArrayHolder instances are not equals`() =
+        compareTwoArrayHolderApiInstances(
+            arrayReferenceType2 = arrayOf("just one string"),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+
+    // TODO: Test disallowed @ArrayContent properties types & all types of arrays
+
+    private fun compareTwoArrayHolderApiInstances(
+        arrayReferenceType1: Array<String> = arrayOf("one string", "another string"),
+        nullableArrayReferenceType1: Array<String>? = null,
+        arrayPrimitiveType1: IntArray = intArrayOf(3, 4, 5),
+        nullableArrayPrimitiveType1: IntArray? = null,
+        arrayReferenceType2: Array<String> = arrayReferenceType1,
+        nullableArrayReferenceType2: Array<String>? = nullableArrayReferenceType1,
+        arrayPrimitiveType2: IntArray = arrayPrimitiveType1,
+        nullableArrayPrimitiveType2: IntArray? = nullableArrayPrimitiveType1,
+        compare: (firstInstance: Any, secondInstance: Any) -> Unit,
+    ) = compareTwoInstances(
+        sourceFileName = "api/ArrayHolder",
+        firstInstanceConstructorArgs = listOf(
+            Array<String>::class.java to arrayReferenceType1,
+            Array<String>::class.java to nullableArrayReferenceType1,
+            IntArray::class.java to arrayPrimitiveType1,
+            IntArray::class.java to nullableArrayPrimitiveType1,
+        ),
+        secondInstanceConstructorArgs = listOf(
+            Array<String>::class.java to arrayReferenceType2,
+            Array<String>::class.java to nullableArrayReferenceType2,
+            IntArray::class.java to arrayPrimitiveType2,
+            IntArray::class.java to nullableArrayPrimitiveType2,
+        ),
+        compare = compare
+    )
+    //endregion
+
     //region Unknown annotation name
     @Test fun `unknown annotation name produces expected error message`() {
         testCompilation(

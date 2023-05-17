@@ -3,6 +3,7 @@ package dev.drewhamilton.poko.ir
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
+import org.jetbrains.kotlin.backend.common.lower.irNot
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.cli.common.messages.MessageUtil
@@ -10,6 +11,7 @@ import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescripto
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
+import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContext
 import org.jetbrains.kotlin.ir.builders.irAs
 import org.jetbrains.kotlin.ir.builders.irBlockBody
@@ -62,7 +64,9 @@ import org.jetbrains.kotlin.ir.util.isInterface
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
 import org.jetbrains.kotlin.ir.util.render
+import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.resolve.source.getPsi
@@ -177,9 +181,68 @@ internal class PokoMembersTransformer(
             val field = property.backingField!!
             val arg1 = irGetField(receiver(irFunction), field)
             val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
-            +irIfThenReturnFalse(irNotEquals(arg1, arg2))
+            property.type.classifierOrNull.let { classifier ->
+                val negativeComparison = when {
+                    property.hasAnnotation(ReadArrayContentAnnotation.asSingleFqName()) -> {
+                        irNot(
+                            irArrayContentDeepEquals(
+                                receiver = arg1,
+                                argument = arg2,
+                                propertyClassifier = classifier,
+                                irClass = irClass,
+                            ),
+                        )
+                    }
+
+                    else -> {
+                        irNotEquals(arg1, arg2)
+                    }
+                }
+                +irIfThenReturnFalse(negativeComparison)
+            }
         }
         +irReturnTrue()
+    }
+
+    private fun IrBuilderWithScope.irArrayContentDeepEquals(
+        receiver: IrExpression,
+        argument: IrExpression,
+        propertyClassifier: IrClassifierSymbol?,
+        irClass: IrClass,
+    ): IrExpression {
+        // TODO: Handle property of type `Any?` that is an array at runtime
+        if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
+            irClass.reportError("@ArrayContent on type $propertyClassifier is not supported")
+            // TODO: Better error/exception
+        }
+
+        val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
+            "contentDeepEquals"
+        } else {
+            "contentEquals"
+        }
+        val contentEqualsFunctionSymbol = pluginContext.referenceFunctions(
+            callableId = CallableId(
+                packageName = FqName("kotlin.collections"),
+                callableName = Name.identifier(callableName),
+            ),
+        ).single { functionSymbol ->
+            // Find the single function with the relevant array type and disambiguate against the
+            // older non-nullable receiver overload:
+            functionSymbol.owner.extensionReceiverParameter?.type?.let {
+                it.classifierOrNull == propertyClassifier && it.isNullable()
+            } ?: false
+        }
+
+        return irCall(
+            contentEqualsFunctionSymbol,
+            type = context.irBuiltIns.booleanType,
+            valueArgumentsCount = 1,
+            typeArgumentsCount = 1,
+        ).apply {
+            extensionReceiver = receiver
+            putValueArgument(0, argument)
+        }
     }
     //endregion
 
@@ -400,5 +463,12 @@ internal class PokoMembersTransformer(
         val psi = descriptor.source.getPsi()
         val location = MessageUtil.psiElementToMessageLocation(psi)
         messageCollector.report(CompilerMessageSeverity.ERROR, message, location)
+    }
+
+    private companion object {
+        val ReadArrayContentAnnotation = ClassId(
+            FqName("dev.drewhamilton.poko"),
+            Name.identifier("ReadArrayContent"),
+        )
     }
 }
