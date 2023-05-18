@@ -4,4 +4,5 @@ package dev.drewhamilton.poko.sample.jvm.arrays
 data class DataArrayHolder(
     val id: String,
     val array: Array<String>,
+    val maybe: Any?,
 )
