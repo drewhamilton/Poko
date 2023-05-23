@@ -13,7 +13,7 @@ ksp = "1.8.21-1.0.11"
 androidx-compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "androidx-compose-compiler" }
 androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "androidx-compose-runtime" }
 
-autoService-annotations = { module = "com.google.auto.service:auto-service-annotations", version = "1.0.1" }
+autoService-annotations = { module = "com.google.auto.service:auto-service-annotations", version = "1.1.0" }
 autoService-ksp = { module = "dev.zacsweers.autoservice:auto-service-ksp", version = "1.0.0" }
 
 junit = { module = "junit:junit", version = "4.13.2" }
