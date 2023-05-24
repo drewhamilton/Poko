@@ -1,9 +1,9 @@
-public abstract interface annotation class dev/drewhamilton/poko/ArrayContent : java/lang/annotation/Annotation {
-}
-
 public abstract interface annotation class dev/drewhamilton/poko/ExperimentalArrayContentSupport : java/lang/annotation/Annotation {
 }
 
 public abstract interface annotation class dev/drewhamilton/poko/Poko : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class dev/drewhamilton/poko/ReadArrayContent : java/lang/annotation/Annotation {
 }
 
