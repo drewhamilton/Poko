@@ -447,29 +447,39 @@ class PokoCompilerPluginTest {
     //endregion
 
     //region Array content
-    @Test fun `two equivalent compiled ArrayHolder instances are equals`() =
+    @Test fun `two equivalent compiled ArrayHolder instances are equals`() {
         compareTwoArrayHolderApiInstances { firstInstance, secondInstance ->
             assertThat(firstInstance).isEqualTo(secondInstance)
             assertThat(secondInstance).isEqualTo(firstInstance)
         }
+    }
 
-    @Test fun `two equivalent compiled ArrayHolder instances have same hashCode`() =
+    @Test fun `two equivalent compiled ArrayHolder instances have same hashCode`() {
         compareTwoArrayHolderApiInstances { firstInstance, secondInstance ->
             assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
         }
+    }
 
-    @Test fun `two equivalent compiled ArrayHolder instances have same toString`() =
+    @Test fun `two equivalent compiled ArrayHolder instances have same toString`() {
         compareTwoArrayHolderApiInstances { firstInstance, secondInstance ->
             assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
         }
+    }
 
-    @Test fun `two inequivalent compiled ArrayHolder instances are not equals`() =
+    @Test fun `two inequivalent compiled ArrayHolder instances are not equals`() {
         compareTwoArrayHolderApiInstances(
             stringArray2 = arrayOf("just one string"),
         ) { firstInstance, secondInstance ->
             assertThat(firstInstance).isNotEqualTo(secondInstance)
             assertThat(secondInstance).isNotEqualTo(firstInstance)
         }
+        compareTwoArrayHolderApiInstances(
+            charArray2 = charArrayOf('x', 'y', 'z'),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+    }
 
     // TODO: Test disallowed @ArrayContent properties types
 
