@@ -19,6 +19,7 @@ import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irCallOp
 import org.jetbrains.kotlin.ir.builders.irConcat
 import org.jetbrains.kotlin.ir.builders.irEqeqeq
+import org.jetbrains.kotlin.ir.builders.irEquals
 import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irIfNull
@@ -54,6 +55,8 @@ import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
+import org.jetbrains.kotlin.ir.types.getArrayElementType
+import org.jetbrains.kotlin.ir.types.isArray
 import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.functions
@@ -212,11 +215,16 @@ internal class PokoMembersTransformer(
     ): IrExpression {
         // TODO: Handle property of type `Any?` that is an array at runtime
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-            irClass.reportError("@ArrayContent on type $propertyClassifier is not supported")
-            // TODO: Better error/exception
+            irClass.reportError("@ReadArrayContent on type $propertyClassifier is not supported")
+            return irEquals(receiver, argument)
         }
 
         val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
+            // TODO: Support nested arrays and remove this block
+            if (receiver.type.getArrayElementType(context.irBuiltIns).isArray()) {
+                irClass.reportError("@ReadArrayContent on nested array is not supported")
+                return irEquals(receiver, argument)
+            }
             "contentDeepEquals"
         } else {
             "contentEquals"
