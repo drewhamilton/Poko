@@ -28,7 +28,9 @@ class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
         version = ArtifactInfo.VERSION
     )
 
-    override fun applyToCompilation(kotlinCompilation: KotlinCompilation<*>): Provider<List<SubpluginOption>> {
+    override fun applyToCompilation(
+        kotlinCompilation: KotlinCompilation<*>,
+    ): Provider<List<SubpluginOption>> {
         val project = kotlinCompilation.target.project
         val extension = project.extensions.getByType(PokoPluginExtension::class.java)
 

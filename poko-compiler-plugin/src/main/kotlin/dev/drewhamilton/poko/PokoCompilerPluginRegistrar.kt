@@ -23,7 +23,10 @@ class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
         val pokoAnnotationString = checkNotNull(configuration[CompilerOptions.POKO_ANNOTATION])
         val pokoAnnotationClassId = ClassId.fromString(pokoAnnotationString)
-        val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
+        val messageCollector = configuration.get(
+            CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY,
+            MessageCollector.NONE,
+        )
 
         IrGenerationExtension.registerExtension(
             PokoIrGenerationExtension(pokoAnnotationClassId, messageCollector)

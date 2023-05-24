@@ -106,7 +106,9 @@ class ArrayTest {
         )
 
 
-        val expected = Regex("DataArrayHolder\\(id=id, array=\\[one, two], maybe=\\[Ljava.lang.String;@[0-9a-fA-F]+\\)")
+        val expected = Regex(
+            "DataArrayHolder\\(id=id, array=\\[one, two], maybe=\\[Ljava.lang.String;@[0-9a-fA-F]+\\)"
+        )
         assertThat(a.toString()).matches(expected.toPattern())
     }
 
@@ -117,7 +119,9 @@ class ArrayTest {
             maybe = arrayOf("3", "4"),
         )
 
-        val expected = Regex("HandwrittenArrayHolder\\(id=id, array=\\[one, two], maybe=\\[Ljava.lang.String;@[0-9a-fA-F]+\\)")
+        val expected = Regex(
+            "HandwrittenArrayHolder\\(id=id, array=\\[one, two], maybe=\\[Ljava.lang.String;@[0-9a-fA-F]+\\)"
+        )
         assertThat(a.toString()).matches(expected.toPattern())
     }
 
@@ -128,7 +132,9 @@ class ArrayTest {
             maybe = arrayOf("3", "4"),
         )
 
-        val expected = Regex("PokoArrayHolder\\(id=id, array=\\[one, two], maybe=\\[Ljava.lang.String;@[0-9a-fA-F]+\\)")
+        val expected = Regex(
+            "PokoArrayHolder\\(id=id, array=\\[one, two], maybe=\\[Ljava.lang.String;@[0-9a-fA-F]+\\)"
+        )
         assertThat(a.toString()).matches(expected.toPattern())
     }
     //endregion
