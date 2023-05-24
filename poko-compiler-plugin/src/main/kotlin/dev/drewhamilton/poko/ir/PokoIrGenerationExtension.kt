@@ -20,7 +20,11 @@ internal class PokoIrGenerationExtension(
             return
         }
 
-        val pokoMembersTransformer = PokoMembersTransformer(pokoAnnotationName, pluginContext, messageCollector)
+        val pokoMembersTransformer = PokoMembersTransformer(
+            pokoAnnotationName = pokoAnnotationName,
+            pluginContext = pluginContext,
+            messageCollector = messageCollector,
+        )
         moduleFragment.transform(pokoMembersTransformer, null)
     }
 
