@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JvmTarget
+import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -446,6 +447,179 @@ class PokoCompilerPluginTest {
     )
     //endregion
 
+    //region Array content
+    @Test fun `two equivalent compiled ArrayHolder instances are equals`() {
+        compareTwoArrayHolderApiInstances { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two equivalent compiled ArrayHolder instances have same hashCode`() {
+        compareTwoArrayHolderApiInstances { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two equivalent compiled ArrayHolder instances have same toString`() {
+        compareTwoArrayHolderApiInstances { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two inequivalent compiled ArrayHolder instances are not equals`() {
+        compareTwoArrayHolderApiInstances(
+            stringArray2 = arrayOf("just one string"),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+        compareTwoArrayHolderApiInstances(
+            charArray2 = charArrayOf('x', 'y', 'z'),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+    }
+
+    private fun compareTwoArrayHolderApiInstances(
+        stringArray1: Array<String> = arrayOf("one string", "another string"),
+        nullableStringArray1: Array<String>? = null,
+        booleanArray1: BooleanArray = booleanArrayOf(true, false),
+        nullableBooleanArray1: BooleanArray? = null,
+        byteArray1: ByteArray = byteArrayOf(1.toByte(), 2.toByte()),
+        nullableByteArray1: ByteArray? = null,
+        charArray1: CharArray = charArrayOf('a', 'b', 'c', 'c'),
+        nullableCharArray1: CharArray? = null,
+        shortArray1: ShortArray = shortArrayOf(99.toShort(), 88.toShort()),
+        nullableShortArray1: ShortArray? = null,
+        intArray1: IntArray = intArrayOf(3, 4, 5),
+        nullableIntArray1: IntArray? = null,
+        longArray1: LongArray = longArrayOf(98765L, 43210L),
+        nullableLongArray1: LongArray? = null,
+        floatArray1: FloatArray = floatArrayOf(3.14f, 1519f),
+        nullableFloatArray1: FloatArray? = null,
+        doubleArray1: DoubleArray = doubleArrayOf(2.22222, Double.NaN),
+        nullableDoubleArray1: DoubleArray? = null,
+        stringArray2: Array<String> = stringArray1,
+        nullableStringArray2: Array<String>? = nullableStringArray1,
+        booleanArray2: BooleanArray = booleanArray1,
+        nullableBooleanArray2: BooleanArray? = nullableBooleanArray1,
+        byteArray2: ByteArray = byteArray1,
+        nullableByteArray2: ByteArray? = nullableByteArray1,
+        charArray2: CharArray = charArray1,
+        nullableCharArray2: CharArray? = nullableCharArray1,
+        shortArray2: ShortArray = shortArray1,
+        nullableShortArray2: ShortArray? = nullableShortArray1,
+        intArray2: IntArray = intArray1,
+        nullableIntArray2: IntArray? = nullableIntArray1,
+        longArray2: LongArray = longArray1,
+        nullableLongArray2: LongArray? = nullableLongArray1,
+        floatArray2: FloatArray = floatArray1,
+        nullableFloatArray2: FloatArray? = nullableFloatArray1,
+        doubleArray2: DoubleArray = doubleArray1,
+        nullableDoubleArray2: DoubleArray? = nullableDoubleArray1,
+        compare: (firstInstance: Any, secondInstance: Any) -> Unit,
+    ) = compareTwoInstances(
+        sourceFileName = "api/ArrayHolder",
+        firstInstanceConstructorArgs = listOf(
+            Array<String>::class.java to stringArray1,
+            Array<String>::class.java to nullableStringArray1,
+            BooleanArray::class.java to booleanArray1,
+            BooleanArray::class.java to nullableBooleanArray1,
+            ByteArray::class.java to byteArray1,
+            ByteArray::class.java to nullableByteArray1,
+            CharArray::class.java to charArray1,
+            CharArray::class.java to nullableCharArray1,
+            ShortArray::class.java to shortArray1,
+            ShortArray::class.java to nullableShortArray1,
+            IntArray::class.java to intArray1,
+            IntArray::class.java to nullableIntArray1,
+            LongArray::class.java to longArray1,
+            LongArray::class.java to nullableLongArray1,
+            FloatArray::class.java to floatArray1,
+            FloatArray::class.java to nullableFloatArray1,
+            DoubleArray::class.java to doubleArray1,
+            DoubleArray::class.java to nullableDoubleArray1,
+        ),
+        secondInstanceConstructorArgs = listOf(
+            Array<String>::class.java to stringArray2,
+            Array<String>::class.java to nullableStringArray2,
+            BooleanArray::class.java to booleanArray2,
+            BooleanArray::class.java to nullableBooleanArray2,
+            ByteArray::class.java to byteArray2,
+            ByteArray::class.java to nullableByteArray2,
+            CharArray::class.java to charArray2,
+            CharArray::class.java to nullableCharArray2,
+            ShortArray::class.java to shortArray2,
+            ShortArray::class.java to nullableShortArray2,
+            IntArray::class.java to intArray2,
+            IntArray::class.java to nullableIntArray2,
+            LongArray::class.java to longArray2,
+            LongArray::class.java to nullableLongArray2,
+            FloatArray::class.java to floatArray2,
+            FloatArray::class.java to nullableFloatArray2,
+            DoubleArray::class.java to doubleArray2,
+            DoubleArray::class.java to nullableDoubleArray2,
+        ),
+        compare = compare,
+    )
+
+    @Test fun `compilation reading array content of type Any fails`() {
+        testCompilation(
+            "illegal/AnyArrayHolder",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on property of type <kotlin.Any?> not supported")
+        }
+    }
+
+    @Test fun `compilation reading array content of generic type fails`() {
+        testCompilation(
+            "illegal/GenericArrayHolder",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on property of type <G of illegal.GenericArrayHolder> not supported")
+        }
+    }
+
+    @Test fun `compilation reading array content of nested primitive array fails`() {
+        testCompilation(
+            "illegal/NestedPrimitiveArrayHolder",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on nested array property not supported")
+        }
+    }
+
+    @Test fun `compilation reading array content of nested typed array fails`() {
+        testCompilation(
+            "illegal/NestedTypedArrayHolder",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on nested array property not supported")
+        }
+    }
+
+    @Test fun `compilation reading array content of non-arrays fails`() {
+        testCompilation(
+            "illegal/NotArrayHolder",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on property of type <kotlin.String> not supported")
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on property of type <kotlin.Int> not supported")
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on property of type <kotlin.Float> not supported")
+        }
+    }
+    //endregion
+
     //region Unknown annotation name
     @Test fun `unknown annotation name produces expected error message`() {
         testCompilation(
@@ -529,8 +703,29 @@ class PokoCompilerPluginTest {
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
         additionalTesting: (KotlinCompilation.Result) -> Unit = {}
     ) {
-        val result = prepareCompilation(*sourceFiles, pokoAnnotationName = pokoAnnotationName).compile()
-        assertThat(result.exitCode).isEqualTo(expectedExitCode)
+        val result =
+            prepareCompilation(*sourceFiles, pokoAnnotationName = pokoAnnotationName).compile()
+        if (
+            expectedExitCode == KotlinCompilation.ExitCode.OK &&
+            result.exitCode != KotlinCompilation.ExitCode.OK
+        ) {
+            val failureMessage = StringBuilder().apply {
+                append("expected: OK\nbut was : ")
+                append(result.exitCode)
+                append("\n")
+
+                result.messages.split("\n").forEach { message ->
+                    if (message.isNotEmpty()) {
+                        append("- ")
+                        append(message)
+                        append("\n")
+                    }
+                }
+            }.toString()
+            fail(failureMessage)
+        } else {
+            assertThat(result.exitCode).isEqualTo(expectedExitCode)
+        }
         additionalTesting(result)
     }
 
