@@ -186,7 +186,7 @@ internal class PokoMembersTransformer(
             val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
             property.type.classifierOrNull.let {
                 val negativeComparison = when {
-                    property.hasAnnotation(ReadArrayContentAnnotation.asSingleFqName()) -> {
+                    property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName()) -> {
                         irNot(
                             irArrayContentDeepEquals(
                                 receiver = arg1,
@@ -486,9 +486,9 @@ internal class PokoMembersTransformer(
     }
 
     private companion object {
-        val ReadArrayContentAnnotation = ClassId(
+        val ArrayContentBasedAnnotation = ClassId(
             FqName("dev.drewhamilton.poko"),
-            Name.identifier("ReadArrayContent"),
+            Name.identifier("ArrayContentBased"),
         )
     }
 }

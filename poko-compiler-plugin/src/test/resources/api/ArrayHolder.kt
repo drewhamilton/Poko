@@ -1,29 +1,29 @@
 package api
 
+import dev.drewhamilton.poko.ArrayContentBased
 import dev.drewhamilton.poko.ExperimentalArrayContentSupport
 import dev.drewhamilton.poko.Poko
-import dev.drewhamilton.poko.ReadArrayContent
 
 @Suppress("Unused")
 @OptIn(ExperimentalArrayContentSupport::class)
 @Poko class ArrayHolder(
-    @ReadArrayContent val stringArray: Array<String>,
-    @ReadArrayContent val nullableStringArray: Array<String>?,
-    @ReadArrayContent val booleanArray: BooleanArray,
-    @ReadArrayContent val nullableBooleanArray: BooleanArray?,
-    @ReadArrayContent val byteArray: ByteArray,
-    @ReadArrayContent val nullableByteArray: ByteArray?,
-    @ReadArrayContent val charArray: CharArray,
-    @ReadArrayContent val nullableCharArray: CharArray?,
-    @ReadArrayContent val shortArray: ShortArray,
-    @ReadArrayContent val nullableShortArray: ShortArray?,
-    @ReadArrayContent val intArray: IntArray,
-    @ReadArrayContent val nullableIntArray: IntArray?,
-    @ReadArrayContent val longArray: LongArray,
-    @ReadArrayContent val nullableLongArray: LongArray?,
-    @ReadArrayContent val floatArray: FloatArray,
-    @ReadArrayContent val nullableFloatArray: FloatArray?,
-    @ReadArrayContent val doubleArray: DoubleArray,
-    @ReadArrayContent val nullableDoubleArray: DoubleArray?,
+    @ArrayContentBased val stringArray: Array<String>,
+    @ArrayContentBased val nullableStringArray: Array<String>?,
+    @ArrayContentBased val booleanArray: BooleanArray,
+    @ArrayContentBased val nullableBooleanArray: BooleanArray?,
+    @ArrayContentBased val byteArray: ByteArray,
+    @ArrayContentBased val nullableByteArray: ByteArray?,
+    @ArrayContentBased val charArray: CharArray,
+    @ArrayContentBased val nullableCharArray: CharArray?,
+    @ArrayContentBased val shortArray: ShortArray,
+    @ArrayContentBased val nullableShortArray: ShortArray?,
+    @ArrayContentBased val intArray: IntArray,
+    @ArrayContentBased val nullableIntArray: IntArray?,
+    @ArrayContentBased val longArray: LongArray,
+    @ArrayContentBased val nullableLongArray: LongArray?,
+    @ArrayContentBased val floatArray: FloatArray,
+    @ArrayContentBased val nullableFloatArray: FloatArray?,
+    @ArrayContentBased val doubleArray: DoubleArray,
+    @ArrayContentBased val nullableDoubleArray: DoubleArray?,
     // TODO: more
 )

@@ -1,11 +1,11 @@
 package illegal
 
+import dev.drewhamilton.poko.ArrayContentBased
 import dev.drewhamilton.poko.ExperimentalArrayContentSupport
 import dev.drewhamilton.poko.Poko
-import dev.drewhamilton.poko.ReadArrayContent
 
 @Suppress("Unused")
 @OptIn(ExperimentalArrayContentSupport::class)
 @Poko class GenericArrayHolder<G>(
-    @ReadArrayContent val generic: G,
+    @ArrayContentBased val generic: G,
 )
