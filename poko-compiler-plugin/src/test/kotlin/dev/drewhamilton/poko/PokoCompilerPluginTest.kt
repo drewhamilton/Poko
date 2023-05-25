@@ -482,8 +482,6 @@ class PokoCompilerPluginTest {
         }
     }
 
-    // TODO: Test disallowed @ArrayContent properties types
-
     private fun compareTwoArrayHolderApiInstances(
         stringArray1: Array<String> = arrayOf("one string", "another string"),
         nullableStringArray1: Array<String>? = null,
@@ -604,6 +602,20 @@ class PokoCompilerPluginTest {
         ) { result ->
             assertThat(result.messages)
                 .contains("@ReadArrayContent on nested array property not supported")
+        }
+    }
+
+    @Test fun `compilation reading array content of non-arrays fails`() {
+        testCompilation(
+            "illegal/NotArrayHolder",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on property of type <kotlin.String> not supported")
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on property of type <kotlin.Int> not supported")
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on property of type <kotlin.Float> not supported")
         }
     }
     //endregion
