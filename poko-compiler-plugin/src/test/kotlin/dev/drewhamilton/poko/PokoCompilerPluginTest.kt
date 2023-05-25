@@ -313,6 +313,63 @@ class PokoCompilerPluginTest {
     )
     //endregion
 
+    //region SimpleWithExtraParam
+    @Test fun `non-property parameter is ignored for equals`() {
+        compareTwoSimpleWithExtraParamApiInstances(
+            callback1 = { true },
+            callback2 = { false },
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `non-property parameter is ignored for hashCode`() {
+        compareTwoSimpleWithExtraParamApiInstances(
+            callback1 = { true },
+            callback2 = { false },
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `non-property parameter is ignored for toString`() {
+        compareTwoSimpleWithExtraParamApiInstances(
+            callback1 = { true },
+            callback2 = { false },
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    private fun compareTwoSimpleWithExtraParamApiInstances(
+        callback1: (Unit) -> Boolean,
+        callback2: (Unit) -> Boolean,
+        int1: Int = 1,
+        requiredString1: String = "String",
+        optionalString1: String? = null,
+        int2: Int = int1,
+        requiredString2: String = requiredString1,
+        optionalString2: String? = optionalString1,
+        compare: (firstInstance: Any, secondInstance: Any) -> Unit,
+    ) = compareTwoInstances(
+        sourceFileName = "api/SimpleWithExtraParam",
+        firstInstanceConstructorArgs = listOf(
+            Int::class.java to int1,
+            String::class.java to requiredString1,
+            String::class.java to optionalString1,
+            Function1::class.java to callback1,
+        ),
+        secondInstanceConstructorArgs = listOf(
+            Int::class.java to int2,
+            String::class.java to requiredString2,
+            String::class.java to optionalString2,
+            Function1::class.java to callback2,
+        ),
+        compare = compare
+    )
+    //endregion
+
     //region Complex class
     @Test fun `two equivalent compiled Complex instances are equals`() =
         compareTwoComplexApiInstances { firstInstance, secondInstance ->
