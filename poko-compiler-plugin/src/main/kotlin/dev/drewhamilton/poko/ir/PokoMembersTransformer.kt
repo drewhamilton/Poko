@@ -74,7 +74,6 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.resolve.source.getPsi
 
-@OptIn(ObsoleteDescriptorBasedAPI::class)
 internal class PokoMembersTransformer(
     private val pokoAnnotationName: ClassId,
     private val pluginContext: IrPluginContext,
@@ -138,7 +137,11 @@ internal class PokoMembersTransformer(
         val parent = parent as IrClass
         val properties = parent.properties
             .toList()
-            .filter { it.symbol.descriptor.source.getPsi() is KtParameter }
+            .filter {
+                // Can't figure out how to check this another way. FIR?
+                @OptIn(ObsoleteDescriptorBasedAPI::class)
+                it.symbol.descriptor.source.getPsi() is KtParameter
+            }
         if (properties.isEmpty()) {
             log("No primary constructor properties")
             parent.reportError("Poko classes must have at least one property in the primary constructor")
@@ -334,6 +337,8 @@ internal class PokoMembersTransformer(
             require(it.isBound) { "$it is not bound" }
         }
 
+        // DataClassMembersGenerator uses this too:
+        @OptIn(ObsoleteDescriptorBasedAPI::class)
         val hasDispatchReceiver = hashCodeFunctionSymbol.descriptor.dispatchReceiverParameter != null
         return irCall(
             hashCodeFunctionSymbol,
@@ -417,6 +422,11 @@ internal class PokoMembersTransformer(
     //endregion
 
     //region Shared generation helpers
+    /**
+     * Converts the function's dispatch receiver parameter (i.e. <this>) to the function's parent.
+     * This is necessary because we are taking the base declaration from a parent class (or Any) and
+     * pseudo-overriding it in this function's parent class.
+     */
     private fun IrFunction.mutateWithNewDispatchReceiverParameterForParentClass() {
         val parentClass = parent as IrClass
         val originalReceiver = checkNotNull(dispatchReceiverParameter)
@@ -424,7 +434,12 @@ internal class PokoMembersTransformer(
             startOffset = originalReceiver.startOffset,
             endOffset = originalReceiver.endOffset,
             origin = originalReceiver.origin,
-            symbol = IrValueParameterSymbolImpl(LazyClassReceiverParameterDescriptor(parentClass.descriptor)),
+            symbol = IrValueParameterSymbolImpl(
+                // IrValueParameterSymbolImpl requires a descriptor; same type as
+                // originalReceiver.symbol:
+                @OptIn(ObsoleteDescriptorBasedAPI::class)
+                LazyClassReceiverParameterDescriptor(parentClass.descriptor)
+            ),
             name = originalReceiver.name,
             index = originalReceiver.index,
             type = parentClass.symbol.createType(hasQuestionMark = false, emptyList()),
@@ -439,7 +454,8 @@ internal class PokoMembersTransformer(
     }
 
     /**
-     * Only works properly after [mutateWithNewDispatchReceiverParameterForParentClass] has been called on [irFunction].
+     * Only works properly after [mutateWithNewDispatchReceiverParameterForParentClass] has been
+     * called on [irFunction].
      */
     private fun IrBlockBodyBuilder.receiver(irFunction: IrFunction) =
         IrGetValueImpl(irFunction.dispatchReceiverParameter!!)
@@ -472,11 +488,13 @@ internal class PokoMembersTransformer(
     }
 
     private fun IrClass.reportError(message: String) {
-        val psi = descriptor.source.getPsi()
+        val psi = source.getPsi()
         val location = MessageUtil.psiElementToMessageLocation(psi)
         messageCollector.report(CompilerMessageSeverity.ERROR, message, location)
     }
 
+    // TODO: Implement an FIR-based declaration checker:
+    @OptIn(ObsoleteDescriptorBasedAPI::class)
     private fun IrProperty.reportError(message: String) {
         val psi = descriptor.source.getPsi()
         val location = MessageUtil.psiElementToMessageLocation(psi)
