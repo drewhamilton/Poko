@@ -53,10 +53,10 @@ import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
 import org.jetbrains.kotlin.ir.types.classOrNull
+import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.types.getArrayElementType
-import org.jetbrains.kotlin.ir.types.isArray
 import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.functions
@@ -184,15 +184,14 @@ internal class PokoMembersTransformer(
             val field = property.backingField!!
             val arg1 = irGetField(receiver(irFunction), field)
             val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
-            property.type.classifierOrNull.let { classifier ->
+            property.type.classifierOrNull.let {
                 val negativeComparison = when {
                     property.hasAnnotation(ReadArrayContentAnnotation.asSingleFqName()) -> {
                         irNot(
                             irArrayContentDeepEquals(
                                 receiver = arg1,
                                 argument = arg2,
-                                propertyClassifier = classifier,
-                                irClass = irClass,
+                                irProperty = property,
                             ),
                         )
                     }
@@ -210,19 +209,26 @@ internal class PokoMembersTransformer(
     private fun IrBuilderWithScope.irArrayContentDeepEquals(
         receiver: IrExpression,
         argument: IrExpression,
-        propertyClassifier: IrClassifierSymbol?,
-        irClass: IrClass,
+        irProperty: IrProperty,
     ): IrExpression {
+        val propertyClassifier = irProperty.type.classifierOrFail
+
         // TODO: Handle property of type `Any?` that is an array at runtime
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-            irClass.reportError("@ReadArrayContent on type $propertyClassifier is not supported")
+            irProperty.reportError(
+                "@ReadArrayContent on property of type <${irProperty.type.render()}> not supported"
+            )
             return irEquals(receiver, argument)
         }
 
         val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
             // TODO: Support nested arrays and remove this block
-            if (receiver.type.getArrayElementType(context.irBuiltIns).isArray()) {
-                irClass.reportError("@ReadArrayContent on nested array is not supported")
+            if (
+                receiver.type.getArrayElementType(context.irBuiltIns)
+                    .classifierOrFail
+                    .isArrayOrPrimitiveArray(context)
+            ) {
+                irProperty.reportError("@ReadArrayContent on nested array property not supported")
                 return irEquals(receiver, argument)
             }
             "contentDeepEquals"
@@ -468,6 +474,12 @@ internal class PokoMembersTransformer(
     }
 
     private fun IrClass.reportError(message: String) {
+        val psi = descriptor.source.getPsi()
+        val location = MessageUtil.psiElementToMessageLocation(psi)
+        messageCollector.report(CompilerMessageSeverity.ERROR, message, location)
+    }
+
+    private fun IrProperty.reportError(message: String) {
         val psi = descriptor.source.getPsi()
         val location = MessageUtil.psiElementToMessageLocation(psi)
         messageCollector.report(CompilerMessageSeverity.ERROR, message, location)

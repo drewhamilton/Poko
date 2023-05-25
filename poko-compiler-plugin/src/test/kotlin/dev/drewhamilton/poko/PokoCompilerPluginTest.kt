@@ -566,6 +566,46 @@ class PokoCompilerPluginTest {
         ),
         compare = compare,
     )
+
+    @Test fun `compilation reading array content of type Any fails`() {
+        testCompilation(
+            "illegal/AnyArrayHolder",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on property of type <kotlin.Any?> not supported")
+        }
+    }
+
+    @Test fun `compilation reading array content of generic type fails`() {
+        testCompilation(
+            "illegal/GenericArrayHolder",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on property of type <G of illegal.GenericArrayHolder> not supported")
+        }
+    }
+
+    @Test fun `compilation reading array content of nested primitive array fails`() {
+        testCompilation(
+            "illegal/NestedPrimitiveArrayHolder",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on nested array property not supported")
+        }
+    }
+
+    @Test fun `compilation reading array content of nested typed array fails`() {
+        testCompilation(
+            "illegal/NestedTypedArrayHolder",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("@ReadArrayContent on nested array property not supported")
+        }
+    }
     //endregion
 
     //region Unknown annotation name
