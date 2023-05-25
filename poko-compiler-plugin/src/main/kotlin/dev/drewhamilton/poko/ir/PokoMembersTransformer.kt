@@ -184,24 +184,22 @@ internal class PokoMembersTransformer(
             val field = property.backingField!!
             val arg1 = irGetField(receiver(irFunction), field)
             val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
-            property.type.classifierOrNull.let {
-                val negativeComparison = when {
-                    property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName()) -> {
-                        irNot(
-                            irArrayContentDeepEquals(
-                                receiver = arg1,
-                                argument = arg2,
-                                irProperty = property,
-                            ),
-                        )
-                    }
-
-                    else -> {
-                        irNotEquals(arg1, arg2)
-                    }
+            val negativeComparison = when {
+                property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName()) -> {
+                    irNot(
+                        irArrayContentDeepEquals(
+                            receiver = arg1,
+                            argument = arg2,
+                            irProperty = property,
+                        ),
+                    )
                 }
-                +irIfThenReturnFalse(negativeComparison)
+
+                else -> {
+                    irNotEquals(arg1, arg2)
+                }
             }
+            +irIfThenReturnFalse(negativeComparison)
         }
         +irReturnTrue()
     }
