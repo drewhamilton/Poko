@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JvmTarget
+import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -650,8 +651,29 @@ class PokoCompilerPluginTest {
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
         additionalTesting: (KotlinCompilation.Result) -> Unit = {}
     ) {
-        val result = prepareCompilation(*sourceFiles, pokoAnnotationName = pokoAnnotationName).compile()
-        assertThat(result.exitCode).isEqualTo(expectedExitCode)
+        val result =
+            prepareCompilation(*sourceFiles, pokoAnnotationName = pokoAnnotationName).compile()
+        if (
+            expectedExitCode == KotlinCompilation.ExitCode.OK &&
+            result.exitCode != KotlinCompilation.ExitCode.OK
+        ) {
+            val failureMessage = StringBuilder().apply {
+                append("expected: OK\nbut was : ")
+                append(result.exitCode)
+                append("\n")
+
+                result.messages.split("\n").forEach { message ->
+                    if (message.isNotEmpty()) {
+                        append("- ")
+                        append(message)
+                        append("\n")
+                    }
+                }
+            }.toString()
+            fail(failureMessage)
+        } else {
+            assertThat(result.exitCode).isEqualTo(expectedExitCode)
+        }
         additionalTesting(result)
     }
 
