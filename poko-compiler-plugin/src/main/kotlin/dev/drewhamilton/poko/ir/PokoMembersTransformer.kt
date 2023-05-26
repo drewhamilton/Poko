@@ -446,12 +446,36 @@ internal class PokoMembersTransformer(
             val irPropertyValue = irGetField(receiver(irFunction), property.backingField!!)
 
             val classifier = property.type.classifierOrNull
-            val irPropertyStringValue = if (classifier.isArrayOrPrimitiveArray(context)) {
-                irCall(context.irBuiltIns.dataClassArrayMemberToStringSymbol, context.irBuiltIns.stringType).apply {
-                    putValueArgument(0, irPropertyValue)
+            val irPropertyStringValue = when {
+                property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName()) -> {
+                    val toStringFunctionSymbol = getArrayDeepToStringFunction(property)
+                        ?: context.irBuiltIns.dataClassArrayMemberToStringSymbol
+                    irCall(
+                        callee = toStringFunctionSymbol,
+                        type = context.irBuiltIns.stringType,
+                    ).apply {
+                        // Poko modification: check for extension receiver for contentDeepHashCode case
+                        @OptIn(ObsoleteDescriptorBasedAPI::class)
+                        val hasExtensionReceiver =
+                            toStringFunctionSymbol.descriptor.extensionReceiverParameter != null
+                        if (hasExtensionReceiver) {
+                            extensionReceiver = irPropertyValue
+                        } else {
+                            putValueArgument(0, irPropertyValue)
+                        }
+                    }
                 }
-            } else {
-                irPropertyValue
+
+                classifier.isArrayOrPrimitiveArray(context) -> {
+                    irCall(
+                        callee = context.irBuiltIns.dataClassArrayMemberToStringSymbol,
+                        type = context.irBuiltIns.stringType
+                    ).apply {
+                        putValueArgument(0, irPropertyValue)
+                    }
+                }
+
+                else -> irPropertyValue
             }
 
             irConcat.addArgument(irPropertyStringValue)
@@ -459,6 +483,41 @@ internal class PokoMembersTransformer(
         }
         irConcat.addArgument(irString(")"))
         +irReturn(irConcat)
+    }
+
+    /**
+     * Returns contentDeepToSTring function symbol if it is an appropriate option for [irProperty],
+     * else returns null.
+     */
+    private fun IrBlockBodyBuilder.getArrayDeepToStringFunction(
+        irProperty: IrProperty,
+    ): IrSimpleFunctionSymbol? {
+        val propertyClassifier = irProperty.type.classifierOrFail
+
+        // TODO: Handle property of type `Any?` that is an array at runtime
+        if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
+            irProperty.reportError(
+                "@ReadArrayContent on property of type <${irProperty.type.render()}> not supported"
+            )
+            return null
+        }
+
+        // Primitive arrays don't need deep toString:
+        if (propertyClassifier in context.irBuiltIns.primitiveArraysToPrimitiveTypes) {
+            return null
+        }
+
+        return pluginContext.referenceFunctions(
+            callableId = CallableId(
+                packageName = FqName("kotlin.collections"),
+                callableName = Name.identifier("contentDeepToString"),
+            ),
+        ).single { functionSymbol ->
+            // Disambiguate against the older non-nullable receiver overload:
+            functionSymbol.owner.extensionReceiverParameter?.type?.let {
+                it.classifierOrNull == propertyClassifier && it.isNullable()
+            } ?: false
+        }
     }
     //endregion
 
