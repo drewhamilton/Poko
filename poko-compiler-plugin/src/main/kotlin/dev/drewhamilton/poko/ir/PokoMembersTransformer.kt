@@ -315,32 +315,83 @@ internal class PokoMembersTransformer(
     /**
      * Symbol-retrieval adapted from [org.jetbrains.kotlin.fir.backend.generators.DataClassMembersGenerator].
      */
-    private fun IrBlockBodyBuilder.getHashCodeOf(property: IrProperty, irValue: IrExpression): IrExpression {
-        val hashCodeFunctionSymbol = property.type.classifierOrNull.let { classifier ->
-            when {
-                classifier.isArrayOrPrimitiveArray(context) -> context.irBuiltIns.dataClassArrayMemberHashCodeSymbol
-                classifier is IrClassSymbol -> getHashCodeFunction(classifier.owner)
-                classifier is IrTypeParameterSymbol -> getHashCodeFunction(classifier.owner.erasedUpperBound)
-                else -> error("Unknown classifier kind $classifier")
-            }
-        }.also {
-            require(it.isBound) { "$it is not bound" }
+    private fun IrBlockBodyBuilder.getHashCodeOf(
+        property: IrProperty,
+        irValue: IrExpression,
+    ): IrExpression {
+        val hasArrayContentBasedAnnotation =
+            property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName())
+        // Non-null if deep hashCode will be used, else null:
+        val deepHashCodeFunctionSymbol = if (hasArrayContentBasedAnnotation) {
+            getArrayDeepHashCodeFunction(property)
+        } else {
+            null
         }
+        val classifier = property.type.classifierOrNull
+        val hashCodeFunctionSymbol = deepHashCodeFunctionSymbol ?: when {
+            classifier.isArrayOrPrimitiveArray(context) ->
+                context.irBuiltIns.dataClassArrayMemberHashCodeSymbol
+            classifier is IrClassSymbol -> getHashCodeFunction(classifier.owner)
+            classifier is IrTypeParameterSymbol ->
+                getHashCodeFunction(classifier.owner.erasedUpperBound)
+            else -> error("Unknown classifier kind $classifier")
+        }
+        check(hashCodeFunctionSymbol.isBound) { "$hashCodeFunctionSymbol is not bound" }
 
-        // DataClassMembersGenerator uses this too:
-        @OptIn(ObsoleteDescriptorBasedAPI::class)
-        val hasDispatchReceiver = hashCodeFunctionSymbol.descriptor.dispatchReceiverParameter != null
+        // Poko modification: check for extension receiver for contentDeepHashCode case
+        val (hasDispatchReceiver, hasExtensionReceiver) = with(
+            // DataClassMembersGenerator uses this too:
+            @OptIn(ObsoleteDescriptorBasedAPI::class)
+            hashCodeFunctionSymbol.descriptor
+        ) {
+            (dispatchReceiverParameter != null) to (extensionReceiverParameter != null)
+        }
         return irCall(
             hashCodeFunctionSymbol,
             context.irBuiltIns.intType,
-            valueArgumentsCount = if (hasDispatchReceiver) 0 else 1,
+            valueArgumentsCount = if (hasDispatchReceiver || hasExtensionReceiver) 0 else 1,
             typeArgumentsCount = 0
         ).apply {
-            if (hasDispatchReceiver) {
-                dispatchReceiver = irValue
-            } else {
-                putValueArgument(0, irValue)
+            when {
+                hasDispatchReceiver -> dispatchReceiver = irValue
+                hasExtensionReceiver -> extensionReceiver = irValue
+                else -> putValueArgument(0, irValue)
             }
+        }
+    }
+
+    /**
+     * Returns contentDeepHashCode function symbol if it is an appropriate option for [irProperty],
+     * else returns null.
+     */
+    private fun IrBlockBodyBuilder.getArrayDeepHashCodeFunction(
+        irProperty: IrProperty,
+    ): IrSimpleFunctionSymbol? {
+        val propertyClassifier = irProperty.type.classifierOrFail
+
+        // TODO: Handle property of type `Any?` that is an array at runtime
+        if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
+            irProperty.reportError(
+                "@ReadArrayContent on property of type <${irProperty.type.render()}> not supported"
+            )
+            return null
+        }
+
+        // Primitive arrays don't need deep equals:
+        if (propertyClassifier in context.irBuiltIns.primitiveArraysToPrimitiveTypes) {
+            return null
+        }
+
+        return pluginContext.referenceFunctions(
+            callableId = CallableId(
+                packageName = FqName("kotlin.collections"),
+                callableName = Name.identifier("contentDeepHashCode"),
+            ),
+        ).single { functionSymbol ->
+            // Disambiguate against the older non-nullable receiver overload:
+            functionSymbol.owner.extensionReceiverParameter?.type?.let {
+                it.classifierOrNull == propertyClassifier && it.isNullable()
+            } ?: false
         }
     }
 
