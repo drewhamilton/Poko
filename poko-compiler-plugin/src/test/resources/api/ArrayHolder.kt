@@ -25,5 +25,6 @@ import dev.drewhamilton.poko.Poko
     @ArrayContentBased val nullableFloatArray: FloatArray?,
     @ArrayContentBased val doubleArray: DoubleArray,
     @ArrayContentBased val nullableDoubleArray: DoubleArray?,
-    // TODO: more
+    @ArrayContentBased val nestedStringArray: Array<Array<String>>,
+    @ArrayContentBased val nestedIntArray: Array<IntArray>,
 )

@@ -56,7 +56,6 @@ import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
-import org.jetbrains.kotlin.ir.types.getArrayElementType
 import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.functions
@@ -223,15 +222,6 @@ internal class PokoMembersTransformer(
         }
 
         val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
-            // TODO: Support nested arrays and remove this block
-            if (
-                receiver.type.getArrayElementType(context.irBuiltIns)
-                    .classifierOrFail
-                    .isArrayOrPrimitiveArray(context)
-            ) {
-                irProperty.reportError("@ReadArrayContent on nested array property not supported")
-                return irEquals(receiver, argument)
-            }
             "contentDeepEquals"
         } else {
             "contentEquals"
