@@ -558,24 +558,38 @@ class PokoCompilerPluginTest {
         nullableFloatArray1: FloatArray? = null,
         doubleArray1: DoubleArray = doubleArrayOf(2.22222, Double.NaN),
         nullableDoubleArray1: DoubleArray? = null,
-        stringArray2: Array<String> = stringArray1,
-        nullableStringArray2: Array<String>? = nullableStringArray1,
-        booleanArray2: BooleanArray = booleanArray1,
-        nullableBooleanArray2: BooleanArray? = nullableBooleanArray1,
-        byteArray2: ByteArray = byteArray1,
-        nullableByteArray2: ByteArray? = nullableByteArray1,
-        charArray2: CharArray = charArray1,
-        nullableCharArray2: CharArray? = nullableCharArray1,
-        shortArray2: ShortArray = shortArray1,
-        nullableShortArray2: ShortArray? = nullableShortArray1,
-        intArray2: IntArray = intArray1,
-        nullableIntArray2: IntArray? = nullableIntArray1,
-        longArray2: LongArray = longArray1,
-        nullableLongArray2: LongArray? = nullableLongArray1,
-        floatArray2: FloatArray = floatArray1,
-        nullableFloatArray2: FloatArray? = nullableFloatArray1,
-        doubleArray2: DoubleArray = doubleArray1,
-        nullableDoubleArray2: DoubleArray? = nullableDoubleArray1,
+        nestedStringArray1: Array<Array<String>> = arrayOf(
+            arrayOf("1A", "2A"),
+            arrayOf("1B", "2B", "3B"),
+        ),
+        nestedIntArray1: Array<IntArray> = arrayOf(
+            intArrayOf(1, 2, 3, 4),
+            intArrayOf(99, 98, 97),
+        ),
+        stringArray2: Array<String> = stringArray1.copyOf(),
+        nullableStringArray2: Array<String>? = nullableStringArray1?.copyOf(),
+        booleanArray2: BooleanArray = booleanArray1.copyOf(),
+        nullableBooleanArray2: BooleanArray? = nullableBooleanArray1?.copyOf(),
+        byteArray2: ByteArray = byteArray1.copyOf(),
+        nullableByteArray2: ByteArray? = nullableByteArray1?.copyOf(),
+        charArray2: CharArray = charArray1.copyOf(),
+        nullableCharArray2: CharArray? = nullableCharArray1?.copyOf(),
+        shortArray2: ShortArray = shortArray1.copyOf(),
+        nullableShortArray2: ShortArray? = nullableShortArray1?.copyOf(),
+        intArray2: IntArray = intArray1.copyOf(),
+        nullableIntArray2: IntArray? = nullableIntArray1?.copyOf(),
+        longArray2: LongArray = longArray1.copyOf(),
+        nullableLongArray2: LongArray? = nullableLongArray1?.copyOf(),
+        floatArray2: FloatArray = floatArray1.copyOf(),
+        nullableFloatArray2: FloatArray? = nullableFloatArray1?.copyOf(),
+        doubleArray2: DoubleArray = doubleArray1.copyOf(),
+        nullableDoubleArray2: DoubleArray? = nullableDoubleArray1?.copyOf(),
+        nestedStringArray2: Array<Array<String>> = nestedStringArray1.map { innerArray ->
+            innerArray.copyOf()
+        }.toTypedArray(),
+        nestedIntArray2: Array<IntArray> = nestedIntArray1.map { innerArray ->
+            innerArray.copyOf()
+        }.toTypedArray(),
         compare: (firstInstance: Any, secondInstance: Any) -> Unit,
     ) = compareTwoInstances(
         sourceFileName = "api/ArrayHolder",
@@ -598,6 +612,8 @@ class PokoCompilerPluginTest {
             FloatArray::class.java to nullableFloatArray1,
             DoubleArray::class.java to doubleArray1,
             DoubleArray::class.java to nullableDoubleArray1,
+            Array<Array<String>>::class.java to nestedStringArray1,
+            Array<IntArray>::class.java to nestedIntArray1,
         ),
         secondInstanceConstructorArgs = listOf(
             Array<String>::class.java to stringArray2,
@@ -618,6 +634,8 @@ class PokoCompilerPluginTest {
             FloatArray::class.java to nullableFloatArray2,
             DoubleArray::class.java to doubleArray2,
             DoubleArray::class.java to nullableDoubleArray2,
+            Array<Array<String>>::class.java to nestedStringArray2,
+            Array<IntArray>::class.java to nestedIntArray2,
         ),
         compare = compare,
     )
@@ -639,26 +657,6 @@ class PokoCompilerPluginTest {
         ) { result ->
             assertThat(result.messages)
                 .contains("@ReadArrayContent on property of type <G of illegal.GenericArrayHolder> not supported")
-        }
-    }
-
-    @Test fun `compilation reading array content of nested primitive array fails`() {
-        testCompilation(
-            "illegal/NestedPrimitiveArrayHolder",
-            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
-        ) { result ->
-            assertThat(result.messages)
-                .contains("@ReadArrayContent on nested array property not supported")
-        }
-    }
-
-    @Test fun `compilation reading array content of nested typed array fails`() {
-        testCompilation(
-            "illegal/NestedTypedArrayHolder",
-            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
-        ) { result ->
-            assertThat(result.messages)
-                .contains("@ReadArrayContent on nested array property not supported")
         }
     }
 
