@@ -454,7 +454,7 @@ internal class PokoMembersTransformer(
                         callee = toStringFunctionSymbol,
                         type = context.irBuiltIns.stringType,
                     ).apply {
-                        // Poko modification: check for extension receiver for contentDeepHashCode case
+                        // Poko modification: check for extension receiver for contentDeepToString
                         @OptIn(ObsoleteDescriptorBasedAPI::class)
                         val hasExtensionReceiver =
                             toStringFunctionSymbol.descriptor.extensionReceiverParameter != null
