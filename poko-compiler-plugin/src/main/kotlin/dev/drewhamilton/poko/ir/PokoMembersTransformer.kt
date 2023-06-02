@@ -486,7 +486,7 @@ internal class PokoMembersTransformer(
     }
 
     /**
-     * Returns contentDeepToSTring function symbol if it is an appropriate option for [irProperty],
+     * Returns contentDeepToString function symbol if it is an appropriate option for [irProperty],
      * else returns null.
      */
     private fun IrBlockBodyBuilder.getArrayDeepToStringFunction(
