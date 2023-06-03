@@ -339,11 +339,7 @@ internal class PokoMembersTransformer(
         check(hashCodeFunctionSymbol.isBound) { "$hashCodeFunctionSymbol is not bound" }
 
         // Poko modification: check for extension receiver for contentDeepHashCode case
-        val (hasDispatchReceiver, hasExtensionReceiver) = with(
-            // DataClassMembersGenerator uses this too:
-            @OptIn(ObsoleteDescriptorBasedAPI::class)
-            hashCodeFunctionSymbol.descriptor
-        ) {
+        val (hasDispatchReceiver, hasExtensionReceiver) = with(hashCodeFunctionSymbol.owner) {
             (dispatchReceiverParameter != null) to (extensionReceiverParameter != null)
         }
         return irCall(
@@ -455,9 +451,8 @@ internal class PokoMembersTransformer(
                         type = context.irBuiltIns.stringType,
                     ).apply {
                         // Poko modification: check for extension receiver for contentDeepToString
-                        @OptIn(ObsoleteDescriptorBasedAPI::class)
                         val hasExtensionReceiver =
-                            toStringFunctionSymbol.descriptor.extensionReceiverParameter != null
+                            toStringFunctionSymbol.owner.extensionReceiverParameter != null
                         if (hasExtensionReceiver) {
                             extensionReceiver = irPropertyValue
                         } else {
