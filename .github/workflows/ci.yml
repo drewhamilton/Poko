@@ -13,6 +13,12 @@ jobs:
         uses: actions/checkout@v3
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1
+      # Zulu JDK 10 seems to be flaky on GH Actions:
+      - name: Install JDK 10
+        uses: actions/setup-java@v3
+        with:
+          distribution: liberica
+          java-version: 10
       - name: Install JDK
         uses: actions/setup-java@v3
         with:
@@ -29,12 +35,6 @@ jobs:
             17
             18
             19
-      # Zulu JDK 10 seems to be flaky on GH Actions:
-      - name: Install JDK 10
-        uses: actions/setup-java@v3
-        with:
-          distribution: liberica
-          java-version: 10
       - name: Build
         uses: gradle/gradle-build-action@v2
         with:
