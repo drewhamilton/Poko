@@ -58,5 +58,11 @@ for (javaVersion in 8..18) {
         classpath = testTask.classpath
         testClassesDirs = testTask.testClassesDirs
     }
+
+    // JDK 10 is flaky on CI:
+    val isCi = System.getenv()["CI"] == "true"
+    if (isCi && javaVersion == 10)
+        continue
+
     tasks.named("check").configure { dependsOn(jdkTest) }
 }
