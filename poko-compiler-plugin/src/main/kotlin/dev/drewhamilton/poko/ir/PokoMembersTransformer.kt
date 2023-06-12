@@ -216,7 +216,7 @@ internal class PokoMembersTransformer(
         // TODO: Handle property of type `Any?` that is an array at runtime
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
             irProperty.reportError(
-                "@ReadArrayContent on property of type <${irProperty.type.render()}> not supported"
+                "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
             )
             return irEquals(receiver, argument)
         }
@@ -368,7 +368,7 @@ internal class PokoMembersTransformer(
         // TODO: Handle property of type `Any?` that is an array at runtime
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
             irProperty.reportError(
-                "@ReadArrayContent on property of type <${irProperty.type.render()}> not supported"
+                "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
             )
             return null
         }
@@ -492,7 +492,7 @@ internal class PokoMembersTransformer(
         // TODO: Handle property of type `Any?` that is an array at runtime
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
             irProperty.reportError(
-                "@ReadArrayContent on property of type <${irProperty.type.render()}> not supported"
+                "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
             )
             return null
         }

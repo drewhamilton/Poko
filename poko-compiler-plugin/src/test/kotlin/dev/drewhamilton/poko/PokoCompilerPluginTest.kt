@@ -646,7 +646,7 @@ class PokoCompilerPluginTest {
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
             assertThat(result.messages)
-                .contains("@ReadArrayContent on property of type <kotlin.Any?> not supported")
+                .contains("@ArrayContentBased on property of type <kotlin.Any?> not supported")
         }
     }
 
@@ -656,7 +656,7 @@ class PokoCompilerPluginTest {
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
             assertThat(result.messages)
-                .contains("@ReadArrayContent on property of type <G of illegal.GenericArrayHolder> not supported")
+                .contains("@ArrayContentBased on property of type <G of illegal.GenericArrayHolder> not supported")
         }
     }
 
@@ -666,11 +666,11 @@ class PokoCompilerPluginTest {
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
             assertThat(result.messages)
-                .contains("@ReadArrayContent on property of type <kotlin.String> not supported")
+                .contains("@ArrayContentBased on property of type <kotlin.String> not supported")
             assertThat(result.messages)
-                .contains("@ReadArrayContent on property of type <kotlin.Int> not supported")
+                .contains("@ArrayContentBased on property of type <kotlin.Int> not supported")
             assertThat(result.messages)
-                .contains("@ReadArrayContent on property of type <kotlin.Float> not supported")
+                .contains("@ArrayContentBased on property of type <kotlin.Float> not supported")
         }
     }
     //endregion
