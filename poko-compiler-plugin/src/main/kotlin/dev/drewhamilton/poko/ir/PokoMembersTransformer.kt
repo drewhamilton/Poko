@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.ir.builders.irReturnTrue
 import org.jetbrains.kotlin.ir.builders.irSet
 import org.jetbrains.kotlin.ir.builders.irString
 import org.jetbrains.kotlin.ir.builders.irTemporary
+import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
@@ -211,14 +212,19 @@ internal class PokoMembersTransformer(
         argument: IrExpression,
         irProperty: IrProperty,
     ): IrExpression {
-        val propertyClassifier = irProperty.type.classifierOrFail
+        val propertyType = irProperty.type
+        val propertyClassifier = propertyType.classifierOrFail
 
-        // TODO: Handle property of type `Any?` that is an array at runtime
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-            irProperty.reportError(
-                "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
-            )
-            return irEquals(receiver, argument)
+            // TODO: Handle generic type that is an array at runtime
+            return if (propertyClassifier == context.irBuiltIns.anyClass) {
+                irRuntimeArrayContentDeepEquals(receiver, argument, irProperty)
+            } else {
+                irProperty.reportError(
+                    "@ArrayContentBased on property of type <${propertyType.render()}> not supported"
+                )
+                irEquals(receiver, argument)
+            }
         }
 
         val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
@@ -248,6 +254,19 @@ internal class PokoMembersTransformer(
             extensionReceiver = receiver
             putValueArgument(0, argument)
         }
+    }
+
+    private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
+        receiver: IrExpression,
+        argument: IrExpression,
+        irProperty: IrProperty,
+    ): IrExpression {
+        return irWhen(
+            type = context.irBuiltIns.booleanType,
+            branches = listOf(
+                TODO(),
+            ),
+        )
     }
     //endregion
 
