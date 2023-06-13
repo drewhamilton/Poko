@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.name.ClassId
 
 @ExperimentalCompilerApi
 @AutoService(CompilerPluginRegistrar::class)
-class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
+public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
     // TODO: Support K2
     override val supportsK2: Boolean = false

@@ -2,6 +2,7 @@ import com.google.devtools.ksp.gradle.KspTask
 import dev.drewhamilton.poko.build.generateArtifactInfo
 import dev.drewhamilton.poko.build.setUpPublication
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -24,6 +25,10 @@ generateArtifactInfo(
     basePackage = "dev.drewhamilton.poko.gradle",
     DokkaTask::class, Jar::class, KspTask::class,
 )
+
+kotlin {
+    explicitApi = ExplicitApiMode.Strict
+}
 
 tasks.withType<KotlinCompile>().configureEach {
     compilerOptions {

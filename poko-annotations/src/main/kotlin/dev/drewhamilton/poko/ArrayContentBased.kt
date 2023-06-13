@@ -21,4 +21,4 @@ package dev.drewhamilton.poko
 @ExperimentalArrayContentSupport
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.PROPERTY)
-annotation class ArrayContentBased
+public annotation class ArrayContentBased

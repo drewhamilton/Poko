@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.SubpluginArtifact
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
-class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
+public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun apply(target: Project) {
         target.extensions.create("poko", PokoPluginExtension::class.java)
@@ -22,7 +22,7 @@ class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun getCompilerPluginId(): String = ArtifactInfo.COMPILER_PLUGIN_ARTIFACT
 
-    override fun getPluginArtifact() = SubpluginArtifact(
+    override fun getPluginArtifact(): SubpluginArtifact = SubpluginArtifact(
         groupId = ArtifactInfo.GROUP,
         artifactId = getCompilerPluginId(),
         version = ArtifactInfo.VERSION

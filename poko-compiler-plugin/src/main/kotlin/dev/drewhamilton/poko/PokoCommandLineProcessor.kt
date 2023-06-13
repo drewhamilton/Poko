@@ -9,9 +9,9 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 
 @AutoService(CommandLineProcessor::class)
 @ExperimentalCompilerApi
-class PokoCommandLineProcessor : CommandLineProcessor {
+public class PokoCommandLineProcessor : CommandLineProcessor {
 
-    override val pluginId = ArtifactInfo.COMPILER_PLUGIN_ARTIFACT
+    override val pluginId: String = ArtifactInfo.COMPILER_PLUGIN_ARTIFACT
 
     override val pluginOptions: Collection<AbstractCliOption> = listOf(
         CliOption(CompilerOptions.ENABLED.toString(), "<true|false>", "", required = true),
@@ -22,7 +22,7 @@ class PokoCommandLineProcessor : CommandLineProcessor {
         option: AbstractCliOption,
         value: String,
         configuration: CompilerConfiguration
-    ) = when (option.optionName) {
+    ): Unit = when (option.optionName) {
         CompilerOptions.ENABLED.toString() -> configuration.put(CompilerOptions.ENABLED, value.toBoolean())
         CompilerOptions.POKO_ANNOTATION.toString() -> configuration.put(CompilerOptions.POKO_ANNOTATION, value)
         else -> throw IllegalArgumentException("Unknown plugin option: ${option.optionName}")
