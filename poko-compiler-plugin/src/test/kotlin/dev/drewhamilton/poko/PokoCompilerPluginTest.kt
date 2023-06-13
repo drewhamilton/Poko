@@ -659,6 +659,88 @@ class PokoCompilerPluginTest {
         }
     }
 
+    @Test fun `two AnyArrayHolder instances holding equivalent nested typed arrays are equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            any2 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            nullableAny1 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+            nullableAny2 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent nested typed arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            any2 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            nullableAny1 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+            nullableAny2 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent nested typed arrays have same toString`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            any2 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            nullableAny1 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+            nullableAny2 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent non-arrays are equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = listOf("one", "two"),
+            any2 = listOf("one", "two"),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent non-arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = listOf("one", "two"),
+            any2 = listOf("one", "two"),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent non-arrays have same toString`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = listOf("one", "two"),
+            any2 = listOf("one", "two"),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding inequivalent nested typed arrays are not equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            any2 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `AnyArrayHolder instances holding mismatching types are not equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = arrayOf("x", "y"),
+            any2 = "xy",
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+    }
+
     @Test fun `compilation reading array content of generic type fails`() {
         testCompilation(
             "illegal/GenericArrayHolder",
