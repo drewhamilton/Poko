@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irCallOp
+import org.jetbrains.kotlin.ir.builders.irComposite
 import org.jetbrains.kotlin.ir.builders.irConcat
 import org.jetbrains.kotlin.ir.builders.irElseBranch
 import org.jetbrains.kotlin.ir.builders.irEqeqeq
@@ -250,44 +251,51 @@ internal class PokoMembersTransformer(
             hasQuestionMark = false,
             arguments = listOf(IrStarProjectionImpl),
         )
-        return irWhen(
-            type = context.irBuiltIns.unitType,
-            branches = listOf(
-                irBranch(
-                    condition = irIs(
-                        argument = receiver,
-                        type = starArrayType,
+        return irComposite {
+            +irWhen(
+                type = context.irBuiltIns.unitType,
+                branches = listOf(
+                    irBranch(
+                        condition = irIs(
+                            argument = receiver,
+                            type = starArrayType,
+                        ),
+                        result = irIfThenReturnFalse(
+                            irCall(
+                                callee = context.irBuiltIns.ororSymbol,
+                                type = context.irBuiltIns.booleanType,
+                                valueArgumentsCount = 2,
+                            ).apply {
+                                putValueArgument(0, irNotIs(argument, starArrayType))
+                                putValueArgument(
+                                    index = 1,
+                                    valueArgument = irNot(
+                                        irCall(
+                                            callee = findContentDeepEqualsFunctionSymbol(
+                                                context.irBuiltIns.arrayClass,
+                                            ),
+                                            type = context.irBuiltIns.booleanType,
+                                            valueArgumentsCount = 1,
+                                            typeArgumentsCount = 1,
+                                        ).apply {
+                                            extensionReceiver = receiver
+                                            putValueArgument(0, argument)
+                                        }
+                                    )
+                                )
+                            },
+                        ),
                     ),
-                    result = irIfThenReturnFalse(
-                        irCall(
-                            callee = context.irBuiltIns.ororSymbol,
-                            type = context.irBuiltIns.booleanType,
-                            valueArgumentsCount = 2,
-                        ).apply {
-                            putValueArgument(0, irNotIs(argument, starArrayType))
-                            putValueArgument(
-                                index = 1,
-                                valueArgument = irCall(
-                                    callee = findContentDeepEqualsFunctionSymbol(
-                                        context.irBuiltIns.arrayClass,
-                                    ),
-                                    type = context.irBuiltIns.booleanType,
-                                    valueArgumentsCount = 1,
-                                    typeArgumentsCount = 1,
-                                ).apply {
-                                    extensionReceiver = receiver
-                                    putValueArgument(0, argument)
-                                }
-                            )
-                        },
+
+                    // TODO: Primitive arrays
+
+                    irElseBranch(
+                        irIfThenReturnFalse(irNotEquals(receiver, argument)),
                     ),
                 ),
-                // TODO: Primitive arrays
-                irElseBranch(
-                    irIfThenReturnFalse(irNotEquals(receiver, argument)),
-                ),
-            ),
-        )
+            )
+            +irReturnTrue()
+        }
     }
 
     /**
