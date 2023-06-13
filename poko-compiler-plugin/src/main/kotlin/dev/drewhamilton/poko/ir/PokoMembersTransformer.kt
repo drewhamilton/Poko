@@ -15,9 +15,11 @@ import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContext
 import org.jetbrains.kotlin.ir.builders.irAs
 import org.jetbrains.kotlin.ir.builders.irBlockBody
+import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irCallOp
 import org.jetbrains.kotlin.ir.builders.irConcat
+import org.jetbrains.kotlin.ir.builders.irElseBranch
 import org.jetbrains.kotlin.ir.builders.irEqeqeq
 import org.jetbrains.kotlin.ir.builders.irEquals
 import org.jetbrains.kotlin.ir.builders.irGet
@@ -26,6 +28,7 @@ import org.jetbrains.kotlin.ir.builders.irIfNull
 import org.jetbrains.kotlin.ir.builders.irIfThenReturnFalse
 import org.jetbrains.kotlin.ir.builders.irIfThenReturnTrue
 import org.jetbrains.kotlin.ir.builders.irInt
+import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irNotEquals
 import org.jetbrains.kotlin.ir.builders.irNotIs
 import org.jetbrains.kotlin.ir.builders.irReturn
@@ -57,6 +60,7 @@ import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
+import org.jetbrains.kotlin.ir.types.impl.IrStarProjectionImpl
 import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.functions
@@ -218,7 +222,7 @@ internal class PokoMembersTransformer(
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
             // TODO: Handle generic type that is an array at runtime
             return if (propertyClassifier == context.irBuiltIns.anyClass) {
-                irRuntimeArrayContentDeepEquals(receiver, argument, irProperty)
+                irRuntimeArrayContentDeepEquals(receiver, argument, propertyClassifier)
             } else {
                 irProperty.reportError(
                     "@ArrayContentBased on property of type <${propertyType.render()}> not supported"
@@ -227,26 +231,8 @@ internal class PokoMembersTransformer(
             }
         }
 
-        val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
-            "contentDeepEquals"
-        } else {
-            "contentEquals"
-        }
-        val contentEqualsFunctionSymbol = pluginContext.referenceFunctions(
-            callableId = CallableId(
-                packageName = FqName("kotlin.collections"),
-                callableName = Name.identifier(callableName),
-            ),
-        ).single { functionSymbol ->
-            // Find the single function with the relevant array type and disambiguate against the
-            // older non-nullable receiver overload:
-            functionSymbol.owner.extensionReceiverParameter?.type?.let {
-                it.classifierOrNull == propertyClassifier && it.isNullable()
-            } ?: false
-        }
-
         return irCall(
-            contentEqualsFunctionSymbol,
+            findContentDeepEqualsFunctionSymbol(propertyClassifier),
             type = context.irBuiltIns.booleanType,
             valueArgumentsCount = 1,
             typeArgumentsCount = 1,
@@ -259,14 +245,71 @@ internal class PokoMembersTransformer(
     private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
         receiver: IrExpression,
         argument: IrExpression,
-        irProperty: IrProperty,
+        propertyClassifier: IrClassifierSymbol,
     ): IrExpression {
+        val starArrayType = context.irBuiltIns.arrayClass.createType(
+            hasQuestionMark = false,
+            arguments = listOf(IrStarProjectionImpl),
+        )
         return irWhen(
-            type = context.irBuiltIns.booleanType,
+            type = context.irBuiltIns.unitType,
             branches = listOf(
-                TODO(),
+                irBranch(
+                    condition = irIs(
+                        argument = receiver,
+                        type = starArrayType,
+                    ),
+                    result = irIfThenReturnFalse(
+                        irCall(
+                            callee = context.irBuiltIns.ororSymbol,
+                            type = context.irBuiltIns.booleanType,
+                            valueArgumentsCount = 2,
+                        ).apply {
+                            putValueArgument(0, irNotIs(argument, starArrayType))
+                            putValueArgument(
+                                index = 1,
+                                valueArgument = irCall(
+                                    callee = findContentDeepEqualsFunctionSymbol(
+                                        context.irBuiltIns.arrayClass,
+                                    ),
+                                    type = context.irBuiltIns.booleanType,
+                                    valueArgumentsCount = 1,
+                                    typeArgumentsCount = 1,
+                                ).apply {
+                                    extensionReceiver = receiver
+                                    putValueArgument(0, argument)
+                                }
+                            )
+                        },
+                    ),
+                ),
+                irElseBranch(
+                    irIfThenReturnFalse(irNotEquals(receiver, argument)),
+                ),
             ),
         )
+    }
+
+    private fun IrBuilderWithScope.findContentDeepEqualsFunctionSymbol(
+        propertyClassifier: IrClassifierSymbol,
+    ): IrSimpleFunctionSymbol {
+        val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
+            "contentDeepEquals"
+        } else {
+            "contentEquals"
+        }
+        return pluginContext.referenceFunctions(
+            callableId = CallableId(
+                packageName = FqName("kotlin.collections"),
+                callableName = Name.identifier(callableName),
+            ),
+        ).single { functionSymbol ->
+            // Find the single function with the relevant array type and disambiguate against the
+            // older non-nullable receiver overload:
+            functionSymbol.owner.extensionReceiverParameter?.type?.let {
+                it.classifierOrNull == propertyClassifier && it.isNullable()
+            } ?: false
+        }
     }
     //endregion
 
