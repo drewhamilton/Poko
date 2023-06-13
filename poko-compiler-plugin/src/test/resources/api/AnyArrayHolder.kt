@@ -9,4 +9,5 @@ import dev.drewhamilton.poko.Poko
 @Poko class AnyArrayHolder(
     @ArrayContentBased val any: Any,
     @ArrayContentBased val nullableAny: Any?,
+    val trailingProperty: String,
 )

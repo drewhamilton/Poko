@@ -251,51 +251,44 @@ internal class PokoMembersTransformer(
             hasQuestionMark = false,
             arguments = listOf(IrStarProjectionImpl),
         )
-        return irComposite {
-            +irWhen(
-                type = context.irBuiltIns.unitType,
-                branches = listOf(
-                    irBranch(
-                        condition = irIs(
-                            argument = receiver,
-                            type = starArrayType,
-                        ),
-                        result = irIfThenReturnFalse(
-                            irCall(
-                                callee = context.irBuiltIns.ororSymbol,
+        return irWhen(
+            type = context.irBuiltIns.booleanType,
+            branches = listOf(
+                irBranch(
+                    condition = irIs(
+                        argument = receiver,
+                        type = starArrayType,
+                    ),
+                    result = irCall(
+                        callee = context.irBuiltIns.andandSymbol,
+                        type = context.irBuiltIns.booleanType,
+                        valueArgumentsCount = 2,
+                    ).apply {
+                        putValueArgument(0, irIs(argument, starArrayType))
+                        putValueArgument(
+                            index = 1,
+                            valueArgument = irCall(
+                                callee = findContentDeepEqualsFunctionSymbol(
+                                    context.irBuiltIns.arrayClass,
+                                ),
                                 type = context.irBuiltIns.booleanType,
-                                valueArgumentsCount = 2,
+                                valueArgumentsCount = 1,
+                                typeArgumentsCount = 1,
                             ).apply {
-                                putValueArgument(0, irNotIs(argument, starArrayType))
-                                putValueArgument(
-                                    index = 1,
-                                    valueArgument = irNot(
-                                        irCall(
-                                            callee = findContentDeepEqualsFunctionSymbol(
-                                                context.irBuiltIns.arrayClass,
-                                            ),
-                                            type = context.irBuiltIns.booleanType,
-                                            valueArgumentsCount = 1,
-                                            typeArgumentsCount = 1,
-                                        ).apply {
-                                            extensionReceiver = receiver
-                                            putValueArgument(0, argument)
-                                        }
-                                    )
-                                )
-                            },
-                        ),
-                    ),
-
-                    // TODO: Primitive arrays
-
-                    irElseBranch(
-                        irIfThenReturnFalse(irNotEquals(receiver, argument)),
-                    ),
+                                extensionReceiver = receiver
+                                putValueArgument(0, argument)
+                            }
+                        )
+                    },
                 ),
-            )
-            +irReturnTrue()
-        }
+
+                // TODO: Primitive arrays
+
+                irElseBranch(
+                    irEquals(receiver, argument),
+                ),
+            ),
+        )
     }
 
     /**

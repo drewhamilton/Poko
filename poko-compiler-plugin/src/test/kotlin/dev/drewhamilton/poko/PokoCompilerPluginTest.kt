@@ -741,6 +741,16 @@ class PokoCompilerPluginTest {
         }
     }
 
+    @Test fun `AnyArrayHolder instances holding inequivalent trailing properties are not equals`() {
+        compareAnyArrayHolderApiInstances(
+            trailingProperty1 = "1",
+            trailingProperty2 = "2",
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+    }
+
     @Test fun `compilation reading array content of generic type fails`() {
         testCompilation(
             "illegal/GenericArrayHolder",
@@ -754,18 +764,22 @@ class PokoCompilerPluginTest {
     private fun compareAnyArrayHolderApiInstances(
         any1: Any = arrayOf("string A", "string B"),
         nullableAny1: Any? = null,
+        trailingProperty1: String = "trailing string",
         any2: Any = arrayOf("string A", "string B"),
         nullableAny2: Any? = null,
+        trailingProperty2: String = trailingProperty1,
         compare: (firstInstance: Any, secondInstance: Any) -> Unit,
     ) = compareTwoInstances(
         sourceFileName = "api/AnyArrayHolder",
         firstInstanceConstructorArgs = listOf(
             Any::class.java to any1,
             Any::class.java to nullableAny1,
+            String::class.java to trailingProperty1,
         ),
         secondInstanceConstructorArgs = listOf(
             Any::class.java to any2,
             Any::class.java to nullableAny2,
+            String::class.java to trailingProperty2,
         ),
         compare = compare,
     )
@@ -790,6 +804,7 @@ class PokoCompilerPluginTest {
             constructorArgs = listOf(
                 Any::class.java to arrayOf(1, 2L, 3f, 4.0),
                 Any::class.java to arrayOf(1, 2L, 3f, 4.0),
+                String::class.java to "trailing",
             ),
         ) { apiInstance, dataInstance ->
             assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
@@ -802,6 +817,7 @@ class PokoCompilerPluginTest {
             constructorArgs = listOf(
                 Any::class.java to arrayOf(1, 2L, 3f, 4.0),
                 Any::class.java to arrayOf(1, 2L, 3f, 4.0),
+                String::class.java to "trailing",
             ),
         ) { apiInstance, dataInstance ->
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())

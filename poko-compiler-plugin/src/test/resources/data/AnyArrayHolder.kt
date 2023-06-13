@@ -8,6 +8,7 @@ package data
 data class AnyArrayHolder(
     val any: Any,
     val nullableAny: Any?,
+    val trailingProperty: String,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other)
@@ -20,6 +21,9 @@ data class AnyArrayHolder(
             return false
 
         if (!this.nullableAny.arrayContentDeepEquals(other.nullableAny))
+            return false
+
+        if (this.trailingProperty != other.trailingProperty)
             return false
 
         return true
@@ -45,6 +49,7 @@ data class AnyArrayHolder(
         var result = any.arrayContentDeepHashCode()
 
         result = result * 31 + nullableAny.arrayContentDeepHashCode()
+        result = result * 31 + trailingProperty.hashCode()
 
         return result
     }
@@ -73,6 +78,9 @@ data class AnyArrayHolder(
             .append(", ")
             .append("nullableAny=")
             .append(nullableAny.arrayContentDeepToString())
+            .append(", ")
+            .append("trailingProperty=")
+            .append(trailingProperty)
             .append(")")
             .toString()
     }
