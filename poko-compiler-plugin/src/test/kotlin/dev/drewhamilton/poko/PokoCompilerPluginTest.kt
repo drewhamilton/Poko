@@ -640,13 +640,114 @@ class PokoCompilerPluginTest {
         compare = compare,
     )
 
-    @Test fun `compilation reading array content of type Any fails`() {
-        testCompilation(
-            "illegal/AnyArrayHolder",
-            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
-        ) { result ->
-            assertThat(result.messages)
-                .contains("@ArrayContentBased on property of type <kotlin.Any?> not supported")
+    @Test fun `two AnyArrayHolder instances holding equivalent typed arrays are equals`() {
+        compareAnyArrayHolderApiInstances { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent typed arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent typed arrays have same toString`() {
+        compareAnyArrayHolderApiInstances { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent nested typed arrays are equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            any2 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            nullableAny1 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+            nullableAny2 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent nested typed arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            any2 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            nullableAny1 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+            nullableAny2 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent nested typed arrays have same toString`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            any2 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            nullableAny1 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+            nullableAny2 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent non-arrays are equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = listOf("one", "two"),
+            any2 = listOf("one", "two"),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent non-arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = listOf("one", "two"),
+            any2 = listOf("one", "two"),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent non-arrays have same toString`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = listOf("one", "two"),
+            any2 = listOf("one", "two"),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding inequivalent nested typed arrays are not equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
+            any2 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `AnyArrayHolder instances holding mismatching types are not equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = arrayOf("x", "y"),
+            any2 = "xy",
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `AnyArrayHolder instances holding inequivalent trailing properties are not equals`() {
+        compareAnyArrayHolderApiInstances(
+            trailingProperty1 = "1",
+            trailingProperty2 = "2",
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
         }
     }
 
@@ -660,6 +761,29 @@ class PokoCompilerPluginTest {
         }
     }
 
+    private fun compareAnyArrayHolderApiInstances(
+        any1: Any = arrayOf("string A", "string B"),
+        nullableAny1: Any? = null,
+        trailingProperty1: String = "trailing string",
+        any2: Any = arrayOf("string A", "string B"),
+        nullableAny2: Any? = null,
+        trailingProperty2: String = trailingProperty1,
+        compare: (firstInstance: Any, secondInstance: Any) -> Unit,
+    ) = compareTwoInstances(
+        sourceFileName = "api/AnyArrayHolder",
+        firstInstanceConstructorArgs = listOf(
+            Any::class.java to any1,
+            Any::class.java to nullableAny1,
+            String::class.java to trailingProperty1,
+        ),
+        secondInstanceConstructorArgs = listOf(
+            Any::class.java to any2,
+            Any::class.java to nullableAny2,
+            String::class.java to trailingProperty2,
+        ),
+        compare = compare,
+    )
+
     @Test fun `compilation reading array content of non-arrays fails`() {
         testCompilation(
             "illegal/NotArrayHolder",
@@ -671,6 +795,32 @@ class PokoCompilerPluginTest {
                 .contains("@ArrayContentBased on property of type <kotlin.Int> not supported")
             assertThat(result.messages)
                 .contains("@ArrayContentBased on property of type <kotlin.Float> not supported")
+        }
+    }
+
+    @Test fun `AnyArrayHolder has same hashCode as handwritten implementation`() {
+        compareApiWithDataClass(
+            sourceFileName = "AnyArrayHolder",
+            constructorArgs = listOf(
+                Any::class.java to arrayOf(1, 2L, 3f, 4.0),
+                Any::class.java to arrayOf(1, 2L, 3f, 4.0),
+                String::class.java to "trailing",
+            ),
+        ) { apiInstance, dataInstance ->
+            assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
+        }
+    }
+
+    @Test fun `AnyArrayHolder has same toString as handwritten implementation`() {
+        compareApiWithDataClass(
+            sourceFileName = "AnyArrayHolder",
+            constructorArgs = listOf(
+                Any::class.java to arrayOf(1, 2L, 3f, 4.0),
+                Any::class.java to arrayOf(1, 2L, 3f, 4.0),
+                String::class.java to "trailing",
+            ),
+        ) { apiInstance, dataInstance ->
+            assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
         }
     }
     //endregion
