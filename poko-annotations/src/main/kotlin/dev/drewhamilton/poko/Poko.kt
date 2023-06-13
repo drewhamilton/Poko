@@ -22,4 +22,4 @@ package dev.drewhamilton.poko
  */
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS)
-annotation class Poko
+public annotation class Poko
