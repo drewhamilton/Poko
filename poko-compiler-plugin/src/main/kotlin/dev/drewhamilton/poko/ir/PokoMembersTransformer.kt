@@ -222,7 +222,7 @@ internal class PokoMembersTransformer(
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
             // TODO: Handle generic type that is an array at runtime
             return if (propertyClassifier == context.irBuiltIns.anyClass) {
-                irRuntimeArrayContentDeepEquals(receiver, argument, propertyClassifier)
+                irRuntimeArrayContentDeepEquals(receiver, argument)
             } else {
                 irProperty.reportError(
                     "@ArrayContentBased on property of type <${propertyType.render()}> not supported"
@@ -245,7 +245,6 @@ internal class PokoMembersTransformer(
     private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
         receiver: IrExpression,
         argument: IrExpression,
-        propertyClassifier: IrClassifierSymbol,
     ): IrExpression {
         val starArrayType = context.irBuiltIns.arrayClass.createType(
             hasQuestionMark = false,
@@ -283,6 +282,7 @@ internal class PokoMembersTransformer(
                         },
                     ),
                 ),
+                // TODO: Primitive arrays
                 irElseBranch(
                     irIfThenReturnFalse(irNotEquals(receiver, argument)),
                 ),
@@ -290,6 +290,10 @@ internal class PokoMembersTransformer(
         )
     }
 
+    /**
+     * Finds `contentDeepEquals` function if [propertyClassifier] is a typed array, or
+     * `contentEquals` function if it is a primitive array.
+     */
     private fun IrBuilderWithScope.findContentDeepEqualsFunctionSymbol(
         propertyClassifier: IrClassifierSymbol,
     ): IrSimpleFunctionSymbol {
