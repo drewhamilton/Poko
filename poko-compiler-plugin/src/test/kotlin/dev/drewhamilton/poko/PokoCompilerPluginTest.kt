@@ -783,6 +783,30 @@ class PokoCompilerPluginTest {
                 .contains("@ArrayContentBased on property of type <kotlin.Float> not supported")
         }
     }
+
+    @Test fun `AnyArrayHolder has same hashCode as handwritten implementation`() {
+        compareApiWithDataClass(
+            sourceFileName = "AnyArrayHolder",
+            constructorArgs = listOf(
+                Any::class.java to arrayOf(1, 2L, 3f, 4.0),
+                Any::class.java to arrayOf(1, 2L, 3f, 4.0),
+            ),
+        ) { apiInstance, dataInstance ->
+            assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
+        }
+    }
+
+    @Test fun `AnyArrayHolder has same toString as handwritten implementation`() {
+        compareApiWithDataClass(
+            sourceFileName = "AnyArrayHolder",
+            constructorArgs = listOf(
+                Any::class.java to arrayOf(1, 2L, 3f, 4.0),
+                Any::class.java to arrayOf(1, 2L, 3f, 4.0),
+            ),
+        ) { apiInstance, dataInstance ->
+            assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
+        }
+    }
     //endregion
 
     //region Unknown annotation name
