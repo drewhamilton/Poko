@@ -640,13 +640,22 @@ class PokoCompilerPluginTest {
         compare = compare,
     )
 
-    @Test fun `compilation reading array content of type Any fails`() {
-        testCompilation(
-            "illegal/AnyArrayHolder",
-            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
-        ) { result ->
-            assertThat(result.messages)
-                .contains("@ArrayContentBased on property of type <kotlin.Any?> not supported")
+    @Test fun `two AnyArrayHolder instances holding equivalent typed arrays are equals`() {
+        compareAnyArrayHolderApiInstances { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent typed arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent typed arrays have same toString`() {
+        compareAnyArrayHolderApiInstances { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
         }
     }
 
@@ -659,6 +668,25 @@ class PokoCompilerPluginTest {
                 .contains("@ArrayContentBased on property of type <G of illegal.GenericArrayHolder> not supported")
         }
     }
+
+    private fun compareAnyArrayHolderApiInstances(
+        any1: Any = arrayOf("string A", "string B"),
+        nullableAny1: Any? = null,
+        any2: Any = arrayOf("string A", "string B"),
+        nullableAny2: Any? = null,
+        compare: (firstInstance: Any, secondInstance: Any) -> Unit,
+    ) = compareTwoInstances(
+        sourceFileName = "api/AnyArrayHolder",
+        firstInstanceConstructorArgs = listOf(
+            Any::class.java to any1,
+            Any::class.java to nullableAny1,
+        ),
+        secondInstanceConstructorArgs = listOf(
+            Any::class.java to any2,
+            Any::class.java to nullableAny2,
+        ),
+        compare = compare,
+    )
 
     @Test fun `compilation reading array content of non-arrays fails`() {
         testCompilation(

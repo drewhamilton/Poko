@@ -433,9 +433,10 @@ internal class PokoMembersTransformer(
 
         // TODO: Handle property of type `Any?` that is an array at runtime
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-            irProperty.reportError(
-                "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
-            )
+            // TODO
+//            irProperty.reportError(
+//                "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
+//            )
             return null
         }
 
@@ -508,9 +509,19 @@ internal class PokoMembersTransformer(
             val irPropertyValue = irGetField(receiver(irFunction), property.backingField!!)
 
             val classifier = property.type.classifierOrNull
+            val hasArrayContentBasedAnnotation =
+                property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName())
+            val isAnyClass = classifier == context.irBuiltIns.anyClass
             val irPropertyStringValue = when {
-                property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName()) -> {
-                    val toStringFunctionSymbol = getArrayDeepToStringFunction(property)
+                // TODO: Handle generic type property that is array at runtime
+                hasArrayContentBasedAnnotation && isAnyClass -> {
+                    val field = property.backingField!!
+                    val instance = irGetField(receiver(irFunction), field)
+                    irRuntimeArrayContentDeepToString(instance)
+                }
+
+                hasArrayContentBasedAnnotation -> {
+                    val toStringFunctionSymbol = maybeFindArrayDeepToStringFunction(property)
                         ?: context.irBuiltIns.dataClassArrayMemberToStringSymbol
                     irCall(
                         callee = toStringFunctionSymbol,
@@ -547,15 +558,14 @@ internal class PokoMembersTransformer(
     }
 
     /**
-     * Returns contentDeepToString function symbol if it is an appropriate option for [irProperty],
-     * else returns null.
+     * Returns `contentDeepToString` function symbol if it is an appropriate option for
+     * [irProperty], else returns null.
      */
-    private fun IrBlockBodyBuilder.getArrayDeepToStringFunction(
+    private fun IrBlockBodyBuilder.maybeFindArrayDeepToStringFunction(
         irProperty: IrProperty,
     ): IrSimpleFunctionSymbol? {
         val propertyClassifier = irProperty.type.classifierOrFail
 
-        // TODO: Handle property of type `Any?` that is an array at runtime
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
             irProperty.reportError(
                 "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
@@ -568,13 +578,73 @@ internal class PokoMembersTransformer(
             return null
         }
 
+        return findContentDeepToStringFunctionSymbol(propertyClassifier)
+    }
+
+    /**
+     * Invokes a `when` branch that checks the runtime type of the [property] instance and invokes
+     * `contentDeepToString` or `contentToString` for typed arrays and primitive arrays,
+     * respectively.
+     */
+    private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
+        property: IrExpression,
+    ): IrExpression {
+        val starArrayType = context.irBuiltIns.arrayClass.createType(
+            hasQuestionMark = false,
+            arguments = listOf(IrStarProjectionImpl),
+        )
+        return irWhen(
+            type = context.irBuiltIns.stringType,
+            branches = listOf(
+                irBranch(
+                    condition = irIs(
+                        argument = property,
+                        type = starArrayType,
+                    ),
+                    result = irCall(
+                        callee = findContentDeepToStringFunctionSymbol(
+                            context.irBuiltIns.arrayClass,
+                        ),
+                        type = context.irBuiltIns.stringType,
+                    ).apply {
+                        extensionReceiver = property
+                    }
+                ),
+
+                // TODO: Primitive arrays
+
+                irElseBranch(
+                    irCall(
+                        callee = context.irBuiltIns.extensionToString,
+                        type = context.irBuiltIns.stringType,
+                    ).apply {
+                        extensionReceiver = property
+                    }
+                ),
+            ),
+        )
+    }
+
+    /**
+     * Finds `contentDeepToString` function if [propertyClassifier] is a typed array, or
+     * `contentToString` function if it is a primitive array.
+     */
+    private fun IrBuilderWithScope.findContentDeepToStringFunctionSymbol(
+        propertyClassifier: IrClassifierSymbol,
+    ): IrSimpleFunctionSymbol {
+        val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
+            "contentDeepToString"
+        } else {
+            "contentToString"
+        }
         return pluginContext.referenceFunctions(
             callableId = CallableId(
                 packageName = FqName("kotlin.collections"),
-                callableName = Name.identifier("contentDeepToString"),
+                callableName = Name.identifier(callableName),
             ),
         ).single { functionSymbol ->
-            // Disambiguate against the older non-nullable receiver overload:
+            // Find the single function with the relevant array type and disambiguate against the
+            // older non-nullable receiver overload:
             functionSymbol.owner.extensionReceiverParameter?.type?.let {
                 it.classifierOrNull == propertyClassifier && it.isNullable()
             } ?: false
