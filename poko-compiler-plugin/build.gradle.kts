@@ -2,7 +2,7 @@ import com.google.devtools.ksp.gradle.KspTask
 import dev.drewhamilton.poko.build.generateArtifactInfo
 import dev.drewhamilton.poko.build.setUpPublication
 import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -35,10 +35,8 @@ dependencies {
     testImplementation(libs.truth)
 }
 
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-        freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
-    }
+kotlin {
+    explicitApi = ExplicitApiMode.Strict
 }
 
 // https://jakewharton.com/build-on-latest-java-test-through-lowest-java/
