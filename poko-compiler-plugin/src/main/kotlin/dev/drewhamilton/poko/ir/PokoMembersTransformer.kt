@@ -4,9 +4,7 @@ import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.backend.common.lower.irNot
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
-import org.jetbrains.kotlin.cli.common.messages.MessageUtil
 import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
@@ -86,7 +84,7 @@ internal class PokoMembersTransformer(
 ) : IrElementTransformerVoidWithContext() {
 
     override fun visitFunctionNew(declaration: IrFunction): IrStatement {
-        log("Reading <$declaration>")
+        messageCollector.log("Reading <$declaration>")
 
         val declarationParent = declaration.parent
         if (declarationParent is IrClass && declarationParent.isPokoClass() && declaration.isFakeOverride) {
@@ -108,27 +106,30 @@ internal class PokoMembersTransformer(
 
     private fun IrClass.isPokoClass(): Boolean = when {
         !hasAnnotation(pokoAnnotationName.asSingleFqName()) -> {
-            log("Not Poko class")
+            messageCollector.log("Not Poko class")
             false
         }
         isData -> {
-            log("Data class")
-            reportError("Poko does not support data classes")
+            messageCollector.log("Data class")
+            messageCollector.reportErrorOnClass(this, "Poko does not support data classes")
             false
         }
         isSingleFieldValueClass || isMultiFieldValueClass -> {
-            log("Value class")
-            reportError("Poko does not support value classes")
+            messageCollector.log("Value class")
+            messageCollector.reportErrorOnClass(this, "Poko does not support value classes")
             false
         }
         isInner -> {
-            log("Inner class")
-            reportError("Poko cannot be applied to inner classes")
+            messageCollector.log("Inner class")
+            messageCollector.reportErrorOnClass(this, "Poko cannot be applied to inner classes")
             false
         }
         primaryConstructor == null -> {
-            log("No primary constructor")
-            reportError("Poko classes must have a primary constructor")
+            messageCollector.log("No primary constructor")
+            messageCollector.reportErrorOnClass(
+                irClass = this,
+                message = "Poko classes must have a primary constructor",
+            )
             false
         }
         else -> {
@@ -148,8 +149,11 @@ internal class PokoMembersTransformer(
                 it.symbol.descriptor.source.getPsi() is KtParameter
             }
         if (properties.isEmpty()) {
-            log("No primary constructor properties")
-            parent.reportError("Poko classes must have at least one property in the primary constructor")
+            messageCollector.log("No primary constructor properties")
+            messageCollector.reportErrorOnClass(
+                irClass = parent,
+                message = "Poko classes must have at least one property in the primary constructor",
+            )
             return
         }
 
@@ -225,8 +229,9 @@ internal class PokoMembersTransformer(
             return if (propertyClassifier == context.irBuiltIns.anyClass) {
                 irRuntimeArrayContentDeepEquals(receiver, argument)
             } else {
-                irProperty.reportError(
-                    "@ArrayContentBased on property of type <${propertyType.render()}> not supported"
+                messageCollector.reportErrorOnProperty(
+                    property = irProperty,
+                    message = "@ArrayContentBased on property of type <${propertyType.render()}> not supported",
                 )
                 irEquals(receiver, argument)
             }
@@ -500,8 +505,9 @@ internal class PokoMembersTransformer(
         val propertyClassifier = irProperty.type.classifierOrFail
 
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-            irProperty.reportError(
-                "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
+            messageCollector.reportErrorOnProperty(
+                property = irProperty,
+                message = "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported",
             )
             return null
         }
@@ -657,8 +663,9 @@ internal class PokoMembersTransformer(
         val propertyClassifier = irProperty.type.classifierOrFail
 
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-            irProperty.reportError(
-                "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
+            messageCollector.reportErrorOnProperty(
+                property = irProperty,
+                message = "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported",
             )
             return null
         }
@@ -803,24 +810,6 @@ internal class PokoMembersTransformer(
         return this == context.irBuiltIns.arrayClass || this in context.irBuiltIns.primitiveArraysToPrimitiveTypes
     }
     //endregion
-
-    private fun log(message: String) {
-        messageCollector.report(CompilerMessageSeverity.LOGGING, "POKO COMPILER PLUGIN (IR): $message")
-    }
-
-    private fun IrClass.reportError(message: String) {
-        val psi = source.getPsi()
-        val location = MessageUtil.psiElementToMessageLocation(psi)
-        messageCollector.report(CompilerMessageSeverity.ERROR, message, location)
-    }
-
-    // TODO: Implement an FIR-based declaration checker:
-    @OptIn(ObsoleteDescriptorBasedAPI::class)
-    private fun IrProperty.reportError(message: String) {
-        val psi = descriptor.source.getPsi()
-        val location = MessageUtil.psiElementToMessageLocation(psi)
-        messageCollector.report(CompilerMessageSeverity.ERROR, message, location)
-    }
 
     private companion object {
         val ArrayContentBasedAnnotation = ClassId(
