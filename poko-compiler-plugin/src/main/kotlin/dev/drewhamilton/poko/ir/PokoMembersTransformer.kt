@@ -355,12 +355,7 @@ internal class PokoMembersTransformer(
         +irResultVar
 
         for (property in irProperties.drop(1)) {
-            val shiftedResult = irCallOp(
-                callee = context.irBuiltIns.intTimesSymbol,
-                type = irIntType,
-                dispatchReceiver = irGet(irResultVar),
-                argument = irInt(31),
-            )
+            val shiftedResult = irCallOp(context.irBuiltIns.intTimesSymbol, irIntType, irGet(irResultVar), irInt(31),)
             val irRhs = irCallOp(context.irBuiltIns.intPlusSymbol, irIntType, shiftedResult, getHashCodeOfProperty(irFunction, property))
             +irSet(irResultVar.symbol, irRhs)
         }
