@@ -362,7 +362,12 @@ internal class PokoMembersTransformer(
         +irResultVar
 
         for (property in irProperties.drop(1)) {
-            val shiftedResult = irCallOp(context.irBuiltIns.intTimesSymbol, irIntType, irGet(irResultVar), irInt(31))
+            val shiftedResult = irCallOp(
+                callee = context.irBuiltIns.intTimesSymbol,
+                type = irIntType,
+                dispatchReceiver = irGet(irResultVar),
+                argument = irInt(31),
+            )
             val irRhs = irCallOp(context.irBuiltIns.intPlusSymbol, irIntType, shiftedResult, getHashCodeOfProperty(irFunction, property))
             +irSet(irResultVar.symbol, irRhs)
         }
@@ -395,21 +400,22 @@ internal class PokoMembersTransformer(
     ): IrExpression {
         val hasArrayContentBasedAnnotation =
             property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName())
+        val classifier = property.type.classifierOrNull
+        // TODO: Handle generic type property that is array at runtime
+        val mayBeRuntimeArray = classifier == context.irBuiltIns.anyClass
+
+        if (hasArrayContentBasedAnnotation && mayBeRuntimeArray) {
+            return irRuntimeArrayContentDeepHashCode(irValue)
+        }
+
         // Non-null if deep hashCode will be used, else null:
         val deepHashCodeFunctionSymbol = if (hasArrayContentBasedAnnotation) {
-            getArrayDeepHashCodeFunction(property)
+            maybeFindArrayDeepHashCodeFunction(property)
         } else {
             null
         }
-        val classifier = property.type.classifierOrNull
-        val hashCodeFunctionSymbol = deepHashCodeFunctionSymbol ?: when {
-            classifier.isArrayOrPrimitiveArray(context) ->
-                context.irBuiltIns.dataClassArrayMemberHashCodeSymbol
-            classifier is IrClassSymbol -> getHashCodeFunction(classifier.owner)
-            classifier is IrTypeParameterSymbol ->
-                getHashCodeFunction(classifier.owner.erasedUpperBound)
-            else -> error("Unknown classifier kind $classifier")
-        }
+        val hashCodeFunctionSymbol = deepHashCodeFunctionSymbol
+            ?: getDataClassHashCodeFunction(classifier)
         check(hashCodeFunctionSymbol.isBound) { "$hashCodeFunctionSymbol is not bound" }
 
         // Poko modification: check for extension receiver for contentDeepHashCode case
@@ -431,20 +437,84 @@ internal class PokoMembersTransformer(
     }
 
     /**
+     * Invokes a `when` branch that checks the runtime type of the [property] instance and invokes
+     * `contentDeepHashCode` or `contentHashCode` for typed arrays and primitive arrays,
+     * respectively.
+     */
+    private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
+        property: IrExpression,
+    ): IrExpression {
+        val starArrayType = context.irBuiltIns.arrayClass.createType(
+            hasQuestionMark = false,
+            arguments = listOf(IrStarProjectionImpl),
+        )
+        return irWhen(
+            type = context.irBuiltIns.intType,
+            branches = listOf(
+                irBranch(
+                    condition = irIs(
+                        argument = property,
+                        type = starArrayType,
+                    ),
+                    result = irCall(
+                        callee = findArrayDeepHashCodeFunction(context.irBuiltIns.arrayClass),
+                        type = context.irBuiltIns.intType,
+                    ).apply {
+                        extensionReceiver = property
+                    }
+                ),
+
+                // TODO: Primitive arrays
+
+                irElseBranch(
+                    irIfNull(
+                        type = context.irBuiltIns.intType,
+                        subject = property,
+                        thenPart = irInt(0),
+                        elsePart = irComposite {
+                            // TODO: Deduplicate?
+                            val hashCodeFunctionSymbol = getDataClassHashCodeFunction(
+                                classifier = property.type.classifierOrNull,
+                            )
+                            check(hashCodeFunctionSymbol.isBound) {
+                                "$hashCodeFunctionSymbol is not bound"
+                            }
+
+                            // Poko modification: check for extension receiver for
+                            // contentDeepHashCode case
+                            val hasDispatchReceiver =
+                                hashCodeFunctionSymbol.owner.dispatchReceiverParameter != null
+                            +irCall(
+                                hashCodeFunctionSymbol,
+                                context.irBuiltIns.intType,
+                                valueArgumentsCount = if (hasDispatchReceiver) 0 else 1,
+                                typeArgumentsCount = 0
+                            ).apply {
+                                when {
+                                    hasDispatchReceiver -> dispatchReceiver = property
+                                    else -> putValueArgument(0, property)
+                                }
+                            }
+                        },
+                    ),
+                ),
+            ),
+        )
+    }
+
+    /**
      * Returns contentDeepHashCode function symbol if it is an appropriate option for [irProperty],
      * else returns null.
      */
-    private fun IrBlockBodyBuilder.getArrayDeepHashCodeFunction(
+    private fun IrBlockBodyBuilder.maybeFindArrayDeepHashCodeFunction(
         irProperty: IrProperty,
     ): IrSimpleFunctionSymbol? {
         val propertyClassifier = irProperty.type.classifierOrFail
 
-        // TODO: Handle property of type `Any?` that is an array at runtime
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-            // TODO
-//            irProperty.reportError(
-//                "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
-//            )
+            irProperty.reportError(
+                "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
+            )
             return null
         }
 
@@ -453,10 +523,21 @@ internal class PokoMembersTransformer(
             return null
         }
 
+        return findArrayDeepHashCodeFunction(propertyClassifier)
+    }
+
+    private fun IrBlockBodyBuilder.findArrayDeepHashCodeFunction(
+        propertyClassifier: IrClassifierSymbol,
+    ): IrSimpleFunctionSymbol {
+        val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
+            "contentDeepHashCode"
+        } else {
+            "contentHashCode"
+        }
         return pluginContext.referenceFunctions(
             callableId = CallableId(
                 packageName = FqName("kotlin.collections"),
-                callableName = Name.identifier("contentDeepHashCode"),
+                callableName = Name.identifier(callableName),
             ),
         ).single { functionSymbol ->
             // Disambiguate against the older non-nullable receiver overload:
@@ -464,6 +545,19 @@ internal class PokoMembersTransformer(
                 it.classifierOrNull == propertyClassifier && it.isNullable()
             } ?: false
         }
+    }
+
+    private fun IrBlockBodyBuilder.getDataClassHashCodeFunction(
+        classifier: IrClassifierSymbol?,
+    ): IrSimpleFunctionSymbol = when {
+        classifier.isArrayOrPrimitiveArray(context) ->
+            context.irBuiltIns.dataClassArrayMemberHashCodeSymbol
+        classifier is IrClassSymbol ->
+            getHashCodeFunction(classifier.owner)
+        classifier is IrTypeParameterSymbol ->
+            getHashCodeFunction(classifier.owner.erasedUpperBound)
+        else ->
+            error("Unknown classifier kind $classifier")
     }
 
     private fun IrBlockBodyBuilder.getHashCodeFunction(irClass: IrClass): IrSimpleFunctionSymbol {
@@ -519,10 +613,10 @@ internal class PokoMembersTransformer(
             val classifier = property.type.classifierOrNull
             val hasArrayContentBasedAnnotation =
                 property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName())
-            val isAnyClass = classifier == context.irBuiltIns.anyClass
+            // TODO: Handle generic type property that is array at runtime
+            val mayBeRuntimeArray = classifier == context.irBuiltIns.anyClass
             val irPropertyStringValue = when {
-                // TODO: Handle generic type property that is array at runtime
-                hasArrayContentBasedAnnotation && isAnyClass -> {
+                hasArrayContentBasedAnnotation && mayBeRuntimeArray -> {
                     val field = property.backingField!!
                     val instance = irGetField(receiver(irFunction), field)
                     irRuntimeArrayContentDeepToString(instance)
