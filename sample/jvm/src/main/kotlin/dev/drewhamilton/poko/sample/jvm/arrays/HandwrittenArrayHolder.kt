@@ -23,39 +23,8 @@ class HandwrittenArrayHolder(
         if (this.array != other.array)
             return false
 
-        // TODO: Revert?
-        when (this.maybe) {
-            is Array<*> ->
-                if (other.maybe !is Array<*> || !this.maybe.contentDeepEquals(other.maybe))
-                    return false
-            is BooleanArray ->
-                if (other.maybe !is BooleanArray || !this.maybe.contentEquals(other.maybe))
-                    return false
-            is ByteArray ->
-                if (other.maybe !is ByteArray || !this.maybe.contentEquals(other.maybe))
-                    return false
-            is CharArray ->
-                if (other.maybe !is CharArray || !this.maybe.contentEquals(other.maybe))
-                    return false
-            is ShortArray ->
-                if (other.maybe !is ShortArray || !this.maybe.contentEquals(other.maybe))
-                    return false
-            is IntArray ->
-                if (other.maybe !is IntArray || !this.maybe.contentEquals(other.maybe))
-                    return false
-            is LongArray ->
-                if (other.maybe !is LongArray || !this.maybe.contentEquals(other.maybe))
-                    return false
-            is FloatArray ->
-                if (other.maybe !is FloatArray || !this.maybe.contentEquals(other.maybe))
-                    return false
-            is DoubleArray ->
-                if (other.maybe !is DoubleArray || !this.maybe.contentEquals(other.maybe))
-                    return false
-            else ->
-                if (this.maybe != other.maybe)
-                    return false
-        }
+        if (this.maybe != other.maybe)
+            return false
 
         return true
     }
@@ -65,18 +34,7 @@ class HandwrittenArrayHolder(
 
         result = result * 31 + array.contentHashCode()
 
-        result = result * 31 + when (maybe) {
-            is Array<*> -> maybe.contentDeepHashCode()
-            is BooleanArray -> maybe.contentHashCode()
-            is ByteArray -> maybe.contentHashCode()
-            is CharArray -> maybe.contentHashCode()
-            is ShortArray -> maybe.contentHashCode()
-            is IntArray -> maybe.contentHashCode()
-            is LongArray -> maybe.contentHashCode()
-            is FloatArray -> maybe.contentHashCode()
-            is DoubleArray -> maybe.contentHashCode()
-            else -> maybe.hashCode()
-        }
+        result = result * 31 + maybe.hashCode()
 
         return result
     }
@@ -91,20 +49,7 @@ class HandwrittenArrayHolder(
             .append(array.contentToString())
             .append(", ")
             .append("maybe=")
-            .append(
-                when (maybe) {
-                    is Array<*> -> maybe.contentDeepToString()
-                    is BooleanArray -> maybe.contentToString()
-                    is ByteArray -> maybe.contentToString()
-                    is CharArray -> maybe.contentToString()
-                    is ShortArray -> maybe.contentToString()
-                    is IntArray -> maybe.contentToString()
-                    is LongArray -> maybe.contentToString()
-                    is FloatArray -> maybe.contentToString()
-                    is DoubleArray -> maybe.contentToString()
-                    else -> maybe.toString()
-                }
-            )
+            .append(maybe)
             .append(")")
             .toString()
     }
