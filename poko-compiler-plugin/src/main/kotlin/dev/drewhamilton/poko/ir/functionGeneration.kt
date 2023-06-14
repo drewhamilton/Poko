@@ -59,7 +59,7 @@ internal fun IrClassifierSymbol?.isArrayOrPrimitiveArray(
  * a generic type).
  */
 // TODO: Handle generic type
-internal fun IrClassifierSymbol.mayBeRuntimeArray(
+internal fun IrClassifierSymbol?.mayBeRuntimeArray(
     context: IrGeneratorContext,
 ): Boolean {
     return this == context.irBuiltIns.anyClass

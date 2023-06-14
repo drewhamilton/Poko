@@ -8,42 +8,20 @@ import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescripto
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
-import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irBlockBody
-import org.jetbrains.kotlin.ir.builders.irBranch
-import org.jetbrains.kotlin.ir.builders.irCall
-import org.jetbrains.kotlin.ir.builders.irConcat
-import org.jetbrains.kotlin.ir.builders.irElseBranch
-import org.jetbrains.kotlin.ir.builders.irGetField
-import org.jetbrains.kotlin.ir.builders.irIs
-import org.jetbrains.kotlin.ir.builders.irReturn
-import org.jetbrains.kotlin.ir.builders.irString
-import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
 import org.jetbrains.kotlin.ir.declarations.isMultiFieldValueClass
 import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
-import org.jetbrains.kotlin.ir.expressions.IrExpression
-import org.jetbrains.kotlin.ir.expressions.addArgument
-import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
-import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
-import org.jetbrains.kotlin.ir.types.classifierOrFail
-import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
-import org.jetbrains.kotlin.ir.types.impl.IrStarProjectionImpl
-import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isFakeOverride
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
-import org.jetbrains.kotlin.ir.util.render
-import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
-import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.resolve.source.getPsi
 
@@ -78,7 +56,12 @@ internal class PokoMembersTransformer(
                     }
 
                     declaration.isToString() -> declaration.convertToGenerated { properties ->
-                        generateToStringMethodBody(declarationParent, declaration, properties)
+                        generateToStringMethodBody(
+                            irClass = declarationParent,
+                            functionDeclaration = declaration,
+                            classProperties = properties,
+                            messageCollector = messageCollector,
+                        )
                     }
                 }
             }
@@ -190,174 +173,4 @@ internal class PokoMembersTransformer(
             setBoolean(this@reflectivelySetFakeOverride, isFakeOverride)
         }
     }
-
-    //region toString
-    private fun IrFunction.isToString(): Boolean =
-        name == Name.identifier("toString") &&
-                returnType == pluginContext.irBuiltIns.stringType &&
-                valueParameters.isEmpty()
-
-    /**
-     * Generate the body of the toString method. Adapted from
-     * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateToStringMethodBody].
-     */
-    private fun IrBlockBodyBuilder.generateToStringMethodBody(
-        irClass: IrClass,
-        irFunction: IrFunction,
-        irProperties: List<IrProperty>,
-    ) {
-        val irConcat = irConcat()
-        irConcat.addArgument(irString(irClass.name.asString() + "("))
-        var first = true
-        for (property in irProperties) {
-            if (!first) irConcat.addArgument(irString(", "))
-
-            irConcat.addArgument(irString(property.name.asString() + "="))
-
-            val irPropertyValue = irGetField(irFunction.receiver(), property.backingField!!)
-
-            val classifier = property.type.classifierOrNull
-            val hasArrayContentBasedAnnotation =
-                property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName())
-            // TODO: Handle generic type property that is array at runtime
-            val mayBeRuntimeArray = classifier == context.irBuiltIns.anyClass
-            val irPropertyStringValue = when {
-                hasArrayContentBasedAnnotation && mayBeRuntimeArray -> {
-                    val field = property.backingField!!
-                    val instance = irGetField(irFunction.receiver(), field)
-                    irRuntimeArrayContentDeepToString(instance)
-                }
-
-                hasArrayContentBasedAnnotation -> {
-                    val toStringFunctionSymbol = maybeFindArrayDeepToStringFunction(property)
-                        ?: context.irBuiltIns.dataClassArrayMemberToStringSymbol
-                    irCall(
-                        callee = toStringFunctionSymbol,
-                        type = context.irBuiltIns.stringType,
-                    ).apply {
-                        // Poko modification: check for extension receiver for contentDeepToString
-                        val hasExtensionReceiver =
-                            toStringFunctionSymbol.owner.extensionReceiverParameter != null
-                        if (hasExtensionReceiver) {
-                            extensionReceiver = irPropertyValue
-                        } else {
-                            putValueArgument(0, irPropertyValue)
-                        }
-                    }
-                }
-
-                classifier.isArrayOrPrimitiveArray(context) -> {
-                    irCall(
-                        callee = context.irBuiltIns.dataClassArrayMemberToStringSymbol,
-                        type = context.irBuiltIns.stringType
-                    ).apply {
-                        putValueArgument(0, irPropertyValue)
-                    }
-                }
-
-                else -> irPropertyValue
-            }
-
-            irConcat.addArgument(irPropertyStringValue)
-            first = false
-        }
-        irConcat.addArgument(irString(")"))
-        +irReturn(irConcat)
-    }
-
-    /**
-     * Returns `contentDeepToString` function symbol if it is an appropriate option for
-     * [irProperty], else returns null.
-     */
-    private fun IrBlockBodyBuilder.maybeFindArrayDeepToStringFunction(
-        irProperty: IrProperty,
-    ): IrSimpleFunctionSymbol? {
-        val propertyClassifier = irProperty.type.classifierOrFail
-
-        if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-            messageCollector.reportErrorOnProperty(
-                property = irProperty,
-                message = "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported",
-            )
-            return null
-        }
-
-        // Primitive arrays don't need deep toString:
-        if (propertyClassifier in context.irBuiltIns.primitiveArraysToPrimitiveTypes) {
-            return null
-        }
-
-        return findContentDeepToStringFunctionSymbol(propertyClassifier)
-    }
-
-    /**
-     * Invokes a `when` branch that checks the runtime type of the [property] instance and invokes
-     * `contentDeepToString` or `contentToString` for typed arrays and primitive arrays,
-     * respectively.
-     */
-    private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
-        property: IrExpression,
-    ): IrExpression {
-        val starArrayType = context.irBuiltIns.arrayClass.createType(
-            hasQuestionMark = false,
-            arguments = listOf(IrStarProjectionImpl),
-        )
-        return irWhen(
-            type = context.irBuiltIns.stringType,
-            branches = listOf(
-                irBranch(
-                    condition = irIs(
-                        argument = property,
-                        type = starArrayType,
-                    ),
-                    result = irCall(
-                        callee = findContentDeepToStringFunctionSymbol(
-                            context.irBuiltIns.arrayClass,
-                        ),
-                        type = context.irBuiltIns.stringType,
-                    ).apply {
-                        extensionReceiver = property
-                    }
-                ),
-
-                // TODO: Primitive arrays
-
-                irElseBranch(
-                    irCall(
-                        callee = context.irBuiltIns.extensionToString,
-                        type = context.irBuiltIns.stringType,
-                    ).apply {
-                        extensionReceiver = property
-                    }
-                ),
-            ),
-        )
-    }
-
-    /**
-     * Finds `contentDeepToString` function if [propertyClassifier] is a typed array, or
-     * `contentToString` function if it is a primitive array.
-     */
-    private fun IrBuilderWithScope.findContentDeepToStringFunctionSymbol(
-        propertyClassifier: IrClassifierSymbol,
-    ): IrSimpleFunctionSymbol {
-        val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
-            "contentDeepToString"
-        } else {
-            "contentToString"
-        }
-        return pluginContext.referenceFunctions(
-            callableId = CallableId(
-                packageName = FqName("kotlin.collections"),
-                callableName = Name.identifier(callableName),
-            ),
-        ).single { functionSymbol ->
-            // Find the single function with the relevant array type and disambiguate against the
-            // older non-nullable receiver overload:
-            functionSymbol.owner.extensionReceiverParameter?.type?.let {
-                it.classifierOrNull == propertyClassifier && it.isNullable()
-            } ?: false
-        }
-    }
-    //endregion
 }

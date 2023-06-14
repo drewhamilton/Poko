@@ -45,10 +45,11 @@ import org.jetbrains.kotlin.name.Name
  * True if the function's signature matches the standard `hashCode` function signature.
  */
 context(IrGeneratorContextInterface)
-internal fun IrFunction.isHashCode(): Boolean =
-    name == Name.identifier("hashCode") &&
+internal fun IrFunction.isHashCode(): Boolean {
+    return name == Name.identifier("hashCode") &&
         returnType == irBuiltIns.intType &&
         valueParameters.isEmpty()
+}
 
 /**
  * Generate the body of the hashCode method. Adapted from
@@ -144,7 +145,7 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
     val hasArrayContentBasedAnnotation =
         property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName())
     val classifier = property.type.classifierOrNull
-    val mayBeRuntimeArray = classifier?.mayBeRuntimeArray(context) == true
+    val mayBeRuntimeArray = classifier.mayBeRuntimeArray(context)
 
     if (hasArrayContentBasedAnnotation && mayBeRuntimeArray) {
         return irRuntimeArrayContentDeepHashCode(value)
