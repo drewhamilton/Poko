@@ -29,7 +29,7 @@ internal val IrProperty.type
  * `dispatchReceiverParameter` updated to the current parent class.
  */
 context(IrBlockBodyBuilder)
-internal fun IrFunction.receiverValue(): IrGetValue = IrGetValueImpl(dispatchReceiverParameter!!)
+internal fun IrFunction.receiver(): IrGetValue = IrGetValueImpl(dispatchReceiverParameter!!)
 
 /**
  * Gets the value of the given [parameter].

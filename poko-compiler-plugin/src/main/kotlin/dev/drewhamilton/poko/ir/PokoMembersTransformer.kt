@@ -12,47 +12,31 @@ import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
-import org.jetbrains.kotlin.ir.builders.irCallOp
-import org.jetbrains.kotlin.ir.builders.irComposite
 import org.jetbrains.kotlin.ir.builders.irConcat
 import org.jetbrains.kotlin.ir.builders.irElseBranch
-import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irGetField
-import org.jetbrains.kotlin.ir.builders.irIfNull
-import org.jetbrains.kotlin.ir.builders.irInt
 import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irReturn
-import org.jetbrains.kotlin.ir.builders.irSet
 import org.jetbrains.kotlin.ir.builders.irString
 import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
-import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
-import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
 import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
-import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.declarations.isMultiFieldValueClass
 import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.addArgument
-import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
-import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
-import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
-import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.types.impl.IrStarProjectionImpl
 import org.jetbrains.kotlin.ir.types.isNullable
-import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.util.hasAnnotation
-import org.jetbrains.kotlin.ir.util.isAnnotationClass
 import org.jetbrains.kotlin.ir.util.isFakeOverride
-import org.jetbrains.kotlin.ir.util.isInterface
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
 import org.jetbrains.kotlin.ir.util.render
@@ -86,7 +70,11 @@ internal class PokoMembersTransformer(
                     }
 
                     declaration.isHashCode() -> declaration.convertToGenerated { properties ->
-                        generateHashCodeMethodBody(declaration, properties)
+                        generateHashCodeMethodBody(
+                            functionDeclaration = declaration,
+                            classProperties = properties,
+                            messageCollector = messageCollector,
+                        )
                     }
 
                     declaration.isToString() -> declaration.convertToGenerated { properties ->
@@ -203,262 +191,6 @@ internal class PokoMembersTransformer(
         }
     }
 
-    //region hashCode
-    private fun IrFunction.isHashCode(): Boolean =
-        name == Name.identifier("hashCode") &&
-                returnType == pluginContext.irBuiltIns.intType &&
-                valueParameters.isEmpty()
-
-    /**
-     * Generate the body of the hashCode method. Adapted from
-     * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateHashCodeMethodBody].
-     */
-    private fun IrBlockBodyBuilder.generateHashCodeMethodBody(
-        irFunction: IrFunction,
-        irProperties: List<IrProperty>,
-    ) {
-        if (irProperties.isEmpty()) {
-            +irReturn(irInt(0))
-            return
-        } else if (irProperties.size == 1) {
-            +irReturn(getHashCodeOfProperty(irFunction, irProperties[0]))
-            return
-        }
-
-        val irIntType = context.irBuiltIns.intType
-
-        val irResultVar = IrVariableImpl(
-            startOffset, endOffset,
-            IrDeclarationOrigin.DEFINED,
-            IrVariableSymbolImpl(),
-            Name.identifier("result"), irIntType,
-            isVar = true, isConst = false, isLateinit = false
-        ).also {
-            it.parent = irFunction
-            it.initializer = getHashCodeOfProperty(irFunction, irProperties[0])
-        }
-        +irResultVar
-
-        for (property in irProperties.drop(1)) {
-            val shiftedResult = irCallOp(context.irBuiltIns.intTimesSymbol, irIntType, irGet(irResultVar), irInt(31))
-            val irRhs = irCallOp(context.irBuiltIns.intPlusSymbol, irIntType, shiftedResult, getHashCodeOfProperty(irFunction, property))
-            +irSet(irResultVar.symbol, irRhs)
-        }
-
-        +irReturn(irGet(irResultVar))
-    }
-
-    private fun IrBlockBodyBuilder.getHashCodeOfProperty(
-        irFunction: IrFunction,
-        irProperty: IrProperty,
-    ): IrExpression {
-        val field = irProperty.backingField!!
-        return when {
-            irProperty.type.isNullable() -> irIfNull(
-                context.irBuiltIns.intType,
-                irGetField(irFunction.receiverValue(), field),
-                irInt(0),
-                getHashCodeOf(irProperty, irGetField(irFunction.receiverValue(), field))
-            )
-            else -> getHashCodeOf(irProperty, irGetField(irFunction.receiverValue(), field))
-        }
-    }
-
-    /**
-     * Symbol-retrieval adapted from [org.jetbrains.kotlin.fir.backend.generators.DataClassMembersGenerator].
-     */
-    private fun IrBlockBodyBuilder.getHashCodeOf(
-        property: IrProperty,
-        irValue: IrExpression,
-    ): IrExpression {
-        val hasArrayContentBasedAnnotation =
-            property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName())
-        val classifier = property.type.classifierOrNull
-        // TODO: Handle generic type property that is array at runtime
-        val mayBeRuntimeArray = classifier == context.irBuiltIns.anyClass
-
-        if (hasArrayContentBasedAnnotation && mayBeRuntimeArray) {
-            return irRuntimeArrayContentDeepHashCode(irValue)
-        }
-
-        // Non-null if deep hashCode will be used, else null:
-        val deepHashCodeFunctionSymbol = if (hasArrayContentBasedAnnotation) {
-            maybeFindArrayDeepHashCodeFunction(property)
-        } else {
-            null
-        }
-        val hashCodeFunctionSymbol = deepHashCodeFunctionSymbol
-            ?: getDataClassHashCodeFunction(classifier)
-        check(hashCodeFunctionSymbol.isBound) { "$hashCodeFunctionSymbol is not bound" }
-
-        // Poko modification: check for extension receiver for contentDeepHashCode case
-        val (hasDispatchReceiver, hasExtensionReceiver) = with(hashCodeFunctionSymbol.owner) {
-            (dispatchReceiverParameter != null) to (extensionReceiverParameter != null)
-        }
-        return irCall(
-            hashCodeFunctionSymbol,
-            context.irBuiltIns.intType,
-            valueArgumentsCount = if (hasDispatchReceiver || hasExtensionReceiver) 0 else 1,
-            typeArgumentsCount = 0
-        ).apply {
-            when {
-                hasDispatchReceiver -> dispatchReceiver = irValue
-                hasExtensionReceiver -> extensionReceiver = irValue
-                else -> putValueArgument(0, irValue)
-            }
-        }
-    }
-
-    /**
-     * Invokes a `when` branch that checks the runtime type of the [property] instance and invokes
-     * `contentDeepHashCode` or `contentHashCode` for typed arrays and primitive arrays,
-     * respectively.
-     */
-    private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
-        property: IrExpression,
-    ): IrExpression {
-        val starArrayType = context.irBuiltIns.arrayClass.createType(
-            hasQuestionMark = false,
-            arguments = listOf(IrStarProjectionImpl),
-        )
-        return irWhen(
-            type = context.irBuiltIns.intType,
-            branches = listOf(
-                irBranch(
-                    condition = irIs(
-                        argument = property,
-                        type = starArrayType,
-                    ),
-                    result = irCall(
-                        callee = findArrayDeepHashCodeFunction(context.irBuiltIns.arrayClass),
-                        type = context.irBuiltIns.intType,
-                    ).apply {
-                        extensionReceiver = property
-                    }
-                ),
-
-                // TODO: Primitive arrays
-
-                irElseBranch(
-                    irIfNull(
-                        type = context.irBuiltIns.intType,
-                        subject = property,
-                        thenPart = irInt(0),
-                        elsePart = irComposite {
-                            // TODO: Deduplicate?
-                            val hashCodeFunctionSymbol = getDataClassHashCodeFunction(
-                                classifier = property.type.classifierOrNull,
-                            )
-                            check(hashCodeFunctionSymbol.isBound) {
-                                "$hashCodeFunctionSymbol is not bound"
-                            }
-
-                            // Poko modification: check for extension receiver for
-                            // contentDeepHashCode case
-                            val hasDispatchReceiver =
-                                hashCodeFunctionSymbol.owner.dispatchReceiverParameter != null
-                            +irCall(
-                                hashCodeFunctionSymbol,
-                                context.irBuiltIns.intType,
-                                valueArgumentsCount = if (hasDispatchReceiver) 0 else 1,
-                                typeArgumentsCount = 0
-                            ).apply {
-                                when {
-                                    hasDispatchReceiver -> dispatchReceiver = property
-                                    else -> putValueArgument(0, property)
-                                }
-                            }
-                        },
-                    ),
-                ),
-            ),
-        )
-    }
-
-    /**
-     * Returns contentDeepHashCode function symbol if it is an appropriate option for [irProperty],
-     * else returns null.
-     */
-    private fun IrBlockBodyBuilder.maybeFindArrayDeepHashCodeFunction(
-        irProperty: IrProperty,
-    ): IrSimpleFunctionSymbol? {
-        val propertyClassifier = irProperty.type.classifierOrFail
-
-        if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-            messageCollector.reportErrorOnProperty(
-                property = irProperty,
-                message = "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported",
-            )
-            return null
-        }
-
-        // Primitive arrays don't need deep equals:
-        if (propertyClassifier in context.irBuiltIns.primitiveArraysToPrimitiveTypes) {
-            return null
-        }
-
-        return findArrayDeepHashCodeFunction(propertyClassifier)
-    }
-
-    private fun IrBlockBodyBuilder.findArrayDeepHashCodeFunction(
-        propertyClassifier: IrClassifierSymbol,
-    ): IrSimpleFunctionSymbol {
-        val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
-            "contentDeepHashCode"
-        } else {
-            "contentHashCode"
-        }
-        return pluginContext.referenceFunctions(
-            callableId = CallableId(
-                packageName = FqName("kotlin.collections"),
-                callableName = Name.identifier(callableName),
-            ),
-        ).single { functionSymbol ->
-            // Disambiguate against the older non-nullable receiver overload:
-            functionSymbol.owner.extensionReceiverParameter?.type?.let {
-                it.classifierOrNull == propertyClassifier && it.isNullable()
-            } ?: false
-        }
-    }
-
-    private fun IrBlockBodyBuilder.getDataClassHashCodeFunction(
-        classifier: IrClassifierSymbol?,
-    ): IrSimpleFunctionSymbol = when {
-        classifier.isArrayOrPrimitiveArray(context) ->
-            context.irBuiltIns.dataClassArrayMemberHashCodeSymbol
-        classifier is IrClassSymbol ->
-            getHashCodeFunction(classifier.owner)
-        classifier is IrTypeParameterSymbol ->
-            getHashCodeFunction(classifier.owner.erasedUpperBound)
-        else ->
-            error("Unknown classifier kind $classifier")
-    }
-
-    private fun IrBlockBodyBuilder.getHashCodeFunction(irClass: IrClass): IrSimpleFunctionSymbol {
-        return irClass.functions.singleOrNull {
-            it.name.asString() == "hashCode" && it.valueParameters.isEmpty() && it.extensionReceiverParameter == null
-        }?.symbol ?: context.irBuiltIns.anyClass.functions.single { it.owner.name.asString() == "hashCode" }
-    }
-
-    private val IrTypeParameter.erasedUpperBound: IrClass
-        get() {
-            // Pick the (necessarily unique) non-interface upper bound if it exists
-            for (type in superTypes) {
-                val irClass = type.classOrNull?.owner ?: continue
-                if (!irClass.isInterface && !irClass.isAnnotationClass) return irClass
-            }
-
-            // Otherwise, choose either the first IrClass supertype or recurse.
-            // In the first case, all supertypes are interface types and the choice was arbitrary.
-            // In the second case, there is only a single supertype.
-            return when (val firstSuper = superTypes.first().classifierOrNull?.owner) {
-                is IrClass -> firstSuper
-                is IrTypeParameter -> firstSuper.erasedUpperBound
-                else -> error("unknown supertype kind $firstSuper")
-            }
-        }
-    //endregion
-
     //region toString
     private fun IrFunction.isToString(): Boolean =
         name == Name.identifier("toString") &&
@@ -482,7 +214,7 @@ internal class PokoMembersTransformer(
 
             irConcat.addArgument(irString(property.name.asString() + "="))
 
-            val irPropertyValue = irGetField(irFunction.receiverValue(), property.backingField!!)
+            val irPropertyValue = irGetField(irFunction.receiver(), property.backingField!!)
 
             val classifier = property.type.classifierOrNull
             val hasArrayContentBasedAnnotation =
@@ -492,7 +224,7 @@ internal class PokoMembersTransformer(
             val irPropertyStringValue = when {
                 hasArrayContentBasedAnnotation && mayBeRuntimeArray -> {
                     val field = property.backingField!!
-                    val instance = irGetField(irFunction.receiverValue(), field)
+                    val instance = irGetField(irFunction.receiver(), field)
                     irRuntimeArrayContentDeepToString(instance)
                 }
 

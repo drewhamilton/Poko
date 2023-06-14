@@ -65,7 +65,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
     fun irOther(): IrExpression = IrGetValueImpl(functionDeclaration.valueParameters.single())
 
     if (!irClass.isSingleFieldValueClass) {
-        +irIfThenReturnTrue(irEqeqeq(functionDeclaration.receiverValue(), irOther()))
+        +irIfThenReturnTrue(irEqeqeq(functionDeclaration.receiver(), irOther()))
     }
 
     +irIfThenReturnFalse(irNotIs(irOther(), irType))
@@ -73,7 +73,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
     val otherWithCast = irTemporary(irAs(irOther(), irType), "other_with_cast")
     for (property in classProperties) {
         val field = property.backingField!!
-        val arg1 = irGetField(functionDeclaration.receiverValue(), field)
+        val arg1 = irGetField(functionDeclaration.receiver(), field)
         val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
         val notEquals = when {
             property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName()) -> {
@@ -137,7 +137,6 @@ private fun IrBuilderWithScope.irArrayContentDeepEquals(
  * Generates IR code that checks the type of [receiver] at runtime, and performs an array content
  * equality check against [argument] if the type is an array type.
  */
-// TODO: Implement all primitive array type branches
 context(IrPluginContext)
 private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
     receiver: IrExpression,
@@ -163,6 +162,7 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
                     )
                     putValueArgument(
                         index = 1,
+                        // TODO: Deduplicate
                         valueArgument = irCall(
                             callee = findContentDeepEqualsFunctionSymbol(irBuiltIns.arrayClass),
                             type = irBuiltIns.booleanType,
