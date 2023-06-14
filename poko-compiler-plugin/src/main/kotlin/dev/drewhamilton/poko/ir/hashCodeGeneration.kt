@@ -33,7 +33,6 @@ import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.functions
-import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isAnnotationClass
 import org.jetbrains.kotlin.ir.util.isInterface
 import org.jetbrains.kotlin.ir.util.render
@@ -142,8 +141,7 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
     value: IrExpression,
     messageCollector: MessageCollector,
 ): IrExpression {
-    val hasArrayContentBasedAnnotation =
-        property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName())
+    val hasArrayContentBasedAnnotation = property.hasArrayContentBasedAnnotation()
     val classifier = property.type.classifierOrNull
     val mayBeRuntimeArray = classifier.mayBeRuntimeArray(context)
 

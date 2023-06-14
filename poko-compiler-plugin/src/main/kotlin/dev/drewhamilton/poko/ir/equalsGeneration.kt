@@ -33,7 +33,6 @@ import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.defaultType
-import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
@@ -76,7 +75,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
         val arg1 = irGetField(functionDeclaration.receiver(), field)
         val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
         val irNotEquals = when {
-            property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName()) -> {
+            property.hasArrayContentBasedAnnotation() -> {
                 irNot(
                     irArrayContentDeepEquals(
                         receiver = arg1,

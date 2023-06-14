@@ -24,7 +24,6 @@ import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isNullable
-import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
@@ -60,8 +59,7 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
         val propertyValue = irGetField(functionDeclaration.receiver(), property.backingField!!)
 
         val classifier = property.type.classifierOrNull
-        val hasArrayContentBasedAnnotation =
-            property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName())
+        val hasArrayContentBasedAnnotation = property.hasArrayContentBasedAnnotation()
         val mayBeRuntimeArray = classifier.mayBeRuntimeArray(context)
         val propertyStringValue = when {
             hasArrayContentBasedAnnotation && mayBeRuntimeArray -> {

@@ -12,7 +12,11 @@ import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.types.impl.IrStarProjectionImpl
+import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.render
+import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.Name
 
 /**
  * The type of an [IrProperty].
@@ -43,6 +47,14 @@ internal fun IrGetValueImpl(
     type = parameter.type,
     symbol = parameter.symbol,
 )
+
+internal fun IrProperty.hasArrayContentBasedAnnotation(): Boolean =
+    hasAnnotation(arrayContentBasedAnnotationFqName)
+
+private val arrayContentBasedAnnotationFqName = ClassId(
+    FqName("dev.drewhamilton.poko"),
+    Name.identifier("ArrayContentBased"),
+).asSingleFqName()
 
 /**
  * Returns true if the classifier represents a typed or primitive array.
