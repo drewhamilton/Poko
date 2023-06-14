@@ -4,15 +4,12 @@ import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.backend.common.lower.irNot
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
-import org.jetbrains.kotlin.cli.common.messages.MessageUtil
 import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
-import org.jetbrains.kotlin.ir.builders.IrGeneratorContext
 import org.jetbrains.kotlin.ir.builders.irAs
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irBranch
@@ -43,14 +40,12 @@ import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
-import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.declarations.isMultiFieldValueClass
 import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.addArgument
-import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
@@ -86,7 +81,7 @@ internal class PokoMembersTransformer(
 ) : IrElementTransformerVoidWithContext() {
 
     override fun visitFunctionNew(declaration: IrFunction): IrStatement {
-        log("Reading <$declaration>")
+        messageCollector.log("Reading <$declaration>")
 
         val declarationParent = declaration.parent
         if (declarationParent is IrClass && declarationParent.isPokoClass() && declaration.isFakeOverride) {
@@ -108,27 +103,30 @@ internal class PokoMembersTransformer(
 
     private fun IrClass.isPokoClass(): Boolean = when {
         !hasAnnotation(pokoAnnotationName.asSingleFqName()) -> {
-            log("Not Poko class")
+            messageCollector.log("Not Poko class")
             false
         }
         isData -> {
-            log("Data class")
-            reportError("Poko does not support data classes")
+            messageCollector.log("Data class")
+            messageCollector.reportErrorOnClass(this, "Poko does not support data classes")
             false
         }
         isSingleFieldValueClass || isMultiFieldValueClass -> {
-            log("Value class")
-            reportError("Poko does not support value classes")
+            messageCollector.log("Value class")
+            messageCollector.reportErrorOnClass(this, "Poko does not support value classes")
             false
         }
         isInner -> {
-            log("Inner class")
-            reportError("Poko cannot be applied to inner classes")
+            messageCollector.log("Inner class")
+            messageCollector.reportErrorOnClass(this, "Poko cannot be applied to inner classes")
             false
         }
         primaryConstructor == null -> {
-            log("No primary constructor")
-            reportError("Poko classes must have a primary constructor")
+            messageCollector.log("No primary constructor")
+            messageCollector.reportErrorOnClass(
+                irClass = this,
+                message = "Poko classes must have a primary constructor",
+            )
             false
         }
         else -> {
@@ -148,8 +146,11 @@ internal class PokoMembersTransformer(
                 it.symbol.descriptor.source.getPsi() is KtParameter
             }
         if (properties.isEmpty()) {
-            log("No primary constructor properties")
-            parent.reportError("Poko classes must have at least one property in the primary constructor")
+            messageCollector.log("No primary constructor properties")
+            messageCollector.reportErrorOnClass(
+                irClass = parent,
+                message = "Poko classes must have at least one property in the primary constructor",
+            )
             return
         }
 
@@ -161,6 +162,47 @@ internal class PokoMembersTransformer(
         }
 
         reflectivelySetFakeOverride(false)
+    }
+
+    /**
+     * Converts the function's dispatch receiver parameter (i.e. <this>) to the function's parent.
+     * This is necessary because we are taking the base declaration from a parent class (or Any) and
+     * pseudo-overriding it in this function's parent class.
+     */
+    private fun IrFunction.mutateWithNewDispatchReceiverParameterForParentClass() {
+        val parentClass = parent as IrClass
+        val originalReceiver = requireNotNull(dispatchReceiverParameter)
+        dispatchReceiverParameter = IrValueParameterImpl(
+            startOffset = originalReceiver.startOffset,
+            endOffset = originalReceiver.endOffset,
+            origin = originalReceiver.origin,
+            symbol = IrValueParameterSymbolImpl(
+                // IrValueParameterSymbolImpl requires a descriptor; same type as
+                // originalReceiver.symbol:
+                @OptIn(ObsoleteDescriptorBasedAPI::class)
+                LazyClassReceiverParameterDescriptor(parentClass.descriptor),
+            ),
+            name = originalReceiver.name,
+            index = originalReceiver.index,
+            type = parentClass.symbol.createType(hasQuestionMark = false, emptyList()),
+            varargElementType = originalReceiver.varargElementType,
+            isCrossinline = originalReceiver.isCrossinline,
+            isNoinline = originalReceiver.isNoinline,
+            isHidden = originalReceiver.isHidden,
+            isAssignable = originalReceiver.isAssignable
+        ).apply {
+            parent = this@mutateWithNewDispatchReceiverParameterForParentClass
+        }
+    }
+
+    /**
+     * Uses reflection to set an [IrFunction]'s private `isFakeOverride` property.
+     */
+    private fun IrFunction.reflectivelySetFakeOverride(isFakeOverride: Boolean) {
+        with(javaClass.getDeclaredField("isFakeOverride")) {
+            isAccessible = true
+            setBoolean(this@reflectivelySetFakeOverride, isFakeOverride)
+        }
     }
 
     //region equals
@@ -184,13 +226,13 @@ internal class PokoMembersTransformer(
         fun irOther(): IrExpression = IrGetValueImpl(irFunction.valueParameters[0])
 
         if (!irClass.isSingleFieldValueClass) {
-            +irIfThenReturnTrue(irEqeqeq(receiver(irFunction), irOther()))
+            +irIfThenReturnTrue(irEqeqeq(irFunction.receiverValue(), irOther()))
         }
         +irIfThenReturnFalse(irNotIs(irOther(), irType))
         val otherWithCast = irTemporary(irAs(irOther(), irType), "other_with_cast")
         for (property in irProperties) {
             val field = property.backingField!!
-            val arg1 = irGetField(receiver(irFunction), field)
+            val arg1 = irGetField(irFunction.receiverValue(), field)
             val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
             val negativeComparison = when {
                 property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName()) -> {
@@ -225,8 +267,9 @@ internal class PokoMembersTransformer(
             return if (propertyClassifier == context.irBuiltIns.anyClass) {
                 irRuntimeArrayContentDeepEquals(receiver, argument)
             } else {
-                irProperty.reportError(
-                    "@ArrayContentBased on property of type <${propertyType.render()}> not supported"
+                messageCollector.reportErrorOnProperty(
+                    property = irProperty,
+                    message = "@ArrayContentBased on property of type <${propertyType.render()}> not supported",
                 )
                 irEquals(receiver, argument)
             }
@@ -371,11 +414,11 @@ internal class PokoMembersTransformer(
         return when {
             irProperty.type.isNullable() -> irIfNull(
                 context.irBuiltIns.intType,
-                irGetField(receiver(irFunction), field),
+                irGetField(irFunction.receiverValue(), field),
                 irInt(0),
-                getHashCodeOf(irProperty, irGetField(receiver(irFunction), field))
+                getHashCodeOf(irProperty, irGetField(irFunction.receiverValue(), field))
             )
-            else -> getHashCodeOf(irProperty, irGetField(receiver(irFunction), field))
+            else -> getHashCodeOf(irProperty, irGetField(irFunction.receiverValue(), field))
         }
     }
 
@@ -500,8 +543,9 @@ internal class PokoMembersTransformer(
         val propertyClassifier = irProperty.type.classifierOrFail
 
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-            irProperty.reportError(
-                "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
+            messageCollector.reportErrorOnProperty(
+                property = irProperty,
+                message = "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported",
             )
             return null
         }
@@ -596,7 +640,7 @@ internal class PokoMembersTransformer(
 
             irConcat.addArgument(irString(property.name.asString() + "="))
 
-            val irPropertyValue = irGetField(receiver(irFunction), property.backingField!!)
+            val irPropertyValue = irGetField(irFunction.receiverValue(), property.backingField!!)
 
             val classifier = property.type.classifierOrNull
             val hasArrayContentBasedAnnotation =
@@ -606,7 +650,7 @@ internal class PokoMembersTransformer(
             val irPropertyStringValue = when {
                 hasArrayContentBasedAnnotation && mayBeRuntimeArray -> {
                     val field = property.backingField!!
-                    val instance = irGetField(receiver(irFunction), field)
+                    val instance = irGetField(irFunction.receiverValue(), field)
                     irRuntimeArrayContentDeepToString(instance)
                 }
 
@@ -657,8 +701,9 @@ internal class PokoMembersTransformer(
         val propertyClassifier = irProperty.type.classifierOrFail
 
         if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-            irProperty.reportError(
-                "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported"
+            messageCollector.reportErrorOnProperty(
+                property = irProperty,
+                message = "@ArrayContentBased on property of type <${irProperty.type.render()}> not supported",
             )
             return null
         }
@@ -741,86 +786,6 @@ internal class PokoMembersTransformer(
         }
     }
     //endregion
-
-    //region Shared generation helpers
-    /**
-     * Converts the function's dispatch receiver parameter (i.e. <this>) to the function's parent.
-     * This is necessary because we are taking the base declaration from a parent class (or Any) and
-     * pseudo-overriding it in this function's parent class.
-     */
-    private fun IrFunction.mutateWithNewDispatchReceiverParameterForParentClass() {
-        val parentClass = parent as IrClass
-        val originalReceiver = checkNotNull(dispatchReceiverParameter)
-        dispatchReceiverParameter = IrValueParameterImpl(
-            startOffset = originalReceiver.startOffset,
-            endOffset = originalReceiver.endOffset,
-            origin = originalReceiver.origin,
-            symbol = IrValueParameterSymbolImpl(
-                // IrValueParameterSymbolImpl requires a descriptor; same type as
-                // originalReceiver.symbol:
-                @OptIn(ObsoleteDescriptorBasedAPI::class)
-                LazyClassReceiverParameterDescriptor(parentClass.descriptor)
-            ),
-            name = originalReceiver.name,
-            index = originalReceiver.index,
-            type = parentClass.symbol.createType(hasQuestionMark = false, emptyList()),
-            varargElementType = originalReceiver.varargElementType,
-            isCrossinline = originalReceiver.isCrossinline,
-            isNoinline = originalReceiver.isNoinline,
-            isHidden = originalReceiver.isHidden,
-            isAssignable = originalReceiver.isAssignable
-        ).apply {
-            parent = this@mutateWithNewDispatchReceiverParameterForParentClass
-        }
-    }
-
-    /**
-     * Only works properly after [mutateWithNewDispatchReceiverParameterForParentClass] has been
-     * called on [irFunction].
-     */
-    private fun IrBlockBodyBuilder.receiver(irFunction: IrFunction) =
-        IrGetValueImpl(irFunction.dispatchReceiverParameter!!)
-
-    private fun IrBlockBodyBuilder.IrGetValueImpl(irParameter: IrValueParameter) = IrGetValueImpl(
-        startOffset, endOffset,
-        irParameter.type,
-        irParameter.symbol
-    )
-
-    private fun IrFunction.reflectivelySetFakeOverride(isFakeOverride: Boolean) {
-        with(javaClass.getDeclaredField("isFakeOverride")) {
-            isAccessible = true
-            setBoolean(this@reflectivelySetFakeOverride, isFakeOverride)
-        }
-    }
-
-    private val IrProperty.type
-        get() = this.backingField?.type
-            ?: this.getter?.returnType
-            ?: error("Can't find type of ${this.render()}")
-
-    private fun IrClassifierSymbol?.isArrayOrPrimitiveArray(context: IrGeneratorContext): Boolean {
-        return this == context.irBuiltIns.arrayClass || this in context.irBuiltIns.primitiveArraysToPrimitiveTypes
-    }
-    //endregion
-
-    private fun log(message: String) {
-        messageCollector.report(CompilerMessageSeverity.LOGGING, "POKO COMPILER PLUGIN (IR): $message")
-    }
-
-    private fun IrClass.reportError(message: String) {
-        val psi = source.getPsi()
-        val location = MessageUtil.psiElementToMessageLocation(psi)
-        messageCollector.report(CompilerMessageSeverity.ERROR, message, location)
-    }
-
-    // TODO: Implement an FIR-based declaration checker:
-    @OptIn(ObsoleteDescriptorBasedAPI::class)
-    private fun IrProperty.reportError(message: String) {
-        val psi = descriptor.source.getPsi()
-        val location = MessageUtil.psiElementToMessageLocation(psi)
-        messageCollector.report(CompilerMessageSeverity.ERROR, message, location)
-    }
 
     private companion object {
         val ArrayContentBasedAnnotation = ClassId(

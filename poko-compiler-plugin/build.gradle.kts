@@ -3,6 +3,7 @@ import dev.drewhamilton.poko.build.generateArtifactInfo
 import dev.drewhamilton.poko.build.setUpPublication
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -37,6 +38,12 @@ dependencies {
 
 kotlin {
     explicitApi = ExplicitApiMode.Strict
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-receivers")
+    }
 }
 
 // https://jakewharton.com/build-on-latest-java-test-through-lowest-java/
