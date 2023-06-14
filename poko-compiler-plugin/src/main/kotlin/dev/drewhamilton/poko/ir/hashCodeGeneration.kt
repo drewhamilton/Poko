@@ -119,19 +119,15 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
     messageCollector: MessageCollector,
 ): IrExpression {
     val field = property.backingField!!
+    val irGetField = { irGetField(function.receiver(), field) }
     return when {
         property.type.isNullable() -> irIfNull(
             type = context.irBuiltIns.intType,
-            subject = irGetField(function.receiver(), field),
+            subject = irGetField(),
             thenPart = irInt(0),
-            // TODO: Deduplicate
-            elsePart = getHashCodeOf(
-                property = property,
-                value = irGetField(function.receiver(), field),
-                messageCollector = messageCollector,
-            )
+            elsePart = getHashCodeOf(property, irGetField(), messageCollector)
         )
-        else -> getHashCodeOf(property, irGetField(function.receiver(), field), messageCollector)
+        else -> getHashCodeOf(property, irGetField(), messageCollector)
     }
 }
 
