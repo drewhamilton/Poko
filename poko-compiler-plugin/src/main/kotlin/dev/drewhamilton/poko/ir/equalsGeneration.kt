@@ -75,7 +75,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
         val field = property.backingField!!
         val arg1 = irGetField(functionDeclaration.receiver(), field)
         val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
-        val notEquals = when {
+        val irNotEquals = when {
             property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName()) -> {
                 irNot(
                     irArrayContentDeepEquals(
@@ -91,7 +91,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
                 irNotEquals(arg1, arg2)
             }
         }
-        +irIfThenReturnFalse(notEquals)
+        +irIfThenReturnFalse(irNotEquals)
     }
     +irReturnTrue()
 }
@@ -122,15 +122,11 @@ private fun IrBuilderWithScope.irArrayContentDeepEquals(
         }
     }
 
-    return irCall(
-        findContentDeepEqualsFunctionSymbol(propertyClassifier),
-        type = context.irBuiltIns.booleanType,
-        valueArgumentsCount = 1,
-        typeArgumentsCount = 1,
-    ).apply {
-        extensionReceiver = receiver
-        putValueArgument(0, argument)
-    }
+    return irCallContentDeepEquals(
+        classifier = propertyClassifier,
+        receiver = receiver,
+        argument = argument,
+    )
 }
 
 /**
@@ -162,16 +158,11 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
                     )
                     putValueArgument(
                         index = 1,
-                        // TODO: Deduplicate
-                        valueArgument = irCall(
-                            callee = findContentDeepEqualsFunctionSymbol(irBuiltIns.arrayClass),
-                            type = irBuiltIns.booleanType,
-                            valueArgumentsCount = 1,
-                            typeArgumentsCount = 1,
-                        ).apply {
-                            extensionReceiver = receiver
-                            putValueArgument(0, argument)
-                        }
+                        valueArgument = irCallContentDeepEquals(
+                            classifier = irBuiltIns.arrayClass,
+                            receiver = receiver,
+                            argument = argument,
+                        )
                     )
                 },
             ),
@@ -183,6 +174,23 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
             ),
         ),
     )
+}
+
+context(IrPluginContext)
+private fun IrBuilderWithScope.irCallContentDeepEquals(
+    classifier: IrClassifierSymbol,
+    receiver: IrExpression,
+    argument: IrExpression,
+): IrExpression {
+    return irCall(
+        callee = findContentDeepEqualsFunctionSymbol(classifier),
+        type = irBuiltIns.booleanType,
+        valueArgumentsCount = 1,
+        typeArgumentsCount = 1,
+    ).apply {
+        extensionReceiver = receiver
+        putValueArgument(0, argument)
+    }
 }
 
 /**
