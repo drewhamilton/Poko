@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.backend.common.lower.irNot
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
+import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
@@ -39,6 +40,7 @@ import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
+import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.declarations.isMultiFieldValueClass
 import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
@@ -48,6 +50,7 @@ import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
+import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrFail
@@ -161,6 +164,47 @@ internal class PokoMembersTransformer(
         reflectivelySetFakeOverride(false)
     }
 
+    /**
+     * Converts the function's dispatch receiver parameter (i.e. <this>) to the function's parent.
+     * This is necessary because we are taking the base declaration from a parent class (or Any) and
+     * pseudo-overriding it in this function's parent class.
+     */
+    private fun IrFunction.mutateWithNewDispatchReceiverParameterForParentClass() {
+        val parentClass = parent as IrClass
+        val originalReceiver = requireNotNull(dispatchReceiverParameter)
+        dispatchReceiverParameter = IrValueParameterImpl(
+            startOffset = originalReceiver.startOffset,
+            endOffset = originalReceiver.endOffset,
+            origin = originalReceiver.origin,
+            symbol = IrValueParameterSymbolImpl(
+                // IrValueParameterSymbolImpl requires a descriptor; same type as
+                // originalReceiver.symbol:
+                @OptIn(ObsoleteDescriptorBasedAPI::class)
+                LazyClassReceiverParameterDescriptor(parentClass.descriptor),
+            ),
+            name = originalReceiver.name,
+            index = originalReceiver.index,
+            type = parentClass.symbol.createType(hasQuestionMark = false, emptyList()),
+            varargElementType = originalReceiver.varargElementType,
+            isCrossinline = originalReceiver.isCrossinline,
+            isNoinline = originalReceiver.isNoinline,
+            isHidden = originalReceiver.isHidden,
+            isAssignable = originalReceiver.isAssignable
+        ).apply {
+            parent = this@mutateWithNewDispatchReceiverParameterForParentClass
+        }
+    }
+
+    /**
+     * Uses reflection to set an [IrFunction]'s private `isFakeOverride` property.
+     */
+    private fun IrFunction.reflectivelySetFakeOverride(isFakeOverride: Boolean) {
+        with(javaClass.getDeclaredField("isFakeOverride")) {
+            isAccessible = true
+            setBoolean(this@reflectivelySetFakeOverride, isFakeOverride)
+        }
+    }
+
     //region equals
     private fun IrFunction.isEquals(): Boolean {
         val valueParameters = valueParameters
@@ -182,13 +226,13 @@ internal class PokoMembersTransformer(
         fun irOther(): IrExpression = IrGetValueImpl(irFunction.valueParameters[0])
 
         if (!irClass.isSingleFieldValueClass) {
-            +irIfThenReturnTrue(irEqeqeq(receiver(irFunction), irOther()))
+            +irIfThenReturnTrue(irEqeqeq(irFunction.receiverValue(), irOther()))
         }
         +irIfThenReturnFalse(irNotIs(irOther(), irType))
         val otherWithCast = irTemporary(irAs(irOther(), irType), "other_with_cast")
         for (property in irProperties) {
             val field = property.backingField!!
-            val arg1 = irGetField(receiver(irFunction), field)
+            val arg1 = irGetField(irFunction.receiverValue(), field)
             val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
             val negativeComparison = when {
                 property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName()) -> {
@@ -370,11 +414,11 @@ internal class PokoMembersTransformer(
         return when {
             irProperty.type.isNullable() -> irIfNull(
                 context.irBuiltIns.intType,
-                irGetField(receiver(irFunction), field),
+                irGetField(irFunction.receiverValue(), field),
                 irInt(0),
-                getHashCodeOf(irProperty, irGetField(receiver(irFunction), field))
+                getHashCodeOf(irProperty, irGetField(irFunction.receiverValue(), field))
             )
-            else -> getHashCodeOf(irProperty, irGetField(receiver(irFunction), field))
+            else -> getHashCodeOf(irProperty, irGetField(irFunction.receiverValue(), field))
         }
     }
 
@@ -596,7 +640,7 @@ internal class PokoMembersTransformer(
 
             irConcat.addArgument(irString(property.name.asString() + "="))
 
-            val irPropertyValue = irGetField(receiver(irFunction), property.backingField!!)
+            val irPropertyValue = irGetField(irFunction.receiverValue(), property.backingField!!)
 
             val classifier = property.type.classifierOrNull
             val hasArrayContentBasedAnnotation =
@@ -606,7 +650,7 @@ internal class PokoMembersTransformer(
             val irPropertyStringValue = when {
                 hasArrayContentBasedAnnotation && mayBeRuntimeArray -> {
                     val field = property.backingField!!
-                    val instance = irGetField(receiver(irFunction), field)
+                    val instance = irGetField(irFunction.receiverValue(), field)
                     irRuntimeArrayContentDeepToString(instance)
                 }
 
