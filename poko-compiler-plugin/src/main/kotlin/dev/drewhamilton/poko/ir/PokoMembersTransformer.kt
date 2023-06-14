@@ -5,12 +5,10 @@ import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.backend.common.lower.irNot
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
-import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
-import org.jetbrains.kotlin.ir.builders.IrGeneratorContext
 import org.jetbrains.kotlin.ir.builders.irAs
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irBranch
@@ -41,19 +39,15 @@ import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
-import org.jetbrains.kotlin.ir.declarations.IrValueParameter
-import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.declarations.isMultiFieldValueClass
 import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.addArgument
-import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
-import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrFail
@@ -746,68 +740,6 @@ internal class PokoMembersTransformer(
                 it.classifierOrNull == propertyClassifier && it.isNullable()
             } ?: false
         }
-    }
-    //endregion
-
-    //region Shared generation helpers
-    /**
-     * Converts the function's dispatch receiver parameter (i.e. <this>) to the function's parent.
-     * This is necessary because we are taking the base declaration from a parent class (or Any) and
-     * pseudo-overriding it in this function's parent class.
-     */
-    private fun IrFunction.mutateWithNewDispatchReceiverParameterForParentClass() {
-        val parentClass = parent as IrClass
-        val originalReceiver = checkNotNull(dispatchReceiverParameter)
-        dispatchReceiverParameter = IrValueParameterImpl(
-            startOffset = originalReceiver.startOffset,
-            endOffset = originalReceiver.endOffset,
-            origin = originalReceiver.origin,
-            symbol = IrValueParameterSymbolImpl(
-                // IrValueParameterSymbolImpl requires a descriptor; same type as
-                // originalReceiver.symbol:
-                @OptIn(ObsoleteDescriptorBasedAPI::class)
-                LazyClassReceiverParameterDescriptor(parentClass.descriptor)
-            ),
-            name = originalReceiver.name,
-            index = originalReceiver.index,
-            type = parentClass.symbol.createType(hasQuestionMark = false, emptyList()),
-            varargElementType = originalReceiver.varargElementType,
-            isCrossinline = originalReceiver.isCrossinline,
-            isNoinline = originalReceiver.isNoinline,
-            isHidden = originalReceiver.isHidden,
-            isAssignable = originalReceiver.isAssignable
-        ).apply {
-            parent = this@mutateWithNewDispatchReceiverParameterForParentClass
-        }
-    }
-
-    /**
-     * Only works properly after [mutateWithNewDispatchReceiverParameterForParentClass] has been
-     * called on [irFunction].
-     */
-    private fun IrBlockBodyBuilder.receiver(irFunction: IrFunction) =
-        IrGetValueImpl(irFunction.dispatchReceiverParameter!!)
-
-    private fun IrBlockBodyBuilder.IrGetValueImpl(irParameter: IrValueParameter) = IrGetValueImpl(
-        startOffset, endOffset,
-        irParameter.type,
-        irParameter.symbol
-    )
-
-    private fun IrFunction.reflectivelySetFakeOverride(isFakeOverride: Boolean) {
-        with(javaClass.getDeclaredField("isFakeOverride")) {
-            isAccessible = true
-            setBoolean(this@reflectivelySetFakeOverride, isFakeOverride)
-        }
-    }
-
-    private val IrProperty.type
-        get() = this.backingField?.type
-            ?: this.getter?.returnType
-            ?: error("Can't find type of ${this.render()}")
-
-    private fun IrClassifierSymbol?.isArrayOrPrimitiveArray(context: IrGeneratorContext): Boolean {
-        return this == context.irBuiltIns.arrayClass || this in context.irBuiltIns.primitiveArraysToPrimitiveTypes
     }
     //endregion
 
