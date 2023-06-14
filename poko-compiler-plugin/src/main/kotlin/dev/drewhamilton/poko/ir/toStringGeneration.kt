@@ -57,13 +57,13 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
 
         irConcat.addArgument(irString(property.name.asString() + "="))
 
-        val irPropertyValue = irGetField(functionDeclaration.receiver(), property.backingField!!)
+        val propertyValue = irGetField(functionDeclaration.receiver(), property.backingField!!)
 
         val classifier = property.type.classifierOrNull
         val hasArrayContentBasedAnnotation =
             property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName())
         val mayBeRuntimeArray = classifier.mayBeRuntimeArray(context)
-        val irPropertyStringValue = when {
+        val propertyStringValue = when {
             hasArrayContentBasedAnnotation && mayBeRuntimeArray -> {
                 val field = property.backingField!!
                 val instance = irGetField(functionDeclaration.receiver(), field)
@@ -75,35 +75,23 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
                     property = property,
                     messageCollector = messageCollector
                 ) ?: context.irBuiltIns.dataClassArrayMemberToStringSymbol
-                // TODO: Deduplicate
-                irCall(
-                    callee = toStringFunctionSymbol,
-                    type = context.irBuiltIns.stringType,
-                ).apply {
-                    // Poko modification: check for extension receiver for contentDeepToString
-                    val hasExtensionReceiver =
-                        toStringFunctionSymbol.owner.extensionReceiverParameter != null
-                    if (hasExtensionReceiver) {
-                        extensionReceiver = irPropertyValue
-                    } else {
-                        putValueArgument(0, irPropertyValue)
-                    }
-                }
+                irCallToStringFunction(
+                    toStringFunctionSymbol = toStringFunctionSymbol,
+                    value = propertyValue,
+                )
             }
 
             classifier.isArrayOrPrimitiveArray(context) -> {
-                irCall(
-                    callee = context.irBuiltIns.dataClassArrayMemberToStringSymbol,
-                    type = context.irBuiltIns.stringType
-                ).apply {
-                    putValueArgument(0, irPropertyValue)
-                }
+                irCallToStringFunction(
+                    toStringFunctionSymbol = context.irBuiltIns.dataClassArrayMemberToStringSymbol,
+                    value = propertyValue,
+                )
             }
 
-            else -> irPropertyValue
+            else -> propertyValue
         }
 
-        irConcat.addArgument(irPropertyStringValue)
+        irConcat.addArgument(propertyStringValue)
         first = false
     }
     irConcat.addArgument(irString(")"))
@@ -153,23 +141,21 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
                     argument = value,
                     type = starArrayType(),
                 ),
-                result = irCall(
-                    callee = findContentDeepToStringFunctionSymbol(context.irBuiltIns.arrayClass),
-                    type = context.irBuiltIns.stringType,
-                ).apply {
-                    extensionReceiver = value
-                }
+                result = irCallToStringFunction(
+                    toStringFunctionSymbol = findContentDeepToStringFunctionSymbol(
+                        context.irBuiltIns.arrayClass,
+                    ),
+                    value = value,
+                ),
             ),
 
             // TODO: Primitive arrays
 
             irElseBranch(
-                irCall(
-                    callee = context.irBuiltIns.extensionToString,
-                    type = context.irBuiltIns.stringType,
-                ).apply {
-                    extensionReceiver = value
-                }
+                irCallToStringFunction(
+                    toStringFunctionSymbol = context.irBuiltIns.extensionToString,
+                    value = value,
+                ),
             ),
         ),
     )
@@ -199,5 +185,24 @@ private fun IrBuilderWithScope.findContentDeepToStringFunctionSymbol(
         functionSymbol.owner.extensionReceiverParameter?.type?.let {
             it.classifierOrNull == propertyClassifier && it.isNullable()
         } ?: false
+    }
+}
+
+private fun IrBlockBodyBuilder.irCallToStringFunction(
+    toStringFunctionSymbol: IrSimpleFunctionSymbol,
+    value: IrExpression,
+): IrExpression {
+    return irCall(
+        callee = toStringFunctionSymbol,
+        type = context.irBuiltIns.stringType,
+    ).apply {
+        // Poko modification: check for extension receiver for contentDeepToString
+        val hasExtensionReceiver =
+            toStringFunctionSymbol.owner.extensionReceiverParameter != null
+        if (hasExtensionReceiver) {
+            extensionReceiver = value
+        } else {
+            putValueArgument(0, value)
+        }
     }
 }
