@@ -7,7 +7,6 @@ import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irCallOp
-import org.jetbrains.kotlin.ir.builders.irComposite
 import org.jetbrains.kotlin.ir.builders.irElseBranch
 import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irGetField
@@ -149,7 +148,6 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
     val hasArrayContentBasedAnnotation =
         property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName())
     val classifier = property.type.classifierOrNull
-    // TODO: Handle generic type property that is array at runtime
     val mayBeRuntimeArray = classifier?.mayBeRuntimeArray(context) == true
 
     if (hasArrayContentBasedAnnotation && mayBeRuntimeArray) {
@@ -163,34 +161,18 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
         null
     }
     val hashCodeFunctionSymbol = deepHashCodeFunctionSymbol
-        ?: getDataClassHashCodeFunction(classifier)
-    check(hashCodeFunctionSymbol.isBound) { "$hashCodeFunctionSymbol is not bound" }
+        ?: getStandardHashCodeFunctionSymbol(classifier)
 
-    // Poko modification: check for extension receiver for contentDeepHashCode case
-    val (hasDispatchReceiver, hasExtensionReceiver) = with(hashCodeFunctionSymbol.owner) {
-        (dispatchReceiverParameter != null) to (extensionReceiverParameter != null)
-    }
-    return irCall(
-        callee = hashCodeFunctionSymbol,
-        type = context.irBuiltIns.intType,
-        valueArgumentsCount = if (hasDispatchReceiver || hasExtensionReceiver) 0 else 1,
-        typeArgumentsCount = 0,
-    ).apply {
-        when {
-            hasDispatchReceiver -> dispatchReceiver = value
-            hasExtensionReceiver -> extensionReceiver = value
-            else -> putValueArgument(0, value)
-        }
-    }
+    return irCallHashCodeFunction(hashCodeFunctionSymbol, value)
 }
 
 /**
- * Generates a `when` branch that checks the runtime type of the [property] instance and invokes
+ * Generates a `when` branch that checks the runtime type of the [value] instance and invokes
  * `contentDeepHashCode` or `contentHashCode` for typed arrays and primitive arrays, respectively.
  */
 context(IrPluginContext)
 private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
-    property: IrExpression,
+    value: IrExpression,
 ): IrExpression {
     val starArrayType = starArrayType()
     return irWhen(
@@ -198,14 +180,14 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
         branches = listOf(
             irBranch(
                 condition = irIs(
-                    argument = property,
+                    argument = value,
                     type = starArrayType,
                 ),
                 result = irCall(
                     callee = findArrayDeepHashCodeFunction(context.irBuiltIns.arrayClass),
                     type = context.irBuiltIns.intType,
                 ).apply {
-                    extensionReceiver = property
+                    extensionReceiver = value
                 }
             ),
 
@@ -214,33 +196,14 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
             irElseBranch(
                 irIfNull(
                     type = context.irBuiltIns.intType,
-                    subject = property,
+                    subject = value,
                     thenPart = irInt(0),
-                    elsePart = irComposite {
-                        // TODO: Deduplicate and remove composite
-                        val hashCodeFunctionSymbol = getDataClassHashCodeFunction(
-                            classifier = property.type.classifierOrNull,
-                        )
-                        check(hashCodeFunctionSymbol.isBound) {
-                            "$hashCodeFunctionSymbol is not bound"
-                        }
-
-                        // Poko modification: check for extension receiver for
-                        // contentDeepHashCode case
-                        val hasDispatchReceiver =
-                            hashCodeFunctionSymbol.owner.dispatchReceiverParameter != null
-                        +irCall(
-                            hashCodeFunctionSymbol,
-                            context.irBuiltIns.intType,
-                            valueArgumentsCount = if (hasDispatchReceiver) 0 else 1,
-                            typeArgumentsCount = 0
-                        ).apply {
-                            when {
-                                hasDispatchReceiver -> dispatchReceiver = property
-                                else -> putValueArgument(0, property)
-                            }
-                        }
-                    },
+                    elsePart = irCallHashCodeFunction(
+                        hashCodeFunctionSymbol = getStandardHashCodeFunctionSymbol(
+                            classifier = value.type.classifierOrNull,
+                        ),
+                        value = value,
+                    ),
                 ),
             ),
         ),
@@ -296,26 +259,53 @@ private fun IrBlockBodyBuilder.findArrayDeepHashCodeFunction(
     }
 }
 
-private fun IrBlockBodyBuilder.getDataClassHashCodeFunction(
+private fun IrBlockBodyBuilder.getStandardHashCodeFunctionSymbol(
     classifier: IrClassifierSymbol?,
 ): IrSimpleFunctionSymbol = when {
     classifier.isArrayOrPrimitiveArray(context) ->
         context.irBuiltIns.dataClassArrayMemberHashCodeSymbol
     classifier is IrClassSymbol ->
-        getHashCodeFunction(classifier.owner)
+        getHashCodeFunctionForClass(classifier.owner)
     classifier is IrTypeParameterSymbol ->
-        getHashCodeFunction(classifier.owner.erasedUpperBound)
+        getHashCodeFunctionForClass(classifier.owner.erasedUpperBound)
     else ->
         error("Unknown classifier kind $classifier")
 }
 
-private fun IrBlockBodyBuilder.getHashCodeFunction(irClass: IrClass): IrSimpleFunctionSymbol {
-    return irClass.functions.singleOrNull {
+private fun IrBlockBodyBuilder.getHashCodeFunctionForClass(
+    irClass: IrClass
+): IrSimpleFunctionSymbol {
+    val explicitHashCodeDeclaration = irClass.functions.singleOrNull {
         it.name.asString() == "hashCode" &&
             it.valueParameters.isEmpty() &&
             it.extensionReceiverParameter == null
-    }?.symbol
+    }
+    return explicitHashCodeDeclaration?.symbol
         ?: context.irBuiltIns.anyClass.functions.single { it.owner.name.asString() == "hashCode" }
+}
+
+private fun IrBlockBodyBuilder.irCallHashCodeFunction(
+    hashCodeFunctionSymbol: IrSimpleFunctionSymbol,
+    value: IrExpression,
+): IrExpression {
+    check(hashCodeFunctionSymbol.isBound) { "$hashCodeFunctionSymbol is not bound" }
+
+    // Poko modification: check for extension receiver for contentDeepHashCode case
+    val (hasDispatchReceiver, hasExtensionReceiver) = with(hashCodeFunctionSymbol.owner) {
+        (dispatchReceiverParameter != null) to (extensionReceiverParameter != null)
+    }
+    return irCall(
+        callee = hashCodeFunctionSymbol,
+        type = context.irBuiltIns.intType,
+        valueArgumentsCount = if (hasDispatchReceiver || hasExtensionReceiver) 0 else 1,
+        typeArgumentsCount = 0,
+    ).apply {
+        when {
+            hasDispatchReceiver -> dispatchReceiver = value
+            hasExtensionReceiver -> extensionReceiver = value
+            else -> putValueArgument(0, value)
+        }
+    }
 }
 
 private val IrTypeParameter.erasedUpperBound: IrClass
