@@ -1,6 +1,7 @@
 package dev.drewhamilton.poko.ir
 
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
+import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContext
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
@@ -8,6 +9,9 @@ import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.expressions.IrGetValue
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
+import org.jetbrains.kotlin.ir.types.IrSimpleType
+import org.jetbrains.kotlin.ir.types.createType
+import org.jetbrains.kotlin.ir.types.impl.IrStarProjectionImpl
 import org.jetbrains.kotlin.ir.util.render
 
 /**
@@ -48,4 +52,22 @@ internal fun IrClassifierSymbol?.isArrayOrPrimitiveArray(
 ): Boolean {
     return this == context.irBuiltIns.arrayClass ||
         this in context.irBuiltIns.primitiveArraysToPrimitiveTypes
+}
+
+/**
+ * Returns true if the classifier represents a type that may be an array at runtime (e.g. [Any] or
+ * a generic type).
+ */
+// TODO: Handle generic type
+internal fun IrClassifierSymbol.mayBeRuntimeArray(
+    context: IrGeneratorContext,
+): Boolean {
+    return this == context.irBuiltIns.anyClass
+}
+
+internal fun IrBuilderWithScope.starArrayType(): IrSimpleType{
+    return context.irBuiltIns.arrayClass.createType(
+        hasQuestionMark = false,
+        arguments = listOf(IrStarProjectionImpl),
+    )
 }

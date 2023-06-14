@@ -3,14 +3,12 @@ package dev.drewhamilton.poko.ir
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
-import org.jetbrains.kotlin.backend.common.lower.irNot
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
-import org.jetbrains.kotlin.ir.builders.irAs
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
@@ -18,22 +16,14 @@ import org.jetbrains.kotlin.ir.builders.irCallOp
 import org.jetbrains.kotlin.ir.builders.irComposite
 import org.jetbrains.kotlin.ir.builders.irConcat
 import org.jetbrains.kotlin.ir.builders.irElseBranch
-import org.jetbrains.kotlin.ir.builders.irEqeqeq
-import org.jetbrains.kotlin.ir.builders.irEquals
 import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irIfNull
-import org.jetbrains.kotlin.ir.builders.irIfThenReturnFalse
-import org.jetbrains.kotlin.ir.builders.irIfThenReturnTrue
 import org.jetbrains.kotlin.ir.builders.irInt
 import org.jetbrains.kotlin.ir.builders.irIs
-import org.jetbrains.kotlin.ir.builders.irNotEquals
-import org.jetbrains.kotlin.ir.builders.irNotIs
 import org.jetbrains.kotlin.ir.builders.irReturn
-import org.jetbrains.kotlin.ir.builders.irReturnTrue
 import org.jetbrains.kotlin.ir.builders.irSet
 import org.jetbrains.kotlin.ir.builders.irString
-import org.jetbrains.kotlin.ir.builders.irTemporary
 import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
@@ -58,7 +48,6 @@ import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.types.impl.IrStarProjectionImpl
 import org.jetbrains.kotlin.ir.types.isNullable
-import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isAnnotationClass
@@ -85,15 +74,24 @@ internal class PokoMembersTransformer(
 
         val declarationParent = declaration.parent
         if (declarationParent is IrClass && declarationParent.isPokoClass() && declaration.isFakeOverride) {
-            when {
-                declaration.isEquals() -> declaration.convertToGenerated { properties ->
-                    generateEqualsMethodBody(declarationParent, declaration, properties)
-                }
-                declaration.isHashCode() -> declaration.convertToGenerated { properties ->
-                    generateHashCodeMethodBody(declaration, properties)
-                }
-                declaration.isToString() -> declaration.convertToGenerated { properties ->
-                    generateToStringMethodBody(declarationParent, declaration, properties)
+            with(pluginContext) {
+                when {
+                    declaration.isEquals() -> declaration.convertToGenerated { properties ->
+                        generateEqualsMethodBody(
+                            irClass = declarationParent,
+                            functionDeclaration = declaration,
+                            classProperties = properties,
+                            messageCollector = messageCollector,
+                        )
+                    }
+
+                    declaration.isHashCode() -> declaration.convertToGenerated { properties ->
+                        generateHashCodeMethodBody(declaration, properties)
+                    }
+
+                    declaration.isToString() -> declaration.convertToGenerated { properties ->
+                        generateToStringMethodBody(declarationParent, declaration, properties)
+                    }
                 }
             }
         }
@@ -205,162 +203,6 @@ internal class PokoMembersTransformer(
         }
     }
 
-    //region equals
-    private fun IrFunction.isEquals(): Boolean {
-        val valueParameters = valueParameters
-        return name == Name.identifier("equals") &&
-                returnType == pluginContext.irBuiltIns.booleanType &&
-                valueParameters.size == 1 && valueParameters[0].type == pluginContext.irBuiltIns.anyNType
-    }
-
-    /**
-     * Generate the body of the equals method. Adapted from
-     * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateEqualsMethodBody].
-     */
-    private fun IrBlockBodyBuilder.generateEqualsMethodBody(
-        irClass: IrClass,
-        irFunction: IrFunction,
-        irProperties: List<IrProperty>,
-    ) {
-        val irType = irClass.defaultType
-        fun irOther(): IrExpression = IrGetValueImpl(irFunction.valueParameters[0])
-
-        if (!irClass.isSingleFieldValueClass) {
-            +irIfThenReturnTrue(irEqeqeq(irFunction.receiverValue(), irOther()))
-        }
-        +irIfThenReturnFalse(irNotIs(irOther(), irType))
-        val otherWithCast = irTemporary(irAs(irOther(), irType), "other_with_cast")
-        for (property in irProperties) {
-            val field = property.backingField!!
-            val arg1 = irGetField(irFunction.receiverValue(), field)
-            val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
-            val negativeComparison = when {
-                property.hasAnnotation(ArrayContentBasedAnnotation.asSingleFqName()) -> {
-                    irNot(
-                        irArrayContentDeepEquals(
-                            receiver = arg1,
-                            argument = arg2,
-                            irProperty = property,
-                        ),
-                    )
-                }
-
-                else -> {
-                    irNotEquals(arg1, arg2)
-                }
-            }
-            +irIfThenReturnFalse(negativeComparison)
-        }
-        +irReturnTrue()
-    }
-
-    private fun IrBuilderWithScope.irArrayContentDeepEquals(
-        receiver: IrExpression,
-        argument: IrExpression,
-        irProperty: IrProperty,
-    ): IrExpression {
-        val propertyType = irProperty.type
-        val propertyClassifier = propertyType.classifierOrFail
-
-        if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-            // TODO: Handle generic type that is an array at runtime
-            return if (propertyClassifier == context.irBuiltIns.anyClass) {
-                irRuntimeArrayContentDeepEquals(receiver, argument)
-            } else {
-                messageCollector.reportErrorOnProperty(
-                    property = irProperty,
-                    message = "@ArrayContentBased on property of type <${propertyType.render()}> not supported",
-                )
-                irEquals(receiver, argument)
-            }
-        }
-
-        return irCall(
-            findContentDeepEqualsFunctionSymbol(propertyClassifier),
-            type = context.irBuiltIns.booleanType,
-            valueArgumentsCount = 1,
-            typeArgumentsCount = 1,
-        ).apply {
-            extensionReceiver = receiver
-            putValueArgument(0, argument)
-        }
-    }
-
-    private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
-        receiver: IrExpression,
-        argument: IrExpression,
-    ): IrExpression {
-        val starArrayType = context.irBuiltIns.arrayClass.createType(
-            hasQuestionMark = false,
-            arguments = listOf(IrStarProjectionImpl),
-        )
-        return irWhen(
-            type = context.irBuiltIns.booleanType,
-            branches = listOf(
-                irBranch(
-                    condition = irIs(
-                        argument = receiver,
-                        type = starArrayType,
-                    ),
-                    result = irCall(
-                        callee = context.irBuiltIns.andandSymbol,
-                        type = context.irBuiltIns.booleanType,
-                        valueArgumentsCount = 2,
-                    ).apply {
-                        putValueArgument(0, irIs(argument, starArrayType))
-                        putValueArgument(
-                            index = 1,
-                            valueArgument = irCall(
-                                callee = findContentDeepEqualsFunctionSymbol(
-                                    context.irBuiltIns.arrayClass,
-                                ),
-                                type = context.irBuiltIns.booleanType,
-                                valueArgumentsCount = 1,
-                                typeArgumentsCount = 1,
-                            ).apply {
-                                extensionReceiver = receiver
-                                putValueArgument(0, argument)
-                            }
-                        )
-                    },
-                ),
-
-                // TODO: Primitive arrays
-
-                irElseBranch(
-                    irEquals(receiver, argument),
-                ),
-            ),
-        )
-    }
-
-    /**
-     * Finds `contentDeepEquals` function if [propertyClassifier] is a typed array, or
-     * `contentEquals` function if it is a primitive array.
-     */
-    private fun IrBuilderWithScope.findContentDeepEqualsFunctionSymbol(
-        propertyClassifier: IrClassifierSymbol,
-    ): IrSimpleFunctionSymbol {
-        val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
-            "contentDeepEquals"
-        } else {
-            "contentEquals"
-        }
-        return pluginContext.referenceFunctions(
-            callableId = CallableId(
-                packageName = FqName("kotlin.collections"),
-                callableName = Name.identifier(callableName),
-            ),
-        ).single { functionSymbol ->
-            // Find the single function with the relevant array type and disambiguate against the
-            // older non-nullable receiver overload:
-            functionSymbol.owner.extensionReceiverParameter?.type?.let {
-                it.classifierOrNull == propertyClassifier && it.isNullable()
-            } ?: false
-        }
-    }
-    //endregion
-
     //region hashCode
     private fun IrFunction.isHashCode(): Boolean =
         name == Name.identifier("hashCode") &&
@@ -398,7 +240,7 @@ internal class PokoMembersTransformer(
         +irResultVar
 
         for (property in irProperties.drop(1)) {
-            val shiftedResult = irCallOp(context.irBuiltIns.intTimesSymbol, irIntType, irGet(irResultVar), irInt(31),)
+            val shiftedResult = irCallOp(context.irBuiltIns.intTimesSymbol, irIntType, irGet(irResultVar), irInt(31))
             val irRhs = irCallOp(context.irBuiltIns.intPlusSymbol, irIntType, shiftedResult, getHashCodeOfProperty(irFunction, property))
             +irSet(irResultVar.symbol, irRhs)
         }
@@ -786,11 +628,4 @@ internal class PokoMembersTransformer(
         }
     }
     //endregion
-
-    private companion object {
-        val ArrayContentBasedAnnotation = ClassId(
-            FqName("dev.drewhamilton.poko"),
-            Name.identifier("ArrayContentBased"),
-        )
-    }
 }
