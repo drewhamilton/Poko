@@ -721,6 +721,202 @@ class PokoCompilerPluginTest {
         }
     }
 
+    @Test fun `two AnyArrayHolder instances holding equivalent byte arrays are equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = byteArrayOf(Byte.MIN_VALUE, Byte.MAX_VALUE),
+            any2 = byteArrayOf(Byte.MIN_VALUE, Byte.MAX_VALUE),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent byte arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = byteArrayOf(Byte.MIN_VALUE),
+            any2 = byteArrayOf(Byte.MIN_VALUE),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent byte arrays have same toString`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = byteArrayOf(Byte.MAX_VALUE),
+            any2 = byteArrayOf(Byte.MAX_VALUE),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent char arrays are equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = charArrayOf('m', 'n', 'o', 'P'),
+            any2 = charArrayOf('m', 'n', 'o', 'P'),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent char arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = charArrayOf('!', '@', '#', '$', '%', '^', '&', '*'),
+            any2 = charArrayOf('!', '@', '#', '$', '%', '^', '&', '*'),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent char arrays have same toString`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = charArrayOf(),
+            any2 = charArrayOf(),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent short arrays are equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = shortArrayOf(6556.toShort()),
+            any2 = shortArrayOf(6556.toShort()),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent short arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = shortArrayOf(6.toShort()),
+            any2 = shortArrayOf(6.toShort()),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent short arrays have same toString`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = shortArrayOf(Short.MIN_VALUE, Short.MAX_VALUE),
+            any2 = shortArrayOf(Short.MIN_VALUE, Short.MAX_VALUE),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent int arrays are equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = intArrayOf(6556),
+            any2 = intArrayOf(6556),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent int arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = intArrayOf(6),
+            any2 = intArrayOf(6),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent int arrays have same toString`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = intArrayOf(Int.MIN_VALUE, Int.MAX_VALUE),
+            any2 = intArrayOf(Int.MIN_VALUE, Int.MAX_VALUE),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent long arrays are equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = longArrayOf(987654321L, 1234567890L),
+            any2 = longArrayOf(987654321L, 1234567890L),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent long arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = longArrayOf(-987654321L, -1234567890L),
+            any2 = longArrayOf(-987654321L, -1234567890L),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent long arrays have same toString`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = longArrayOf(987654321L, 1234567890L, -987654321L, -1234567890L),
+            any2 = longArrayOf(987654321L, 1234567890L, -987654321L, -1234567890L),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent float arrays are equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = floatArrayOf(1.2f, 2.3f, 3.4f),
+            any2 = floatArrayOf(1.2f, 2.3f, 3.4f),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent float arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = floatArrayOf(1.2f, 2.3f, 3.4f),
+            any2 = floatArrayOf(1.2f, 2.3f, 3.4f),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent float arrays have same toString`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = floatArrayOf(1.2f, 2.3f, 3.4f),
+            any2 = floatArrayOf(1.2f, 2.3f, 3.4f),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent double arrays are equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = doubleArrayOf(0.0, -0.0, Double.NaN),
+            any2 = doubleArrayOf(0.0, -0.0, Double.NaN),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent double arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = doubleArrayOf(1.2, 2.3, 3.4),
+            any2 = doubleArrayOf(1.2, 2.3, 3.4),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent double arrays have same toString`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = doubleArrayOf(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
+            any2 = doubleArrayOf(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
     @Test fun `two AnyArrayHolder instances holding equivalent non-arrays are equals`() {
         compareAnyArrayHolderApiInstances(
             any1 = listOf("one", "two"),
