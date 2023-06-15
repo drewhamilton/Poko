@@ -2,7 +2,6 @@ package dev.drewhamilton.poko.ir
 
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
-import org.jetbrains.kotlin.ir.builders.IrGeneratorContext
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
@@ -19,6 +18,7 @@ import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.types.impl.IrStarProjectionImpl
+import org.jetbrains.kotlin.ir.types.superTypes
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isAnnotationClass
 import org.jetbrains.kotlin.ir.util.isInterface
@@ -68,28 +68,38 @@ private val arrayContentBasedAnnotationFqName = ClassId(
 /**
  * Returns true if the classifier represents a typed or primitive array.
  */
-internal fun IrClassifierSymbol?.isArrayOrPrimitiveArray(
-    context: IrGeneratorContext,
-): Boolean {
-    return this == context.irBuiltIns.arrayClass ||
-        this in context.irBuiltIns.primitiveArraysToPrimitiveTypes
+context(IrGeneratorContextInterface)
+internal fun IrClassifierSymbol?.isArrayOrPrimitiveArray(): Boolean {
+    return this == irBuiltIns.arrayClass ||
+        this in irBuiltIns.primitiveArraysToPrimitiveTypes
 }
 
 /**
  * Returns true if the classifier represents a type that may be an array at runtime (e.g. [Any] or
  * a generic type).
  */
-internal fun IrClassifierSymbol?.mayBeRuntimeArray(
-    context: IrGeneratorContext,
-): Boolean {
-    return this == context.irBuiltIns.anyClass ||
+context(IrGeneratorContextInterface)
+internal fun IrClassifierSymbol?.mayBeRuntimeArray(): Boolean {
+    return this == irBuiltIns.anyClass ||
         (this is IrTypeParameterSymbol && hasArrayOrPrimitiveArrayUpperBound)
 }
 
+context(IrGeneratorContextInterface)
 private val IrTypeParameterSymbol.hasArrayOrPrimitiveArrayUpperBound: Boolean
     get() {
-        // TODO
-        return true
+        superTypes().forEach { superType ->
+            val superTypeClassifier = superType.classifierOrNull
+            // Note: A generic type cannot have an array as an upper bound, else that would also
+            // be checked here.
+            val foundUpperBoundMatch = superTypeClassifier == irBuiltIns.anyClass ||
+                (superTypeClassifier is IrTypeParameterSymbol &&
+                    superTypeClassifier.hasArrayOrPrimitiveArrayUpperBound)
+
+            if (foundUpperBoundMatch) {
+                return true
+            }
+        }
+        return false
     }
 
 internal val IrTypeParameter.erasedUpperBound: IrClass

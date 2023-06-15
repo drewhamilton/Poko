@@ -63,9 +63,8 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
 
         val classifier = property.type.classifierOrNull
         val hasArrayContentBasedAnnotation = property.hasArrayContentBasedAnnotation()
-        val mayBeRuntimeArray = classifier.mayBeRuntimeArray(context)
         val propertyStringValue = when {
-            hasArrayContentBasedAnnotation && mayBeRuntimeArray -> {
+            hasArrayContentBasedAnnotation && with(context) { classifier.mayBeRuntimeArray() } -> {
                 val field = property.backingField!!
                 val instance = irGetField(functionDeclaration.receiver(), field)
                 irRuntimeArrayContentDeepToString(instance)
@@ -82,7 +81,7 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
                 )
             }
 
-            classifier.isArrayOrPrimitiveArray(context) -> {
+            with(context) { classifier.isArrayOrPrimitiveArray() } -> {
                 irCallToStringFunction(
                     toStringFunctionSymbol = context.irBuiltIns.dataClassArrayMemberToStringSymbol,
                     value = propertyValue,
@@ -110,7 +109,8 @@ private fun IrBlockBodyBuilder.maybeFindArrayDeepToStringFunction(
 ): IrSimpleFunctionSymbol? {
     val propertyClassifier = property.type.classifierOrFail
 
-    if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
+    val isArray = with(context) { propertyClassifier.isArrayOrPrimitiveArray() }
+    if (!isArray) {
         messageCollector.reportErrorOnProperty(
             property = property,
             message = "@ArrayContentBased on property of type <${property.type.render()}> not supported",

@@ -141,9 +141,8 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
 ): IrExpression {
     val hasArrayContentBasedAnnotation = property.hasArrayContentBasedAnnotation()
     val classifier = property.type.classifierOrNull
-    val mayBeRuntimeArray = classifier.mayBeRuntimeArray(context)
 
-    if (hasArrayContentBasedAnnotation && mayBeRuntimeArray) {
+    if (hasArrayContentBasedAnnotation && with(context) { classifier.mayBeRuntimeArray() }) {
         return irRuntimeArrayContentDeepHashCode(value)
     }
 
@@ -233,7 +232,8 @@ private fun IrBlockBodyBuilder.maybeFindArrayDeepHashCodeFunction(
 ): IrSimpleFunctionSymbol? {
     val propertyClassifier = property.type.classifierOrFail
 
-    if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
+    val isArray = with(context) { propertyClassifier.isArrayOrPrimitiveArray() }
+    if (!isArray) {
         messageCollector.reportErrorOnProperty(
             property = property,
             message = "@ArrayContentBased on property of type <${property.type.render()}> not supported",
@@ -274,7 +274,7 @@ private fun IrBlockBodyBuilder.findArrayContentDeepHashCodeFunction(
 private fun IrBlockBodyBuilder.getStandardHashCodeFunctionSymbol(
     classifier: IrClassifierSymbol?,
 ): IrSimpleFunctionSymbol = when {
-    classifier.isArrayOrPrimitiveArray(context) ->
+    with(context) { classifier.isArrayOrPrimitiveArray() } ->
         context.irBuiltIns.dataClassArrayMemberHashCodeSymbol
     classifier is IrClassSymbol ->
         getHashCodeFunctionForClass(classifier.owner)

@@ -1128,12 +1128,24 @@ class PokoCompilerPluginTest {
         }
     }
 
+    @Test fun `two ComplexGenericArrayHolder instances with equivalent int arrays are equals`() {
+        compareGenericArrayHolderApiInstances(
+            generic1 = intArrayOf(50, 100),
+            generic2 = intArrayOf(50, 100),
+            sourceFileName = "api/ComplexGenericArrayHolder"
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
     private fun compareGenericArrayHolderApiInstances(
         generic1: Any?,
         generic2: Any?,
+        sourceFileName: String = "api/GenericArrayHolder",
         compare: (firstInstance: Any, secondInstance: Any) -> Unit,
     ) = compareTwoInstances(
-        sourceFileName = "api/GenericArrayHolder",
+        sourceFileName = sourceFileName,
         firstInstanceConstructorArgs = listOf(
             Any::class.java to generic1,
         ),
