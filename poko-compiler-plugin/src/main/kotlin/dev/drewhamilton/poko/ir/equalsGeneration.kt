@@ -149,13 +149,15 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
                 classSymbol = context.irBuiltIns.arrayClass,
             ),
 
-            irArrayTypeCheckAndContentDeepEqualsBranch(
-                receiver = receiver,
-                argument = argument,
-                classSymbol = with(context) { PrimitiveType.BOOLEAN.toPrimitiveArrayClassSymbol() },
-            ),
-
-            // TODO: Primitive arrays
+            // Map each primitive type to a `when` branch covering its respective primitive array
+            // type:
+            *PrimitiveType.values().map { primitiveType ->
+                irArrayTypeCheckAndContentDeepEqualsBranch(
+                    receiver = receiver,
+                    argument = argument,
+                    classSymbol = with(context) { primitiveType.toPrimitiveArrayClassSymbol() },
+                )
+            }.toTypedArray(),
 
             irElseBranch(
                 irEquals(receiver, argument),

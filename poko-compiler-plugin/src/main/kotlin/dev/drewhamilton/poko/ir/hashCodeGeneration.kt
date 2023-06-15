@@ -179,12 +179,14 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
                 classSymbol = context.irBuiltIns.arrayClass,
             ),
 
-            irArrayTypeCheckAndContentDeepHashCodeBranch(
-                value = value,
-                classSymbol = with(context) { PrimitiveType.BOOLEAN.toPrimitiveArrayClassSymbol() },
-            ),
-
-            // TODO: Primitive arrays
+            // Map each primitive type to a `when` branch covering its respective primitive array
+            // type:
+            *PrimitiveType.values().map { primitiveType ->
+                irArrayTypeCheckAndContentDeepHashCodeBranch(
+                    value = value,
+                    classSymbol = with(context) { primitiveType.toPrimitiveArrayClassSymbol() },
+                )
+            }.toTypedArray(),
 
             irElseBranch(
                 irIfNull(
