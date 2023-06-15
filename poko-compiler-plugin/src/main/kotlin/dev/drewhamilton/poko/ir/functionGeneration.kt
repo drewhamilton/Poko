@@ -1,13 +1,15 @@
 package dev.drewhamilton.poko.ir
 
+import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
-import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContext
+import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.expressions.IrGetValue
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
+import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.createType
@@ -77,9 +79,17 @@ internal fun IrClassifierSymbol?.mayBeRuntimeArray(
     return this == context.irBuiltIns.anyClass
 }
 
-internal fun IrBuilderWithScope.starArrayType(): IrSimpleType{
-    return context.irBuiltIns.arrayClass.createType(
-        hasQuestionMark = false,
-        arguments = listOf(IrStarProjectionImpl),
-    )
+context(IrGeneratorContextInterface)
+internal fun PrimitiveType.toPrimitiveArrayClassSymbol(): IrClassSymbol {
+    return irBuiltIns.primitiveTypesToPrimitiveArrays.getValue(this)
+}
+
+context(IrGeneratorContextInterface)
+internal fun IrClassSymbol.createArrayType(): IrSimpleType {
+    val typeArguments = when {
+        this == irBuiltIns.arrayClass -> listOf(IrStarProjectionImpl)
+        this in irBuiltIns.primitiveArraysToPrimitiveTypes -> emptyList()
+        else -> throw IllegalArgumentException("$this is not an array class symbol")
+    }
+    return createType(hasQuestionMark = false, arguments = typeArguments)
 }

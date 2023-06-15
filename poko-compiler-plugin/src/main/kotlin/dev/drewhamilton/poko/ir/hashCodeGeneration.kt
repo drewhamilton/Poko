@@ -1,6 +1,7 @@
 package dev.drewhamilton.poko.ir
 
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
@@ -22,6 +23,7 @@ import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
+import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
@@ -169,21 +171,17 @@ context(IrPluginContext)
 private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
     value: IrExpression,
 ): IrExpression {
-    val starArrayType = starArrayType()
     return irWhen(
         type = context.irBuiltIns.intType,
         branches = listOf(
-            irBranch(
-                condition = irIs(
-                    argument = value,
-                    type = starArrayType,
-                ),
-                result = irCall(
-                    callee = findArrayDeepHashCodeFunction(context.irBuiltIns.arrayClass),
-                    type = context.irBuiltIns.intType,
-                ).apply {
-                    extensionReceiver = value
-                }
+            irArrayTypeCheckAndContentDeepHashCodeBranch(
+                value = value,
+                classSymbol = context.irBuiltIns.arrayClass,
+            ),
+
+            irArrayTypeCheckAndContentDeepHashCodeBranch(
+                value = value,
+                classSymbol = with(context) { PrimitiveType.BOOLEAN.toPrimitiveArrayClassSymbol() },
             ),
 
             // TODO: Primitive arrays
@@ -202,6 +200,27 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
                 ),
             ),
         ),
+    )
+}
+
+/**
+ * Generates a runtime `when` branch computing the content deep hashCode of [value]. The branch is
+ * only executed if [value] is an instance of [classSymbol].
+ */
+context(IrPluginContext)
+private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
+    value: IrExpression,
+    classSymbol: IrClassSymbol,
+): IrBranch {
+    val type = with(context) { classSymbol.createArrayType() }
+    return irBranch(
+        condition = irIs(value, type),
+        result = irCall(
+            callee = findArrayContentDeepHashCodeFunction(classSymbol),
+            type = context.irBuiltIns.intType,
+        ).apply {
+            extensionReceiver = value
+        }
     )
 }
 
@@ -229,11 +248,11 @@ private fun IrBlockBodyBuilder.maybeFindArrayDeepHashCodeFunction(
         return null
     }
 
-    return findArrayDeepHashCodeFunction(propertyClassifier)
+    return findArrayContentDeepHashCodeFunction(propertyClassifier)
 }
 
 context(IrPluginContext)
-private fun IrBlockBodyBuilder.findArrayDeepHashCodeFunction(
+private fun IrBlockBodyBuilder.findArrayContentDeepHashCodeFunction(
     propertyClassifier: IrClassifierSymbol,
 ): IrSimpleFunctionSymbol {
     val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
