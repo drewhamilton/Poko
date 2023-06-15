@@ -5,4 +5,4 @@ package dev.drewhamilton.poko
  * change or break.
  */
 @RequiresOptIn
-public annotation class ExperimentalArrayContentSupport
+public annotation class ArrayContentSupport
