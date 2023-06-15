@@ -152,7 +152,7 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
             irArrayTypeCheckAndContentDeepEqualsBranch(
                 receiver = receiver,
                 argument = argument,
-                classSymbol = PrimitiveType.BOOLEAN.toPrimitiveArrayClassSymbol(),
+                classSymbol = with(context) { PrimitiveType.BOOLEAN.toPrimitiveArrayClassSymbol() },
             ),
 
             // TODO: Primitive arrays

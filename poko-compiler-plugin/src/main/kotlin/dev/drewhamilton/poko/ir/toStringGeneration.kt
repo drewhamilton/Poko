@@ -1,6 +1,7 @@
 package dev.drewhamilton.poko.ir
 
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
@@ -17,8 +18,10 @@ import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
+import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.addArgument
+import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.types.classifierOrFail
@@ -134,17 +137,14 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
     return irWhen(
         type = context.irBuiltIns.stringType,
         branches = listOf(
-            irBranch(
-                condition = irIs(
-                    argument = value,
-                    type = starArrayType(),
-                ),
-                result = irCallToStringFunction(
-                    toStringFunctionSymbol = findContentDeepToStringFunctionSymbol(
-                        context.irBuiltIns.arrayClass,
-                    ),
-                    value = value,
-                ),
+            irArrayTypeCheckAndContentDeepToStringBranch(
+                value = value,
+                classSymbol = context.irBuiltIns.arrayClass,
+            ),
+
+            irArrayTypeCheckAndContentDeepToStringBranch(
+                value = value,
+                classSymbol = with(context) { PrimitiveType.BOOLEAN.toPrimitiveArrayClassSymbol() },
             ),
 
             // TODO: Primitive arrays
@@ -155,6 +155,25 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
                     value = value,
                 ),
             ),
+        ),
+    )
+}
+
+/**
+ * Generates a runtime `when` branch computing the content deep toString of [value]. The branch is
+ * only executed if [value] is an instance of [classSymbol].
+ */
+context(IrPluginContext)
+private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
+    value: IrExpression,
+    classSymbol: IrClassSymbol,
+): IrBranch {
+    val type = classSymbol.createArrayType()
+    return irBranch(
+        condition = irIs(value, type),
+        result = irCallToStringFunction(
+            toStringFunctionSymbol = findContentDeepToStringFunctionSymbol(classSymbol),
+            value = value,
         ),
     )
 }

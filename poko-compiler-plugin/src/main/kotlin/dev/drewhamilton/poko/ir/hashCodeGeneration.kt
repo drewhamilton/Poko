@@ -181,7 +181,7 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
 
             irArrayTypeCheckAndContentDeepHashCodeBranch(
                 value = value,
-                classSymbol = PrimitiveType.BOOLEAN.toPrimitiveArrayClassSymbol(),
+                classSymbol = with(context) { PrimitiveType.BOOLEAN.toPrimitiveArrayClassSymbol() },
             ),
 
             // TODO: Primitive arrays
