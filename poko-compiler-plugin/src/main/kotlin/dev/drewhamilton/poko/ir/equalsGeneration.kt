@@ -112,8 +112,10 @@ private fun IrBuilderWithScope.irArrayContentDeepEquals(
     val propertyType = property.type
     val propertyClassifier = propertyType.classifierOrFail
 
-    if (!propertyClassifier.isArrayOrPrimitiveArray(context)) {
-        return if (propertyClassifier.mayBeRuntimeArray(context)) {
+    val isArray = with(context) { propertyClassifier.isArrayOrPrimitiveArray() }
+    if (!isArray) {
+        val mayBeRuntimeArray = with(context) { propertyClassifier.mayBeRuntimeArray() }
+        return if (mayBeRuntimeArray) {
             irRuntimeArrayContentDeepEquals(receiver, argument)
         } else {
             messageCollector.reportErrorOnProperty(
