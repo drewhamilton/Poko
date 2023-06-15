@@ -2,6 +2,7 @@ package dev.drewhamilton.poko.ir
 
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.irNot
+import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
@@ -26,7 +27,9 @@ import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
+import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.types.classifierOrFail
@@ -137,33 +140,19 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
     receiver: IrExpression,
     argument: IrExpression,
 ): IrExpression {
-    val starArrayType = starArrayType()
     return irWhen(
-        type = irBuiltIns.booleanType,
+        type = context.irBuiltIns.booleanType,
         branches = listOf(
-            irBranch(
-                condition = irIs(
-                    argument = receiver,
-                    type = starArrayType,
-                ),
-                result = irCall(
-                    callee = irBuiltIns.andandSymbol,
-                    type = irBuiltIns.booleanType,
-                    valueArgumentsCount = 2,
-                ).apply {
-                    putValueArgument(
-                        index = 0,
-                        valueArgument = irIs(argument, starArrayType),
-                    )
-                    putValueArgument(
-                        index = 1,
-                        valueArgument = irCallContentDeepEquals(
-                            classifier = irBuiltIns.arrayClass,
-                            receiver = receiver,
-                            argument = argument,
-                        )
-                    )
-                },
+            irArrayTypeCheckAndContentDeepEqualsBranch(
+                receiver = receiver,
+                argument = argument,
+                classSymbol = context.irBuiltIns.arrayClass,
+            ),
+
+            irArrayTypeCheckAndContentDeepEqualsBranch(
+                receiver = receiver,
+                argument = argument,
+                classSymbol = PrimitiveType.BOOLEAN.toPrimitiveArrayClassSymbol(),
             ),
 
             // TODO: Primitive arrays
@@ -176,6 +165,36 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
 }
 
 context(IrPluginContext)
+private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
+    receiver: IrExpression,
+    argument: IrExpression,
+    classSymbol: IrClassSymbol,
+): IrBranch {
+    val type = with(context) { classSymbol.createArrayType() }
+    return irBranch(
+        condition = irIs(receiver, type),
+        result = irCall(
+            callee = context.irBuiltIns.andandSymbol,
+            type = context.irBuiltIns.booleanType,
+            valueArgumentsCount = 2,
+        ).apply {
+            putValueArgument(
+                index = 0,
+                valueArgument = irIs(argument, type),
+            )
+            putValueArgument(
+                index = 1,
+                valueArgument = irCallContentDeepEquals(
+                    classifier = classSymbol,
+                    receiver = receiver,
+                    argument = argument,
+                ),
+            )
+        },
+    )
+}
+
+context(IrPluginContext)
 private fun IrBuilderWithScope.irCallContentDeepEquals(
     classifier: IrClassifierSymbol,
     receiver: IrExpression,
@@ -183,7 +202,7 @@ private fun IrBuilderWithScope.irCallContentDeepEquals(
 ): IrExpression {
     return irCall(
         callee = findContentDeepEqualsFunctionSymbol(classifier),
-        type = irBuiltIns.booleanType,
+        type = context.irBuiltIns.booleanType,
         valueArgumentsCount = 1,
         typeArgumentsCount = 1,
     ).apply {
