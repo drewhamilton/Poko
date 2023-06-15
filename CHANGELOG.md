@@ -1,5 +1,11 @@
 # Changelog
 
+## SNAPSHOT
+
+Add experimental `@ArrayContentBased` annotation. This annotation can be applied to `@Poko` class
+array properties to ensure that the array's content is considered for `equals`, `hashCode`, and
+`toString`. (By default, array content is not considered.)
+
 ## 0.13.0
 _2023-04-03_
 
