@@ -216,7 +216,7 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
     return irBranch(
         condition = irIs(value, type),
         result = irCall(
-            callee = findArrayDeepContentHashCodeFunction(classSymbol),
+            callee = findArrayContentDeepHashCodeFunction(classSymbol),
             type = context.irBuiltIns.intType,
         ).apply {
             extensionReceiver = value
@@ -248,11 +248,11 @@ private fun IrBlockBodyBuilder.maybeFindArrayDeepHashCodeFunction(
         return null
     }
 
-    return findArrayDeepContentHashCodeFunction(propertyClassifier)
+    return findArrayContentDeepHashCodeFunction(propertyClassifier)
 }
 
 context(IrPluginContext)
-private fun IrBlockBodyBuilder.findArrayDeepContentHashCodeFunction(
+private fun IrBlockBodyBuilder.findArrayContentDeepHashCodeFunction(
     propertyClassifier: IrClassifierSymbol,
 ): IrSimpleFunctionSymbol {
     val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
