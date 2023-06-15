@@ -2,7 +2,6 @@ package dev.drewhamilton.poko.ir
 
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
-import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContext
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
 import org.jetbrains.kotlin.ir.declarations.IrFunction
@@ -78,14 +77,6 @@ internal fun IrClassifierSymbol?.mayBeRuntimeArray(
     context: IrGeneratorContext,
 ): Boolean {
     return this == context.irBuiltIns.anyClass
-}
-
-@Deprecated("Use createArrayType")
-internal fun IrBuilderWithScope.starArrayType(): IrSimpleType {
-    return context.irBuiltIns.arrayClass.createType(
-        hasQuestionMark = false,
-        arguments = listOf(IrStarProjectionImpl),
-    )
 }
 
 context(IrGeneratorContextInterface)
