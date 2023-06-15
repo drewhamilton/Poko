@@ -945,7 +945,7 @@ class PokoCompilerPluginTest {
         }
     }
 
-    @Test fun `two AnyArrayHolder instances holding inequivalent nested typed arrays are not equals`() {
+    @Test fun `two AnyArrayHolder instances holding inequivalent typed arrays are not equals`() {
         compareAnyArrayHolderApiInstances(
             any1 = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
             any2 = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
@@ -975,16 +975,6 @@ class PokoCompilerPluginTest {
         }
     }
 
-    @Test fun `compilation reading array content of generic type fails`() {
-        testCompilation(
-            "illegal/GenericArrayHolder",
-            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
-        ) { result ->
-            assertThat(result.messages)
-                .contains("@ArrayContentBased on property of type <G of illegal.GenericArrayHolder> not supported")
-        }
-    }
-
     private fun compareAnyArrayHolderApiInstances(
         any1: Any = arrayOf("string A", "string B"),
         nullableAny1: Any? = null,
@@ -1007,20 +997,6 @@ class PokoCompilerPluginTest {
         ),
         compare = compare,
     )
-
-    @Test fun `compilation reading array content of non-arrays fails`() {
-        testCompilation(
-            "illegal/NotArrayHolder",
-            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
-        ) { result ->
-            assertThat(result.messages)
-                .contains("@ArrayContentBased on property of type <kotlin.String> not supported")
-            assertThat(result.messages)
-                .contains("@ArrayContentBased on property of type <kotlin.Int> not supported")
-            assertThat(result.messages)
-                .contains("@ArrayContentBased on property of type <kotlin.Float> not supported")
-        }
-    }
 
     @Test fun `AnyArrayHolder has same hashCode as handwritten implementation`() {
         compareApiWithDataClass(
@@ -1045,6 +1021,149 @@ class PokoCompilerPluginTest {
             ),
         ) { apiInstance, dataInstance ->
             assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
+        }
+    }
+
+    @Test fun `two GenericArrayHolder instances with equivalent typed arrays are equals`() {
+        compareGenericArrayHolderApiInstances(
+            generic1 = arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)),
+            generic2 = arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two GenericArrayHolder instances with equivalent typed arrays have same hashCode`() {
+        compareGenericArrayHolderApiInstances(
+            generic1 = arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)),
+            generic2 = arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two GenericArrayHolder instances with equivalent typed arrays have same toString`() {
+        compareGenericArrayHolderApiInstances(
+            generic1 = arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)),
+            generic2 = arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two GenericArrayHolder instances with equivalent int arrays are equals`() {
+        compareGenericArrayHolderApiInstances(
+            generic1 = intArrayOf(5, 10),
+            generic2 = intArrayOf(5, 10),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two GenericArrayHolder instances with equivalent int arrays have same hashCode`() {
+        compareGenericArrayHolderApiInstances(
+            generic1 = intArrayOf(5, 10),
+            generic2 = intArrayOf(5, 10),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two GenericArrayHolder instances with equivalent int arrays have same toString`() {
+        compareGenericArrayHolderApiInstances(
+            generic1 = intArrayOf(5, 10),
+            generic2 = intArrayOf(5, 10),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two GenericArrayHolder instances with equivalent non-arrays are equals`() {
+        compareGenericArrayHolderApiInstances(
+            generic1 = "5, 10",
+            generic2 = "5, 10",
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two GenericArrayHolder instances with equivalent non-arrays have same hashCode`() {
+        compareGenericArrayHolderApiInstances(
+            generic1 = "5, 10",
+            generic2 = "5, 10",
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two GenericArrayHolder instances with equivalent non-arrays have same toString`() {
+        compareGenericArrayHolderApiInstances(
+            generic1 = "5, 10",
+            generic2 = "5, 10",
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
+    @Test fun `two GenericArrayHolder instances holding inequivalent long arrays are not equals`() {
+        compareGenericArrayHolderApiInstances(
+            generic1 = longArrayOf(Long.MIN_VALUE),
+            generic2 = longArrayOf(Long.MAX_VALUE),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `GenericArrayHolder instances holding mismatching types are not equals`() {
+        compareGenericArrayHolderApiInstances(
+            generic1 = arrayOf("x", "y"),
+            generic2 = "xy",
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isNotEqualTo(secondInstance)
+            assertThat(secondInstance).isNotEqualTo(firstInstance)
+        }
+    }
+
+    private fun compareGenericArrayHolderApiInstances(
+        generic1: Any?,
+        generic2: Any?,
+        compare: (firstInstance: Any, secondInstance: Any) -> Unit,
+    ) = compareTwoInstances(
+        sourceFileName = "api/GenericArrayHolder",
+        firstInstanceConstructorArgs = listOf(
+            Any::class.java to generic1,
+        ),
+        secondInstanceConstructorArgs = listOf(
+            Any::class.java to generic2,
+        ),
+        compare = compare,
+    )
+
+    @Test fun `compilation reading array content of generic type with unsupported upper bound fails`() {
+        testCompilation(
+            "illegal/GenericArrayHolder",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("@ArrayContentBased on property of type <G of illegal.GenericArrayHolder> not supported")
+        }
+    }
+
+    @Test fun `compilation reading array content of non-arrays fails`() {
+        testCompilation(
+            "illegal/NotArrayHolder",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            assertThat(result.messages)
+                .contains("@ArrayContentBased on property of type <kotlin.String> not supported")
+            assertThat(result.messages)
+                .contains("@ArrayContentBased on property of type <kotlin.Int> not supported")
+            assertThat(result.messages)
+                .contains("@ArrayContentBased on property of type <kotlin.Float> not supported")
         }
     }
     //endregion

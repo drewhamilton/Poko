@@ -4,17 +4,24 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContext
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
+import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
+import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.expressions.IrGetValue
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
+import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.types.IrSimpleType
+import org.jetbrains.kotlin.ir.types.classOrNull
+import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.types.impl.IrStarProjectionImpl
 import org.jetbrains.kotlin.ir.util.hasAnnotation
+import org.jetbrains.kotlin.ir.util.isAnnotationClass
+import org.jetbrains.kotlin.ir.util.isInterface
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
@@ -72,12 +79,36 @@ internal fun IrClassifierSymbol?.isArrayOrPrimitiveArray(
  * Returns true if the classifier represents a type that may be an array at runtime (e.g. [Any] or
  * a generic type).
  */
-// TODO: Handle generic type
 internal fun IrClassifierSymbol?.mayBeRuntimeArray(
     context: IrGeneratorContext,
 ): Boolean {
-    return this == context.irBuiltIns.anyClass
+    return this == context.irBuiltIns.anyClass ||
+        (this is IrTypeParameterSymbol && hasArrayOrPrimitiveArrayUpperBound)
 }
+
+private val IrTypeParameterSymbol.hasArrayOrPrimitiveArrayUpperBound: Boolean
+    get() {
+        // TODO
+        return true
+    }
+
+internal val IrTypeParameter.erasedUpperBound: IrClass
+    get() {
+        // Pick the (necessarily unique) non-interface upper bound if it exists
+        for (type in superTypes) {
+            val irClass = type.classOrNull?.owner ?: continue
+            if (!irClass.isInterface && !irClass.isAnnotationClass) return irClass
+        }
+
+        // Otherwise, choose either the first IrClass supertype or recurse.
+        // In the first case, all supertypes are interface types and the choice was arbitrary.
+        // In the second case, there is only a single supertype.
+        return when (val firstSuper = superTypes.first().classifierOrNull?.owner) {
+            is IrClass -> firstSuper
+            is IrTypeParameter -> firstSuper.erasedUpperBound
+            else -> error("unknown supertype kind $firstSuper")
+        }
+    }
 
 context(IrGeneratorContextInterface)
 internal fun PrimitiveType.toPrimitiveArrayClassSymbol(): IrClassSymbol {

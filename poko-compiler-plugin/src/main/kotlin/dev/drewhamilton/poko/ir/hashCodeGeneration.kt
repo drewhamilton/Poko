@@ -21,7 +21,6 @@ import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
-import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrExpression
@@ -30,13 +29,10 @@ import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
-import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.functions
-import org.jetbrains.kotlin.ir.util.isAnnotationClass
-import org.jetbrains.kotlin.ir.util.isInterface
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
@@ -323,21 +319,3 @@ private fun IrBlockBodyBuilder.irCallHashCodeFunction(
         }
     }
 }
-
-private val IrTypeParameter.erasedUpperBound: IrClass
-    get() {
-        // Pick the (necessarily unique) non-interface upper bound if it exists
-        for (type in superTypes) {
-            val irClass = type.classOrNull?.owner ?: continue
-            if (!irClass.isInterface && !irClass.isAnnotationClass) return irClass
-        }
-
-        // Otherwise, choose either the first IrClass supertype or recurse.
-        // In the first case, all supertypes are interface types and the choice was arbitrary.
-        // In the second case, there is only a single supertype.
-        return when (val firstSuper = superTypes.first().classifierOrNull?.owner) {
-            is IrClass -> firstSuper
-            is IrTypeParameter -> firstSuper.erasedUpperBound
-            else -> error("unknown supertype kind $firstSuper")
-        }
-    }
