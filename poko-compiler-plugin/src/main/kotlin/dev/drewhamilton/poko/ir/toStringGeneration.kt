@@ -142,12 +142,14 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
                 classSymbol = context.irBuiltIns.arrayClass,
             ),
 
-            irArrayTypeCheckAndContentDeepToStringBranch(
-                value = value,
-                classSymbol = with(context) { PrimitiveType.BOOLEAN.toPrimitiveArrayClassSymbol() },
-            ),
-
-            // TODO: Primitive arrays
+            // Map each primitive type to a `when` branch covering its respective primitive array
+            // type:
+            *PrimitiveType.values().map { primitiveType ->
+                irArrayTypeCheckAndContentDeepToStringBranch(
+                    value = value,
+                    classSymbol = with(context) { primitiveType.toPrimitiveArrayClassSymbol() },
+                )
+            }.toTypedArray(),
 
             irElseBranch(
                 irCallToStringFunction(
