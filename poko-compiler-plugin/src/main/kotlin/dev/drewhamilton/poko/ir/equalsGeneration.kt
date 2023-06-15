@@ -164,6 +164,10 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
     )
 }
 
+/**
+ * Generates a runtime `when` branch checking for content deep equality of [receiver] and
+ * [argument]. The branch is only executed if [receiver] is an instance of [classSymbol].
+ */
 context(IrPluginContext)
 private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
     receiver: IrExpression,
