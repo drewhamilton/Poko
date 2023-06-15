@@ -693,6 +693,34 @@ class PokoCompilerPluginTest {
         }
     }
 
+    @Test fun `two AnyArrayHolder instances holding equivalent boolean arrays are equals`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = booleanArrayOf(false, true, true),
+            any2 = booleanArrayOf(false, true, true),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance).isEqualTo(secondInstance)
+            assertThat(secondInstance).isEqualTo(firstInstance)
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent boolean arrays have same hashCode`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = booleanArrayOf(false, true, false),
+            any2 = booleanArrayOf(false, true, false),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.hashCode()).isEqualTo(secondInstance.hashCode())
+        }
+    }
+
+    @Test fun `two AnyArrayHolder instances holding equivalent boolean arrays have same toString`() {
+        compareAnyArrayHolderApiInstances(
+            any1 = booleanArrayOf(false, false, true),
+            any2 = booleanArrayOf(false, false, true),
+        ) { firstInstance, secondInstance ->
+            assertThat(firstInstance.toString()).isEqualTo(secondInstance.toString())
+        }
+    }
+
     @Test fun `two AnyArrayHolder instances holding equivalent non-arrays are equals`() {
         compareAnyArrayHolderApiInstances(
             any1 = listOf("one", "two"),
