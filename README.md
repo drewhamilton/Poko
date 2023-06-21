@@ -30,7 +30,6 @@ manually.
 By default, Poko does nothing to inspect the contents of array properties. [This aligns with data
 classes](https://blog.jetbrains.com/kotlin/2015/09/feedback-request-limitations-on-data-classes/#Appendix.Comparingarrays).
 
-_Note: This feature is currently only available in snapshots._
 Poko consumers can change this behavior on a per-property basis with the `@ArrayContentBased`
 annotation. On properties of a typed array type, this annotation will generate a `contentDeepEquals`
 check. On properties of a primitive array type, this annotation will generate a `contentEquals`
@@ -71,7 +70,7 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version |
 |-----------------|--------------|
-| 1.8.20 – 1.8.21 | 0.13.0       |
+| 1.8.20 – 1.8.22 | 0.13.1       |
 | 1.8.0 – 1.8.10  | 0.12.0       |
 | 1.7.0 – 1.7.21  | 0.11.0       |
 | 1.6.20 – 1.6.21 | 0.10.0       | 
