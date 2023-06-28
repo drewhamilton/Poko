@@ -16,9 +16,9 @@ setUpLocalSigning()
 @Suppress("UnstableApiUsage")
 mavenPublishing {
   coordinates(
-    groupId = project.property("publishGroup") as String,
+    groupId = project.property("GROUP") as String,
     artifactId = project.property("publishAnnotationsArtifact") as String,
-    version = project.property("publishVersion") as String,
+    version = project.property("VERSION_NAME") as String,
   )
 
   pom {

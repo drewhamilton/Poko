@@ -1,9 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-group = rootProject.property("publishGroup")!!
-version = rootProject.property("publishVersion")!!
-
 plugins {
     alias(libs.plugins.dokka) apply false
     alias(libs.plugins.mavenPublish) apply false
@@ -13,6 +10,9 @@ plugins {
 }
 
 allprojects {
+    group = rootProject.property("GROUP")!!
+    version = rootProject.property("VERSION_NAME")!!
+
     repositories {
         mavenCentral()
 

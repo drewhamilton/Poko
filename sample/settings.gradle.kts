@@ -13,7 +13,7 @@ pluginManagement {
             exclusiveContent {
                 forRepository { mavenLocal() }
                 filter {
-                    val publishGroup: String by extra
+                    val publishGroup = extra["GROUP"] as String
                     includeGroup(publishGroup)
                 }
             }
@@ -23,7 +23,7 @@ pluginManagement {
     }
 
     resolutionStrategy {
-        val publishVersion: String by extra
+        val publishVersion = extra["VERSION_NAME"] as String
         eachPlugin {
             if (requested.id.id == "dev.drewhamilton.poko") {
                 useVersion(publishVersion)
@@ -49,7 +49,7 @@ if (!isCi) {
     // Use local Poko modules for non-CI builds:
     includeBuild("../.") {
         logger.lifecycle("Replacing Poko module dependencies with local projects")
-        val publishGroup: String by extra
+        val publishGroup: String = extra["GROUP"] as String
         val publishAnnotationsArtifact: String by extra
         val publishCompilerPluginArtifact: String by extra
         val publishGradlePluginArtifact: String by extra
