@@ -6,6 +6,7 @@ version = rootProject.property("publishVersion")!!
 
 plugins {
     alias(libs.plugins.dokka) apply false
+    alias(libs.plugins.mavenPublish) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
     alias(libs.plugins.ksp) apply false

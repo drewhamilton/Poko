@@ -1,6 +1,6 @@
 import com.google.devtools.ksp.gradle.KspTask
 import dev.drewhamilton.poko.build.generateArtifactInfo
-import dev.drewhamilton.poko.build.setUpPublication
+import dev.drewhamilton.poko.build.setUpLocalSigning
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -10,16 +10,23 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ksp)
     alias(libs.plugins.dokka)
-    `maven-publish`
-    signing
+    alias(libs.plugins.mavenPublish)
 }
 
-val gradlePluginDomainObjectName = "poko"
-setUpPublication(
-    artifactName = project.property("publishGradlePluginArtifact") as String,
-    pomName = "Poko Gradle Plugin",
-    gradlePluginDomainObjectName = gradlePluginDomainObjectName,
-)
+setUpLocalSigning()
+
+@Suppress("UnstableApiUsage")
+mavenPublishing {
+    coordinates(
+        groupId = project.property("publishGroup") as String,
+        artifactId = project.property("publishGradlePluginArtifact") as String,
+        version = project.property("publishVersion") as String,
+    )
+
+    pom {
+        name.set("Poko Gradle Plugin")
+    }
+}
 
 generateArtifactInfo(
     basePackage = "dev.drewhamilton.poko.gradle",
@@ -38,7 +45,7 @@ tasks.withType<KotlinCompile>().configureEach {
 
 gradlePlugin {
     plugins {
-        create(gradlePluginDomainObjectName) {
+        create("poko") {
             id = "dev.drewhamilton.poko"
             implementationClass = "dev.drewhamilton.poko.gradle.PokoGradlePlugin"
         }

@@ -1,18 +1,27 @@
-import dev.drewhamilton.poko.build.setUpPublication
+import dev.drewhamilton.poko.build.setUpLocalSigning
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
 plugins {
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.dokka)
-  `maven-publish`
-  signing
+  alias(libs.plugins.mavenPublish)
 }
 
 kotlin {
   explicitApi = ExplicitApiMode.Strict
 }
 
-setUpPublication(
-  artifactName = project.property("publishAnnotationsArtifact") as String,
-  pomName = "Poko Annotations",
-)
+setUpLocalSigning()
+
+@Suppress("UnstableApiUsage")
+mavenPublishing {
+  coordinates(
+    groupId = project.property("publishGroup") as String,
+    artifactId = project.property("publishAnnotationsArtifact") as String,
+    version = project.property("publishVersion") as String,
+  )
+
+  pom {
+    name.set("Poko Annotations")
+  }
+}

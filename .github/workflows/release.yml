@@ -30,9 +30,9 @@ jobs:
           gradle-version: wrapper
           arguments: publishAllPublicationsToMavenCentralRepository
         env:
-          ORG_GRADLE_PROJECT_personalSonatypeIssuesUsername: >-
+          ORG_GRADLE_PROJECT_mavenCentralUsername: >-
             ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesUsername }}
-          ORG_GRADLE_PROJECT_personalSonatypeIssuesPassword: >-
+          ORG_GRADLE_PROJECT_mavenCentralPassword: >-
             ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesPassword }}
-          ORG_GRADLE_PROJECT_personalGpgKey: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgKey }}
-          ORG_GRADLE_PROJECT_personalGpgPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgPassword }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgKey }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgPassword }}
