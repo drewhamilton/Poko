@@ -28,11 +28,9 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: wrapper
-          arguments: publishAllPublicationsToMavenCentralRepository
+          arguments: publish --no-configuration-cache
         env:
-          ORG_GRADLE_PROJECT_mavenCentralUsername: >-
-            ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesUsername }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: >-
-            ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesPassword }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesUsername }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesPassword }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgKey }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgPassword }}
