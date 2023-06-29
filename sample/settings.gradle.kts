@@ -13,7 +13,7 @@ pluginManagement {
             exclusiveContent {
                 forRepository { mavenLocal() }
                 filter {
-                    val publishGroup: String by extra
+                    val publishGroup = extra["GROUP"] as String
                     includeGroup(publishGroup)
                 }
             }
@@ -23,7 +23,7 @@ pluginManagement {
     }
 
     resolutionStrategy {
-        val publishVersion: String by extra
+        val publishVersion = extra["VERSION_NAME"] as String
         eachPlugin {
             if (requested.id.id == "dev.drewhamilton.poko") {
                 useVersion(publishVersion)
@@ -49,18 +49,16 @@ if (!isCi) {
     // Use local Poko modules for non-CI builds:
     includeBuild("../.") {
         logger.lifecycle("Replacing Poko module dependencies with local projects")
-        val publishGroup: String by extra
-        val publishAnnotationsArtifact: String by extra
-        val publishCompilerPluginArtifact: String by extra
-        val publishGradlePluginArtifact: String by extra
+        val publishGroup: String = extra["GROUP"] as String
+        logger.lifecycle("Group $publishGroup")
         dependencySubstitution {
-            substitute(module("$publishGroup:$publishAnnotationsArtifact"))
+            substitute(module("$publishGroup:${extra["poko-annotations.POM_ARTIFACT_ID"]}"))
                 .using(project(":poko-annotations"))
                 .because("Developers can see local changes reflected in the sample project")
-            substitute(module("$publishGroup:$publishCompilerPluginArtifact"))
+            substitute(module("$publishGroup:${extra["poko-compiler-plugin.POM_ARTIFACT_ID"]}"))
                 .using(project(":poko-compiler-plugin"))
                 .because("Developers can see local changes reflected in the sample project")
-            substitute(module("$publishGroup:$publishGradlePluginArtifact"))
+            substitute(module("$publishGroup:${extra["poko-gradle-plugin.POM_ARTIFACT_ID"]}"))
                 .using(project(":poko-gradle-plugin"))
                 .because("Developers can see local changes reflected in the sample project")
         }

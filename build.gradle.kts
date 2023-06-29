@@ -1,17 +1,20 @@
+import dev.drewhamilton.poko.build.setUpLocalSigning
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-group = rootProject.property("publishGroup")!!
-version = rootProject.property("publishVersion")!!
-
 plugins {
     alias(libs.plugins.dokka) apply false
+    alias(libs.plugins.mavenPublish) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
     alias(libs.plugins.ksp) apply false
 }
 
 allprojects {
+    group = rootProject.property("GROUP")!!
+    version = rootProject.property("VERSION_NAME")!!
+    setUpLocalSigning()
+
     repositories {
         mavenCentral()
 

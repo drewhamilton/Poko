@@ -24,7 +24,7 @@ allprojects {
             exclusiveContent {
                 forRepository { mavenLocal() }
                 filter {
-                    includeGroup(property("publishGroup") as String)
+                    includeGroup(property("GROUP") as String)
                 }
             }
         }

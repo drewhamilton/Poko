@@ -4,6 +4,9 @@
 List<String> propertiesFiles = [
     "../gradle.properties",
     "../local.properties",
+    "../poko-annotations/gradle.properties",
+    "../poko-compiler-plugin/gradle.properties",
+    "../poko-gradle-plugin/gradle.properties",
 ]
 
 propertiesFiles.each { fileName ->
@@ -11,12 +14,30 @@ propertiesFiles.each { fileName ->
     if (file.exists()) {
         Properties properties = new Properties()
         file.withInputStream { properties.load(it) }
+
+        int moduleNameStartIndex = fileName.indexOf('/') + 1
+        int moduleNameEndIndex = fileName.lastIndexOf('/')
+        String namespace
+        if (moduleNameStartIndex < moduleNameEndIndex) {
+            namespace = fileName.substring(moduleNameStartIndex, moduleNameEndIndex)
+                .replace('/', '.')
+        } else {
+            namespace = null
+        }
+        logger.lifecycle("prefix: $namespace")
+
         properties.each { key, value ->
+            String namespacedKey
+            if (namespace == null) {
+                namespacedKey = key
+            } else {
+                namespacedKey = "$namespace.$key"
+            }
             try {
-                properties.set(key, value)
+                properties.set(namespacedKey, value)
             } catch (MissingMethodException ignored) {
                 // We are in a pluginManagement block that can't set properties, so set an extra instead:
-                ext.set(key, value)
+                ext.set(namespacedKey, value)
             }
         }
     }
