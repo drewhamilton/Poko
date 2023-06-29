@@ -1,6 +1,5 @@
 import com.google.devtools.ksp.gradle.KspTask
 import dev.drewhamilton.poko.build.generateArtifactInfo
-import dev.drewhamilton.poko.build.setUpLocalSigning
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -12,8 +11,6 @@ plugins {
     alias(libs.plugins.dokka)
     alias(libs.plugins.mavenPublish)
 }
-
-setUpLocalSigning()
 
 generateArtifactInfo(
     basePackage = "dev.drewhamilton.poko.gradle",

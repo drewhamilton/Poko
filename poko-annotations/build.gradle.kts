@@ -1,4 +1,3 @@
-import dev.drewhamilton.poko.build.setUpLocalSigning
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
 plugins {
@@ -10,5 +9,3 @@ plugins {
 kotlin {
   explicitApi = ExplicitApiMode.Strict
 }
-
-setUpLocalSigning()

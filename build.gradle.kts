@@ -1,3 +1,4 @@
+import dev.drewhamilton.poko.build.setUpLocalSigning
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -12,6 +13,7 @@ plugins {
 allprojects {
     group = rootProject.property("GROUP")!!
     version = rootProject.property("VERSION_NAME")!!
+    setUpLocalSigning()
 
     repositories {
         mavenCentral()
