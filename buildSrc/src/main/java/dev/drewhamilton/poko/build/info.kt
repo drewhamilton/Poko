@@ -55,12 +55,16 @@ internal class GenerateArtifactInfoAction(
                 "basePackage" to basePackage,
                 "publishGroup" to "${project.group}",
                 "publishVersion" to "${project.version}",
-                "annotationsArtifact" to project.property("publishAnnotationsArtifact"),
-                "compilerPluginArtifact" to project.property("publishCompilerPluginArtifact"),
-                "gradlePluginArtifact" to project.property("publishGradlePluginArtifact"),
+                "annotationsArtifact" to artifactIdForProject("poko-annotations"),
+                "compilerPluginArtifact" to artifactIdForProject("poko-compiler-plugin"),
+                "gradlePluginArtifact" to artifactIdForProject("poko-gradle-plugin"),
             )
         )
         t.filteringCharset = "UTF-8"
+    }
+
+    private fun artifactIdForProject(projectName: String): Any {
+        return project.rootProject.project(projectName).property("POM_ARTIFACT_ID")!!
     }
 }
 

@@ -14,19 +14,6 @@ plugins {
 
 setUpLocalSigning()
 
-@Suppress("UnstableApiUsage")
-mavenPublishing {
-    coordinates(
-        groupId = project.property("GROUP") as String,
-        artifactId = project.property("publishCompilerPluginArtifact") as String,
-        version = project.property("VERSION_NAME") as String,
-    )
-
-    pom {
-        name.set("Poko Compiler Plugin")
-    }
-}
-
 generateArtifactInfo(
     basePackage = "dev.drewhamilton.poko",
     DokkaTask::class, Jar::class, KspTask::class,
