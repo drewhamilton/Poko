@@ -1,6 +1,6 @@
 package dev.drewhamilton.poko.sample.jvm.arrays
 
-import dev.drewhamilton.poko.sample.jvm.Poko
+import dev.drewhamilton.poko.Poko
 
 @Suppress("unused")
 @Poko class PokoArrayHolder(
