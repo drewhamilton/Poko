@@ -20,6 +20,6 @@ package dev.drewhamilton.poko
  * immutable. `var`s, mutable collections, and especially arrays should be avoided. The class itself
  * should also be final. The compiler plugin does not enforce these recommendations.
  */
-@Retention(AnnotationRetention.BINARY)
+@Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
 public annotation class Poko
