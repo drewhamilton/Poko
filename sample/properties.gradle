@@ -24,7 +24,6 @@ propertiesFiles.each { fileName ->
         } else {
             namespace = null
         }
-        logger.lifecycle("prefix: $namespace")
 
         properties.each { key, value ->
             String namespacedKey

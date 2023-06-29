@@ -50,7 +50,6 @@ if (!isCi) {
     includeBuild("../.") {
         logger.lifecycle("Replacing Poko module dependencies with local projects")
         val publishGroup: String = extra["GROUP"] as String
-        logger.lifecycle("Group $publishGroup")
         dependencySubstitution {
             substitute(module("$publishGroup:${extra["poko-annotations.POM_ARTIFACT_ID"]}"))
                 .using(project(":poko-annotations"))
