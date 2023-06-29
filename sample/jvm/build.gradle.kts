@@ -4,7 +4,6 @@ plugins {
 }
 
 poko {
-    pokoAnnotation.set("dev/drewhamilton/poko/sample/jvm/Poko")
     enabled.set(true)
 }
 
