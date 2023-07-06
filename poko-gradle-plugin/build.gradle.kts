@@ -37,8 +37,7 @@ gradlePlugin {
 }
 
 dependencies {
-    implementation(libs.kotlin.gradleApi)
-    compileOnly(libs.kotlin.gradle)
+    compileOnly(libs.kotlin.gradleApi)
 
     implementation(libs.autoService.annotations)
     ksp(libs.autoService.ksp)
