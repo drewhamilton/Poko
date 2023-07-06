@@ -22,7 +22,6 @@ kotlin-compileTesting = { module = "com.github.tschuchortdev:kotlin-compile-test
 kotlin-compileTestingFork = { module = "dev.zacsweers.kctfork:core", version.ref = "kotlinCompileTestingFork" }
 
 kotlin-embeddableCompiler = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
-kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-gradleApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
 
 truth = { module = "com.google.truth:truth", version = "1.1.5" }
