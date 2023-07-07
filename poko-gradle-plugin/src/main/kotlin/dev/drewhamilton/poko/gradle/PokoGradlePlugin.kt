@@ -39,7 +39,10 @@ public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
             else -> null
         }
         if (annotationDependency != null) {
-            project.dependencies.add("implementation", annotationDependency)
+            project.dependencies.add(
+                kotlinCompilation.compileOnlyConfigurationName,
+                annotationDependency,
+            )
         }
 
         return project.provider {
