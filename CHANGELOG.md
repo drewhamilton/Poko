@@ -9,6 +9,10 @@ Include default `poko-annotations` dependency as `compileOnly`, and convert `@Po
 binary retention to source retention. This makes Poko invisible to consumers of Poko-consuming
 libraries.
 
+Change the Kotlin Gradle plugin to a `compileOnly` dependency of the Poko Gradle plugin, allowing
+consumers to use older versions of Kotlin for their libraries than Poko uses (assuming compatible
+versions of the Kotlin compiler API).
+
 ## 0.13.1
 _2023-06-20_
 
