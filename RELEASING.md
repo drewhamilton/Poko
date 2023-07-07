@@ -10,8 +10,6 @@
  8. Commit the snapshot change.
  9. Push the tag and 2 commits to origin/main.
 10. Wait for the "Release" Action to complete.
-11. Close and release the artifacts on Sonatype.
-12. Create the release on GitHub with release notes copied from the changelog.
+11. Create the release on GitHub with release notes copied from the changelog.
 
-If steps 9, 10, or 11 fail: drop the Sonatype repo, fix the problem, commit, and start again at
-step 6.
+If steps 10 fails: drop the Sonatype repo, fix the problem, commit, and start again at step 6.

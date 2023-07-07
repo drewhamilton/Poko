@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.14.0
+_2023-07-06_
+
+Compile with Kotlin 1.9.0.
+
+Include default `poko-annotations` dependency as `compileOnly`, and convert `@Poko` annotation from
+binary retention to source retention. This makes Poko invisible to consumers of Poko-consuming
+libraries.
+
 ## 0.13.1
 _2023-06-20_
 
