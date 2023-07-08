@@ -1,6 +1,9 @@
 package dev.drewhamilton.poko.sample.jvm.arrays
 
-import com.google.common.truth.Truth.assertThat
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNotEqualTo
+import assertk.assertions.matches
 import org.junit.Test
 
 class ArrayTest {
@@ -109,7 +112,7 @@ class ArrayTest {
         val expected = Regex(
             "DataArrayHolder\\(id=id, array=\\[one, two], maybe=\\[Ljava.lang.String;@[0-9a-fA-F]+\\)"
         )
-        assertThat(a.toString()).matches(expected.toPattern())
+        assertThat(a.toString()).matches(expected)
     }
 
     @Test fun `handwritten toString is as expected`() {
@@ -122,7 +125,7 @@ class ArrayTest {
         val expected = Regex(
             "HandwrittenArrayHolder\\(id=id, array=\\[one, two], maybe=\\[Ljava.lang.String;@[0-9a-fA-F]+\\)"
         )
-        assertThat(a.toString()).matches(expected.toPattern())
+        assertThat(a.toString()).matches(expected)
     }
 
     @Test fun `poko toString is as expected`() {
@@ -135,7 +138,7 @@ class ArrayTest {
         val expected = Regex(
             "PokoArrayHolder\\(id=id, array=\\[one, two], maybe=\\[Ljava.lang.String;@[0-9a-fA-F]+\\)"
         )
-        assertThat(a.toString()).matches(expected.toPattern())
+        assertThat(a.toString()).matches(expected)
     }
     //endregion
 }

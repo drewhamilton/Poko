@@ -59,7 +59,7 @@ dependencies {
     implementation(libs.androidx.compose.runtime)
 
     testImplementation(libs.junit)
-    testImplementation(libs.truth)
+    testImplementation(libs.assertk)
 }
 
 repositories {

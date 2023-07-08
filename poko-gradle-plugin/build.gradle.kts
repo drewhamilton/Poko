@@ -43,5 +43,5 @@ dependencies {
     ksp(libs.autoService.ksp)
 
     testImplementation(libs.junit)
-    testImplementation(libs.truth)
+    testImplementation(libs.assertk)
 }
