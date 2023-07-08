@@ -26,7 +26,7 @@ dependencies {
     testImplementation(libs.kotlin.embeddableCompiler)
     testImplementation(libs.kotlin.compileTesting)
     testImplementation(libs.junit)
-    testImplementation(libs.truth)
+    testImplementation(libs.assertk)
 }
 
 kotlin {

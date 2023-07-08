@@ -1,6 +1,7 @@
 package dev.drewhamilton.poko.sample.jvm
 
-import com.google.common.truth.Truth.assertThat
+import assertk.assertThat
+import assertk.assertions.isEqualTo
 import org.junit.Test
 
 class SampleTest {
