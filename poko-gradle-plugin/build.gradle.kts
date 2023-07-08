@@ -7,7 +7,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     `java-gradle-plugin`
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.dokka)
     alias(libs.plugins.mavenPublish)
 }
@@ -38,9 +37,6 @@ gradlePlugin {
 
 dependencies {
     compileOnly(libs.kotlin.gradleApi)
-
-    implementation(libs.autoService.annotations)
-    ksp(libs.autoService.ksp)
 
     testImplementation(libs.junit)
     testImplementation(libs.assertk)
