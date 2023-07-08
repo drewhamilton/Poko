@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.dokka) apply false
     alias(libs.plugins.mavenPublish) apply false
     alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
     alias(libs.plugins.ksp) apply false
 }
@@ -31,7 +32,7 @@ allprojects {
         }
     }
 
-    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+    val kotlinPluginHandler: AppliedPlugin.() -> Unit = {
         val javaVersion = JavaVersion.VERSION_1_8
         project.tasks.withType<JavaCompile>().configureEach {
             sourceCompatibility = javaVersion.toString()
@@ -44,4 +45,6 @@ allprojects {
             }
         }
     }
+    pluginManager.withPlugin("org.jetbrains.kotlin.jvm", kotlinPluginHandler)
+    pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform", kotlinPluginHandler)
 }
