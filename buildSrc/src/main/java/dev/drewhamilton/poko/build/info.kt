@@ -8,8 +8,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 /**
  * Generates an `ArtifactInfo` class with information about the Poko artifacts in [basePackage] in the calling Project.
- * Tasks of type [KotlinCompilationTask] will depend on the generation task's provider, and each of [dependentTasks]
- * will depend on the generation task directly.
  */
 fun Project.generateArtifactInfo(
     basePackage: String,
