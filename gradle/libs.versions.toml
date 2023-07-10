@@ -22,6 +22,7 @@ kotlin-compileTesting = { module = "com.github.tschuchortdev:kotlin-compile-test
 kotlin-compileTestingFork = { module = "dev.zacsweers.kctfork:core", version.ref = "kotlinCompileTestingFork" }
 
 kotlin-embeddableCompiler = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-gradleApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
 
 assertk = "com.willowtreeapps.assertk:assertk:0.26.1"

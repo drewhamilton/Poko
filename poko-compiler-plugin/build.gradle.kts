@@ -11,9 +11,11 @@ pokoBuild {
 }
 
 dependencies {
+    // The stdlib and compiler APIs will be provided by the enclosing Kotlin compiler environment.
+    compileOnly(libs.kotlin.stdlib)
     compileOnly(libs.kotlin.embeddableCompiler)
 
-    implementation(libs.autoService.annotations)
+    compileOnly(libs.autoService.annotations)
     ksp(libs.autoService.ksp)
 
     testImplementation(project(":poko-annotations"))
