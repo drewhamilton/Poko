@@ -18,8 +18,9 @@
     },
   ],
   "ignoreDeps": [
+    // These should just match the main Kotlin version:
     "org.jetbrains.kotlin:kotlin-compiler-embeddable",
-    "org.jetbrains.kotlin:kotlin-gradle-plugin",
     "org.jetbrains.kotlin:kotlin-gradle-plugin-api",
+    "org.jetbrains.kotlin:kotlin-stdlib",
   ],
 }
