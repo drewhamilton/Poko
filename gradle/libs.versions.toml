@@ -3,7 +3,7 @@
 # https://androidx.dev/storage/compose-compiler/repository for versions matching new Kotlin versions:
 androidx-compose-compiler = "1.5.0-dev-k1.9.0-6a60475e07f"
 androidx-compose-runtime = "1.4.3"
-kotlin = "1.9.0"
+kotlin = "1.9.20-station-823"
 kotlinCompileTesting = "1.5.0"
 kotlinCompileTestingFork = "0.3.0"
 ksp = "1.9.0-1.0.11"
