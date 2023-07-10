@@ -1,17 +1,14 @@
-import dev.drewhamilton.poko.build.generateArtifactInfo
-import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.dokka)
-    alias(libs.plugins.mavenPublish)
 }
 
-generateArtifactInfo(
-    basePackage = "dev.drewhamilton.poko",
-)
+pokoBuild {
+    publishing()
+    generateArtifactInfo("dev.drewhamilton.poko")
+}
 
 dependencies {
     compileOnly(libs.kotlin.embeddableCompiler)
@@ -24,10 +21,6 @@ dependencies {
     testImplementation(libs.kotlin.compileTesting)
     testImplementation(libs.junit)
     testImplementation(libs.assertk)
-}
-
-kotlin {
-    explicitApi = ExplicitApiMode.Strict
 }
 
 tasks.withType<KotlinCompile>().configureEach {

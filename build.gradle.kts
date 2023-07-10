@@ -41,7 +41,6 @@ allprojects {
         project.tasks.withType<KotlinCompile>().configureEach {
             compilerOptions {
                 jvmTarget.set(JvmTarget.fromTarget(javaVersion.toString()))
-                freeCompilerArgs.add("-progressive")
             }
         }
     }

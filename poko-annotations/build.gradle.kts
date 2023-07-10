@@ -1,9 +1,9 @@
-import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
-
 plugins {
   alias(libs.plugins.kotlin.multiplatform)
-  alias(libs.plugins.dokka)
-  alias(libs.plugins.mavenPublish)
+}
+
+pokoBuild {
+  publishing()
 }
 
 kotlin {
@@ -32,6 +32,4 @@ kotlin {
   watchosDeviceArm64()
   watchosSimulatorArm64()
   watchosX64()
-
-  explicitApi = ExplicitApiMode.Strict
 }
