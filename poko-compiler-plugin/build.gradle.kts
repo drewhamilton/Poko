@@ -6,7 +6,7 @@ plugins {
 }
 
 pokoBuild {
-    publishing()
+    publishing("Poko Compiler Plugin")
     generateArtifactInfo("dev.drewhamilton.poko")
 }
 
