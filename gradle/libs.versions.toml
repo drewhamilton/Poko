@@ -27,13 +27,14 @@ kotlin-gradleApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", v
 
 assertk = "com.willowtreeapps.assertk:assertk:0.26.1"
 
+plugin-mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.25.3"
+plugin-dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.8.20"
+
 [plugins]
 
 android-library = { id = "com.android.library", version = "8.0.2" }
-dokka = { id = "org.jetbrains.dokka", version = "1.8.20" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version = "0.13.2" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.25.3" }

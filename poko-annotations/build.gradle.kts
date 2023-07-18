@@ -3,7 +3,7 @@ plugins {
 }
 
 pokoBuild {
-  publishing()
+  publishing("Poko Annotations")
 }
 
 kotlin {
