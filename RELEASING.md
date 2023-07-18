@@ -1,7 +1,7 @@
 # Releasing
 
  1. Make sure you're on the main branch.
- 2. Change `pokoVersion` in `build-support/src/main/java/dev/drewhamilton/poko/build/PokoBuildPlugin.kt` to a non-SNAPSHOT version.
+ 2. Change `pokoVersion` in `build-support/…/PokoBuildPlugin.kt` to a non-SNAPSHOT version.
  3. Update README.md for the impending release.
  4. Update CHANGELOG.md for the impending release.
  5. Commit (don't push) the changes with message "Release x.y.z", where x.y.z is the new version.
