@@ -19,4 +19,5 @@ include(
     ":poko-compiler-plugin",
     ":poko-annotations",
     ":poko-gradle-plugin",
+    ":poko-tests",
 )
