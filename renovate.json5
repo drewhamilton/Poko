@@ -22,5 +22,6 @@
     "org.jetbrains.kotlin:kotlin-compiler-embeddable",
     "org.jetbrains.kotlin:kotlin-gradle-plugin-api",
     "org.jetbrains.kotlin:kotlin-stdlib",
+    "org.jetbrains.kotlin:kotlin-test",
   ],
 }
