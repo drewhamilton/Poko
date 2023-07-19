@@ -32,6 +32,7 @@ class PokoBuildPlugin : Plugin<Project> {
             // TODO Use version catalog references here.
             project.pluginManager.apply("com.vanniktech.maven.publish")
             project.pluginManager.apply("org.jetbrains.dokka")
+            project.pluginManager.apply("org.jetbrains.kotlinx.binary-compatibility-validator")
 
             // Published modules should be explicit about their API visibility.
             val kotlinPluginHandler = Action<AppliedPlugin> {
