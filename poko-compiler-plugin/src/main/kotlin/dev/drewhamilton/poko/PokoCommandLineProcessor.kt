@@ -14,8 +14,8 @@ public class PokoCommandLineProcessor : CommandLineProcessor {
     override val pluginId: String = ArtifactInfo.COMPILER_PLUGIN_ARTIFACT
 
     override val pluginOptions: Collection<AbstractCliOption> = listOf(
-        CliOption(CompilerOptions.ENABLED.toString(), "<true|false>", "", required = true),
-        CliOption(CompilerOptions.POKO_ANNOTATION.toString(), "Annotation class name", "", required = true),
+        CliOption(CompilerOptions.ENABLED.toString(), "<true|false>", "", required = false),
+        CliOption(CompilerOptions.POKO_ANNOTATION.toString(), "Annotation class name", "", required = false),
     )
 
     override fun processOption(

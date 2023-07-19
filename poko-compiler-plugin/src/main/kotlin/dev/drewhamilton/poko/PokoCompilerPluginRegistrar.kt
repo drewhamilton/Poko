@@ -1,6 +1,8 @@
 package dev.drewhamilton.poko
 
 import com.google.auto.service.AutoService
+import dev.drewhamilton.poko.ArtifactInfo.DEFAULT_POKO_ANNOTATION
+import dev.drewhamilton.poko.ArtifactInfo.DEFAULT_POKO_ENABLED
 import dev.drewhamilton.poko.ir.PokoIrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
@@ -18,10 +20,10 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
     override val supportsK2: Boolean = false
 
     override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
-        if (configuration[CompilerOptions.ENABLED] != true)
+        if (!configuration.get(CompilerOptions.ENABLED, DEFAULT_POKO_ENABLED))
             return
 
-        val pokoAnnotationString = checkNotNull(configuration[CompilerOptions.POKO_ANNOTATION])
+        val pokoAnnotationString = configuration.get(CompilerOptions.POKO_ANNOTATION, DEFAULT_POKO_ANNOTATION)
         val pokoAnnotationClassId = ClassId.fromString(pokoAnnotationString)
         val messageCollector = configuration.get(
             CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY,
