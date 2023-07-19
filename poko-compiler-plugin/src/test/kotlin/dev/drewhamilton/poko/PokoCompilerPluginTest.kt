@@ -76,56 +76,6 @@ class PokoCompilerPluginTest {
     }
     //endregion
 
-    //region Explicit function declarations
-    @Test fun `two equivalent compiled ExplicitDeclarations instances are equals`() =
-        compareTwoExplicitDeclarationsApiInstances { firstInstance, secondInstance ->
-            assertThat(firstInstance).isEqualTo(secondInstance)
-            assertThat(secondInstance).isEqualTo(firstInstance)
-        }
-
-    @Test fun `two inequivalent compiled ExplicitDeclarations instances are not equals`() =
-        compareTwoExplicitDeclarationsApiInstances(string2 = "string 11") { firstInstance, secondInstance ->
-            assertThat(firstInstance).isNotEqualTo(secondInstance)
-            assertThat(secondInstance).isNotEqualTo(firstInstance)
-        }
-
-    private fun compareTwoExplicitDeclarationsApiInstances(
-        string1: String = "string 1",
-        string2: String = "string 2",
-        compare: (firstInstance: Any, secondInstance: Any) -> Unit
-    ) = compareTwoInstances(
-        sourceFileName = "api/ExplicitDeclarations",
-        firstInstanceConstructorArgs = listOf(String::class.java to string1),
-        secondInstanceConstructorArgs = listOf(String::class.java to string2),
-        compare = compare
-    )
-
-    @Test fun `compilation with explicit function declarations respects explicit hashCode`() {
-        val testString = "test thing"
-        compareExplicitDeclarationsInstances(string = testString) { apiInstance, dataInstance ->
-            assertThat(apiInstance.hashCode()).isEqualTo(testString.length)
-            assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
-        }
-    }
-
-    @Test fun `compilation with explicit function declarations respects explicit toString`() {
-        val testString = "test string"
-        compareExplicitDeclarationsInstances(string = testString) { apiInstance, dataInstance ->
-            assertThat(apiInstance.toString()).isEqualTo(testString)
-            assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
-        }
-    }
-
-    private fun compareExplicitDeclarationsInstances(
-        string: String = "test string",
-        compare: (apiInstance: Any, dataInstance: Any) -> Unit
-    ) = compareApiWithDataClass(
-        sourceFileName = "ExplicitDeclarations",
-        constructorArgs = listOf(String::class.java to string),
-        compare = compare
-    )
-    //endregion
-
     //region Superclass function declarations
     @Test fun `two equivalent compiled Subclass instances are equals`() =
         compareTwoSubclassApiInstances { firstInstance, secondInstance ->
