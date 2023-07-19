@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.gradle
 
+import dev.drewhamilton.poko.gradle.ArtifactInfo.DEFAULT_POKO_ANNOTATION
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation

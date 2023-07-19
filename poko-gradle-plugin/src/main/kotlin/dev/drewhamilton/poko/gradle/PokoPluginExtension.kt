@@ -1,5 +1,7 @@
 package dev.drewhamilton.poko.gradle
 
+import dev.drewhamilton.poko.gradle.ArtifactInfo.DEFAULT_POKO_ANNOTATION
+import dev.drewhamilton.poko.gradle.ArtifactInfo.DEFAULT_POKO_ENABLED
 import javax.inject.Inject
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
@@ -7,7 +9,7 @@ import org.gradle.api.provider.Property
 public abstract class PokoPluginExtension @Inject constructor(objects: ObjectFactory) {
 
     public val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
-        .convention(true)
+        .convention(DEFAULT_POKO_ENABLED)
 
     /**
      * Define a custom Poko marker annotation. The poko-annotations artifact won't be automatically
