@@ -22,4 +22,6 @@ package dev.drewhamilton.poko
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
-public annotation class Poko
+public annotation class Poko(
+    val excludeFunctions: Boolean = false
+)
