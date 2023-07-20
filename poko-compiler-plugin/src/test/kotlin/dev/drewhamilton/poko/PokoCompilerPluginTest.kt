@@ -76,62 +76,6 @@ class PokoCompilerPluginTest {
     }
     //endregion
 
-    //region Superclass function declarations
-    @Test fun `two equivalent compiled Subclass instances are equals`() =
-        compareTwoSubclassApiInstances { firstInstance, secondInstance ->
-            // Super class equals implementation returns `other == true`; this confirms that is overridden:
-            assertThat(firstInstance).isNotEqualTo(true)
-            assertThat(secondInstance).isNotEqualTo(true)
-
-            assertThat(firstInstance).isEqualTo(secondInstance)
-            assertThat(secondInstance).isEqualTo(firstInstance)
-        }
-
-    @Test fun `two inequivalent compiled Subclass instances are not equals`() =
-        compareTwoSubclassApiInstances(number2 = 888) { firstInstance, secondInstance ->
-            // Super class equals implementation returns `other == true`; this confirms that is overridden:
-            assertThat(firstInstance).isNotEqualTo(true)
-            assertThat(secondInstance).isNotEqualTo(true)
-
-            assertThat(firstInstance).isNotEqualTo(secondInstance)
-            assertThat(secondInstance).isNotEqualTo(firstInstance)
-        }
-
-    private fun compareTwoSubclassApiInstances(
-        number1: Number = 999,
-        number2: Number = number1,
-        compare: (firstInstance: Any, secondInstance: Any) -> Unit
-    ) = compareTwoInstances(
-        sourceFileName = "api/Sub",
-        firstInstanceConstructorArgs = listOf(Number::class.java to number1),
-        secondInstanceConstructorArgs = listOf(Number::class.java to number2),
-        otherFilesToCompile = listOf("Super"),
-        compare = compare
-    )
-
-    @Test fun `superclass hashCode is overridden`() =
-        compareSubclassInstances { apiInstance, dataInstance ->
-            assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
-            assertThat(apiInstance.hashCode()).isNotEqualTo(50934)
-        }
-
-    @Test fun `superclass toString is overridden`() =
-        compareSubclassInstances { apiInstance, dataInstance ->
-            assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
-            assertThat(apiInstance.toString()).isNotEqualTo("superclass")
-        }
-
-    private fun compareSubclassInstances(
-        number: Number = 123.4,
-        compare: (apiInstance: Any, dataInstance: Any) -> Unit
-    ) = compareApiWithDataClass(
-        sourceFileName = "Sub",
-        constructorArgs = listOf(Number::class.java to number),
-        otherFilesToCompile = listOf("Super"),
-        compare = compare
-    )
-    //endregion
-
     //region Nested
     @Test fun `two equivalent compiled Nested instances are equals`() =
         compareTwoNestedApiInstances { firstInstance, secondInstance ->

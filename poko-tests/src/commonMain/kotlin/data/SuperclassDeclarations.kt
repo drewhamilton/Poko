@@ -2,7 +2,6 @@ package data
 
 import Super
 
-@Suppress("unused")
-data class Sub(
+data class SuperclassDeclarations(
     val number: Number
 ) : Super()

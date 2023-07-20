@@ -1,9 +1,8 @@
-package api
+package poko
 
 import Super
 import dev.drewhamilton.poko.Poko
 
-@Suppress("unused")
-@Poko class Sub(
+@Poko class SuperclassDeclarations(
     val number: Number
 ) : Super()
