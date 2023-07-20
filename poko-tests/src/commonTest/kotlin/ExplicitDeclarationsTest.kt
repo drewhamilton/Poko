@@ -2,6 +2,8 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
 import kotlin.test.Test
+import data.ExplicitDeclarations as ExplicitDeclarationsData
+import poko.ExplicitDeclarations as ExplicitDeclarationsPoko
 
 class ExplicitDeclarationsTest {
     @Test fun twoEquivalentCompiledExplicitDeclarationsInstancesAreEquals() {
