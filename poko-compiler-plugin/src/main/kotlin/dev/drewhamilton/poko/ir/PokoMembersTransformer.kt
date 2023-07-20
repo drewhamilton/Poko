@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
+import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
 import org.jetbrains.kotlin.ir.declarations.isMultiFieldValueClass
 import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
@@ -130,7 +131,10 @@ internal class PokoMembersTransformer(
             generateFunctionBody(properties)
         }
 
-        reflectivelySetFakeOverride(false)
+        (this as IrSimpleFunction).apply {
+            isFakeOverride = false
+            isExternal = false
+        }
     }
 
     /**
@@ -161,16 +165,6 @@ internal class PokoMembersTransformer(
             isAssignable = originalReceiver.isAssignable
         ).apply {
             parent = this@mutateWithNewDispatchReceiverParameterForParentClass
-        }
-    }
-
-    /**
-     * Uses reflection to set an [IrFunction]'s private `isFakeOverride` property.
-     */
-    private fun IrFunction.reflectivelySetFakeOverride(isFakeOverride: Boolean) {
-        with(javaClass.getDeclaredField("isFakeOverride")) {
-            isAccessible = true
-            setBoolean(this@reflectivelySetFakeOverride, isFakeOverride)
         }
     }
 }

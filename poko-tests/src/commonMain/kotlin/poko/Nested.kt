@@ -1,8 +1,7 @@
-package api
+package poko
 
 import dev.drewhamilton.poko.Poko
 
-@Suppress("unused")
 class OuterClass {
     @Poko class Nested(
         val value: String

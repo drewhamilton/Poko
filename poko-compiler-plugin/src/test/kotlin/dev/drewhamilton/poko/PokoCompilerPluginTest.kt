@@ -77,67 +77,6 @@ class PokoCompilerPluginTest {
     //endregion
 
     //region Nested
-    @Test fun `two equivalent compiled Nested instances are equals`() =
-        compareTwoNestedApiInstances { firstInstance, secondInstance ->
-            assertThat(firstInstance).isEqualTo(secondInstance)
-            assertThat(secondInstance).isEqualTo(firstInstance)
-        }
-
-    @Test fun `two inequivalent compiled Nested instances are not equals`() =
-        compareTwoNestedApiInstances(value2 = "string 2") { firstInstance, secondInstance ->
-            assertThat(firstInstance).isNotEqualTo(secondInstance)
-            assertThat(secondInstance).isNotEqualTo(firstInstance)
-        }
-
-    private fun compareTwoNestedApiInstances(
-        value1: String = "string 1",
-        value2: String = value1,
-        compare: (firstInstance: Any, secondInstance: Any) -> Unit
-    ) = compareTwoInstances(
-        sourceFileName = "api/OuterClass",
-        className = "api.OuterClass\$Nested",
-        firstInstanceConstructorArgs = listOf(String::class.java to value1),
-        secondInstanceConstructorArgs = listOf(String::class.java to value2),
-        compare = compare
-    )
-
-    @Test fun `compilation of nested class within class matches corresponding data class toString`() =
-        compareNestedClassApiAndDataInstances(nestedClassName = "Nested") { apiInstance, dataInstance ->
-            assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
-        }
-
-    @Test fun `compilation of nested class within class matches corresponding data class hashCode`() =
-        compareNestedClassApiAndDataInstances(nestedClassName = "Nested") { apiInstance, dataInstance ->
-            assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
-        }
-
-    @Test fun `compilation of nested class within interface matches corresponding data class toString`() =
-        compareNestedClassApiAndDataInstances(
-            nestedClassName = "Nested",
-            outerClassName = "OuterInterface"
-        ) { apiInstance, dataInstance ->
-            assertThat(apiInstance.toString()).isEqualTo(dataInstance.toString())
-        }
-
-    @Test fun `compilation of nested class within interface matches corresponding data class hashCode`() =
-        compareNestedClassApiAndDataInstances(
-            nestedClassName = "Nested",
-            outerClassName = "OuterInterface"
-        ) { apiInstance, dataInstance ->
-            assertThat(apiInstance.hashCode()).isEqualTo(dataInstance.hashCode())
-        }
-
-    private inline fun compareNestedClassApiAndDataInstances(
-        nestedClassName: String,
-        outerClassName: String = "OuterClass",
-        compare: (apiInstance: Any, dataInstance: Any) -> Unit
-    ) = compareApiWithDataClass(
-        sourceFileName = outerClassName,
-        className = "$outerClassName\$$nestedClassName",
-        constructorArgs = listOf(String::class.java to "nested class value"),
-        compare = compare
-    )
-
     @Test fun `compilation of inner class fails`() {
         testCompilation(
             "illegal/OuterClass",
