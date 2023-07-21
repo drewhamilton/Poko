@@ -1,9 +1,10 @@
-package api
+package data
 
-import dev.drewhamilton.poko.Poko
-
-@Suppress("Unused")
-@Poko class Complex<T>(
+/**
+ * A data class version of [poko.Complex], useful for comparing generated [toString], [equals], and [hashCode].
+ */
+@Suppress("Unused", "ArrayInDataClass")
+data class Complex<T>(
     val referenceType: String,
     val nullableReferenceType: String?,
     val int: Int,
