@@ -13,8 +13,6 @@ import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
-import org.jetbrains.kotlin.ir.declarations.isMultiFieldValueClass
-import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.util.hasAnnotation
@@ -80,7 +78,7 @@ internal class PokoMembersTransformer(
             messageCollector.reportErrorOnClass(this, "Poko does not support data classes")
             false
         }
-        isSingleFieldValueClass || isMultiFieldValueClass -> {
+        isValue -> {
             messageCollector.log("Value class")
             messageCollector.reportErrorOnClass(this, "Poko does not support value classes")
             false
