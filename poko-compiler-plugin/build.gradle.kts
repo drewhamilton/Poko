@@ -32,7 +32,8 @@ tasks.withType<KotlinCompile>().configureEach {
 }
 
 // https://jakewharton.com/build-on-latest-java-test-through-lowest-java/
-for (javaVersion in 8..18) {
+// The normal test task will run on the latest JDK.
+for (javaVersion in listOf(8, 11, 17)) {
     val jdkTest = tasks.register<Test>("testJdk$javaVersion") {
         val javaToolchains  = project.extensions.getByType<JavaToolchainService>()
         javaLauncher.set(
@@ -48,11 +49,6 @@ for (javaVersion in 8..18) {
         classpath = testTask.classpath
         testClassesDirs = testTask.testClassesDirs
     }
-
-    // JDK 10 is flaky on CI:
-    val isCi = System.getenv()["CI"] == "true"
-    if (isCi && javaVersion == 10)
-        continue
 
     tasks.named("check").configure { dependsOn(jdkTest) }
 }

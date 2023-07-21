@@ -19,16 +19,8 @@ jobs:
           distribution: zulu
           java-version: |
             8
-            9
-            10
             11
-            12
-            13
-            14
-            15
-            16
             17
-            18
             19
       - name: Build
         uses: gradle/gradle-build-action@v2
@@ -50,7 +42,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        ci_java_version: [ 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]
+        ci_java_version: [ 8, 11, 17, 19 ]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
