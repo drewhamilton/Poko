@@ -1,7 +1,7 @@
 package data
 
 /**
- * A data class version of [api.Simple], useful for comparing generated [toString], [equals], and [hashCode].
+ * A data class version of [poko.Simple], useful for comparing generated [toString], [equals], and [hashCode].
  */
 @Suppress("unused")
 data class Simple(
