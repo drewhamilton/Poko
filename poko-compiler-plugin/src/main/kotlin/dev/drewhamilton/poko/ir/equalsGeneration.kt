@@ -26,7 +26,6 @@ import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
-import org.jetbrains.kotlin.ir.declarations.isSingleFieldValueClass
 import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
@@ -66,10 +65,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
     val irType = irClass.defaultType
     fun irOther(): IrExpression = IrGetValueImpl(functionDeclaration.valueParameters.single())
 
-    if (!irClass.isSingleFieldValueClass) {
-        +irIfThenReturnTrue(irEqeqeq(functionDeclaration.receiver(), irOther()))
-    }
-
+    +irIfThenReturnTrue(irEqeqeq(functionDeclaration.receiver(), irOther()))
     +irIfThenReturnFalse(irNotIs(irOther(), irType))
 
     val otherWithCast = irTemporary(irAs(irOther(), irType), "other_with_cast")
