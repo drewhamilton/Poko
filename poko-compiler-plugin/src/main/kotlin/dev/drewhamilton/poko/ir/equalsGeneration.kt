@@ -13,8 +13,10 @@ import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irElseBranch
 import org.jetbrains.kotlin.ir.builders.irEqeqeq
 import org.jetbrains.kotlin.ir.builders.irEquals
+import org.jetbrains.kotlin.ir.builders.irFalse
 import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irGetField
+import org.jetbrains.kotlin.ir.builders.irIfThenElse
 import org.jetbrains.kotlin.ir.builders.irIfThenReturnFalse
 import org.jetbrains.kotlin.ir.builders.irIfThenReturnTrue
 import org.jetbrains.kotlin.ir.builders.irIs
@@ -177,24 +179,16 @@ private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
     val type = with(context) { classSymbol.createArrayType() }
     return irBranch(
         condition = irIs(receiver, type),
-        result = irCall(
-            callee = context.irBuiltIns.andandSymbol,
+        result = irIfThenElse(
             type = context.irBuiltIns.booleanType,
-            valueArgumentsCount = 2,
-        ).apply {
-            putValueArgument(
-                index = 0,
-                valueArgument = irIs(argument, type),
-            )
-            putValueArgument(
-                index = 1,
-                valueArgument = irCallContentDeepEquals(
-                    classifier = classSymbol,
-                    receiver = receiver,
-                    argument = argument,
-                ),
-            )
-        },
+            condition = irIs(argument, type),
+            thenPart = irCallContentDeepEquals(
+                classifier = classSymbol,
+                receiver = receiver,
+                argument = argument,
+            ),
+            elsePart = irFalse(),
+        ),
     )
 }
 
