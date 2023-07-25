@@ -1,6 +1,9 @@
+import assertk.all
 import assertk.assertThat
+import assertk.assertions.hashCodeFun
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
+import assertk.assertions.toStringFun
 import kotlin.test.Test
 import data.Simple as SimpleData
 import poko.Simple as SimplePoko
@@ -23,12 +26,9 @@ class SimpleTest {
     @Test fun compiled_Simple_class_instance_has_expected_hashCode() {
         val poko = SimplePoko(1, "String", null)
         val data = SimpleData(1, "String", null)
-        assertThat(poko.hashCode()).isEqualTo(data.hashCode())
-    }
-
-    @Test fun compiled_Simple_class_instance_has_expected_toString() {
-        val poko = SimplePoko(1, "String", null)
-        val data = SimpleData(1, "String", null)
-        assertThat(poko.toString()).isEqualTo(data.toString())
+        assertThat(poko).all {
+            hashCodeFun().isEqualTo(data.hashCode())
+            toStringFun().isEqualTo(data.toString())
+        }
     }
 }

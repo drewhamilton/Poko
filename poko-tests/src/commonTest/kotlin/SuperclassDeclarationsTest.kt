@@ -1,6 +1,9 @@
+import assertk.all
 import assertk.assertThat
+import assertk.assertions.hashCodeFun
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
+import assertk.assertions.toStringFun
 import kotlin.test.Test
 import data.SuperclassDeclarations as SuperclassDeclarationsData
 import poko.SuperclassDeclarations as SuperclassDeclarationsPoko
@@ -32,14 +35,15 @@ class SuperclassDeclarationsTest {
     @Test fun superclass_hashCode_is_overridden() {
         val poko = SuperclassDeclarationsPoko(123.4)
         val data = SuperclassDeclarationsData(123.4)
-        assertThat(poko.hashCode()).isEqualTo(data.hashCode())
-        assertThat(poko.hashCode()).isNotEqualTo(50934)
-    }
-
-    @Test fun superclass_toString_is_overridden() {
-        val poko = SuperclassDeclarationsPoko(123.4)
-        val data = SuperclassDeclarationsData(123.4)
-        assertThat(poko.toString()).isEqualTo(data.toString())
-        assertThat(poko.toString()).isNotEqualTo("superclass")
+        assertThat(poko).all {
+            hashCodeFun().all {
+                isEqualTo(data.hashCode())
+                isNotEqualTo(50934)
+            }
+            toStringFun().all {
+                isEqualTo(data.toString())
+                isNotEqualTo("superclass")
+            }
+        }
     }
 }

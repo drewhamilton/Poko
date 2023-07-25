@@ -1,6 +1,9 @@
+import assertk.all
 import assertk.assertThat
+import assertk.assertions.hashCodeFun
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
+import assertk.assertions.toStringFun
 import kotlin.test.Test
 import data.OuterClass.Nested as NestedData
 import poko.OuterClass.Nested as NestedPoko
@@ -23,12 +26,9 @@ class NestedTest {
     @Test fun compilation_of_nested_class_within_class_matches_corresponding_data_class_hashCode() {
         val poko = NestedPoko("nested class value")
         val data = NestedData("nested class value")
-        assertThat(poko.hashCode()).isEqualTo(data.hashCode())
-    }
-
-    @Test fun compilation_of_nested_class_within_class_matches_corresponding_data_class_toString() {
-        val poko = NestedPoko("nested class value")
-        val data = NestedData("nested class value")
-        assertThat(poko.toString()).isEqualTo(data.toString())
+        assertThat(poko).all {
+            hashCodeFun().isEqualTo(data.hashCode())
+            toStringFun().isEqualTo(data.toString())
+        }
     }
 }

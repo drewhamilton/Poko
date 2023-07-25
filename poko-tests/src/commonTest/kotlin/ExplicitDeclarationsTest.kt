@@ -1,6 +1,9 @@
+import assertk.all
 import assertk.assertThat
+import assertk.assertions.hashCodeFun
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
+import assertk.assertions.toStringFun
 import kotlin.test.Test
 import data.ExplicitDeclarations as ExplicitDeclarationsData
 import poko.ExplicitDeclarations as ExplicitDeclarationsPoko
@@ -21,18 +24,19 @@ class ExplicitDeclarationsTest {
     }
 
     @Test fun compilation_with_explicit_function_declarations_respects_explicit_hashCode() {
-        val testString = "test thing"
-        val poko = ExplicitDeclarationsPoko(testString)
-        val data = ExplicitDeclarationsData(testString)
-        assertThat(poko.hashCode()).isEqualTo(testString.length)
-        assertThat(poko.hashCode()).isEqualTo(data.hashCode())
-    }
-
-    @Test fun compilation_with_explicit_function_declarations_respects_explicit_toString() {
         val testString = "test string"
         val poko = ExplicitDeclarationsPoko(testString)
         val data = ExplicitDeclarationsData(testString)
-        assertThat(poko.toString()).isEqualTo(testString)
-        assertThat(poko.toString()).isEqualTo(data.toString())
+
+        assertThat(poko).all {
+            hashCodeFun().all {
+                isEqualTo(testString.length)
+                isEqualTo(data.hashCode())
+            }
+            toStringFun().all {
+                isEqualTo(testString)
+                isEqualTo(data.toString())
+            }
+        }
     }
 }
