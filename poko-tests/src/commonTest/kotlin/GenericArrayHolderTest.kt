@@ -1,7 +1,8 @@
-
 import assertk.assertThat
+import assertk.assertions.hashCodeFun
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
+import assertk.assertions.toStringFun
 import kotlin.test.Test
 import poko.GenericArrayHolder
 
@@ -11,18 +12,8 @@ class GenericArrayHolderTest {
         val b = GenericArrayHolder(arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)))
         assertThat(a).isEqualTo(b)
         assertThat(b).isEqualTo(a)
-    }
-
-    @Test fun two_GenericArrayHolder_instances_with_equivalent_typed_arrays_have_same_hashCode() {
-        val a = GenericArrayHolder(arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)))
-        val b = GenericArrayHolder(arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)))
-        assertThat(a.hashCode()).isEqualTo(b.hashCode())
-    }
-
-    @Test fun two_GenericArrayHolder_instances_with_equivalent_typed_arrays_have_same_toString() {
-        val a = GenericArrayHolder(arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)))
-        val b = GenericArrayHolder(arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)))
-        assertThat(a.toString()).isEqualTo(b.toString())
+        assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
+        assertThat(a).toStringFun().isEqualTo(b.toString())
     }
 
     @Test fun two_GenericArrayHolder_instances_with_equivalent_int_arrays_are_equals() {
@@ -30,18 +21,8 @@ class GenericArrayHolderTest {
         val b = GenericArrayHolder(intArrayOf(5, 10))
         assertThat(a).isEqualTo(b)
         assertThat(b).isEqualTo(a)
-    }
-
-    @Test fun two_GenericArrayHolder_instances_with_equivalent_int_arrays_have_same_hashCode() {
-        val a = GenericArrayHolder(intArrayOf(5, 10))
-        val b = GenericArrayHolder(intArrayOf(5, 10))
-        assertThat(a.hashCode()).isEqualTo(b.hashCode())
-    }
-
-    @Test fun two_GenericArrayHolder_instances_with_equivalent_int_arrays_have_same_toString() {
-        val a = GenericArrayHolder(intArrayOf(5, 10))
-        val b = GenericArrayHolder(intArrayOf(5, 10))
-        assertThat(a.toString()).isEqualTo(b.toString())
+        assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
+        assertThat(a).toStringFun().isEqualTo(b.toString())
     }
 
     @Test fun two_GenericArrayHolder_instances_with_equivalent_nonarrays_are_equals() {
@@ -49,18 +30,8 @@ class GenericArrayHolderTest {
         val b = GenericArrayHolder("5, 10")
         assertThat(a).isEqualTo(b)
         assertThat(b).isEqualTo(a)
-    }
-
-    @Test fun two_GenericArrayHolder_instances_with_equivalent_nonarrays_have_same_hashCode() {
-        val a = GenericArrayHolder("5, 10")
-        val b = GenericArrayHolder("5, 10")
-        assertThat(a.hashCode()).isEqualTo(b.hashCode())
-    }
-
-    @Test fun two_GenericArrayHolder_instances_with_equivalent_nonarrays_have_same_toString() {
-        val a = GenericArrayHolder("5, 10")
-        val b = GenericArrayHolder("5, 10")
-        assertThat(a.toString()).isEqualTo(b.toString())
+        assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
+        assertThat(a).toStringFun().isEqualTo(b.toString())
     }
 
     @Test fun two_GenericArrayHolder_instances_holding_inequivalent_long_arrays_are_not_equals() {

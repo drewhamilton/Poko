@@ -1,4 +1,5 @@
 
+import assertk.all
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.hashCodeFun
@@ -26,7 +27,6 @@ class AnyArrayHolderTest {
             assertThat(b).isEqualTo(a)
 
             assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
-
             assertThat(a).toStringFun().isEqualTo(b.toString())
         }
     }
@@ -47,7 +47,6 @@ class AnyArrayHolderTest {
             assertThat(b).isEqualTo(a)
 
             assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
-
             assertThat(a).toStringFun().isEqualTo(b.toString())
         }
     }
@@ -68,7 +67,6 @@ class AnyArrayHolderTest {
             assertThat(b).isEqualTo(a)
 
             assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
-
             assertThat(a).toStringFun().isEqualTo(b.toString())
         }
     }
@@ -89,7 +87,6 @@ class AnyArrayHolderTest {
             assertThat(b).isEqualTo(a)
 
             assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
-
             assertThat(a).toStringFun().isEqualTo(b.toString())
         }
     }
@@ -110,7 +107,6 @@ class AnyArrayHolderTest {
             assertThat(b).isEqualTo(a)
 
             assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
-
             assertThat(a).toStringFun().isEqualTo(b.toString())
         }
     }
@@ -131,7 +127,6 @@ class AnyArrayHolderTest {
             assertThat(b).isEqualTo(a)
 
             assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
-
             assertThat(a).toStringFun().isEqualTo(b.toString())
         }
     }
@@ -152,7 +147,6 @@ class AnyArrayHolderTest {
             assertThat(b).isEqualTo(a)
 
             assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
-
             assertThat(a).toStringFun().isEqualTo(b.toString())
         }
     }
@@ -173,7 +167,6 @@ class AnyArrayHolderTest {
             assertThat(b).isEqualTo(a)
 
             assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
-
             assertThat(a).toStringFun().isEqualTo(b.toString())
         }
     }
@@ -194,7 +187,6 @@ class AnyArrayHolderTest {
             assertThat(b).isEqualTo(a)
 
             assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
-
             assertThat(a).toStringFun().isEqualTo(b.toString())
         }
     }
@@ -215,7 +207,6 @@ class AnyArrayHolderTest {
             assertThat(b).isEqualTo(a)
 
             assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
-
             assertThat(a).toStringFun().isEqualTo(b.toString())
         }
     }
@@ -236,7 +227,6 @@ class AnyArrayHolderTest {
             assertThat(b).isEqualTo(a)
 
             assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
-
             assertThat(a).toStringFun().isEqualTo(b.toString())
         }
     }
@@ -297,9 +287,9 @@ class AnyArrayHolderTest {
             nullableAny = arrayOf(1, 2L, 3f, 4.0),
             trailingProperty = "trailing",
         )
-        assertAll {
-            assertThat(poko).hashCodeFun().isEqualTo(data.hashCode())
-            assertThat(poko).toStringFun().isEqualTo(data.toString())
+        assertThat(poko).all {
+            hashCodeFun().isEqualTo(data.hashCode())
+            toStringFun().isEqualTo(data.toString())
         }
     }
 }
