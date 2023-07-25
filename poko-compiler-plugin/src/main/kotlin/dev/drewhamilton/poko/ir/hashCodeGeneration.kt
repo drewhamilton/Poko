@@ -146,13 +146,13 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
         return irRuntimeArrayContentDeepHashCode(value)
     }
 
-    // Non-null if deep hashCode will be used, else null:
-    val deepHashCodeFunctionSymbol = if (hasArrayContentBasedAnnotation) {
-        maybeFindArrayDeepHashCodeFunction(property, messageCollector)
+    // Non-null if content-based hashCode will be used, else null:
+    val contentHashCodeFunctionSymbol = if (hasArrayContentBasedAnnotation) {
+        maybeFindArrayContentHashCodeFunction(property, messageCollector)
     } else {
         null
     }
-    val hashCodeFunctionSymbol = deepHashCodeFunctionSymbol
+    val hashCodeFunctionSymbol = contentHashCodeFunctionSymbol
         ?: getStandardHashCodeFunctionSymbol(classifier)
 
     return irCallHashCodeFunction(hashCodeFunctionSymbol, value)
@@ -226,7 +226,7 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
  * else returns null. [property] must have an array type.
  */
 context(IrPluginContext)
-private fun IrBlockBodyBuilder.maybeFindArrayDeepHashCodeFunction(
+private fun IrBlockBodyBuilder.maybeFindArrayContentHashCodeFunction(
     property: IrProperty,
     messageCollector: MessageCollector,
 ): IrSimpleFunctionSymbol? {
@@ -238,11 +238,6 @@ private fun IrBlockBodyBuilder.maybeFindArrayDeepHashCodeFunction(
             property = property,
             message = "@ArrayContentBased on property of type <${property.type.render()}> not supported",
         )
-        return null
-    }
-
-    // Primitive arrays don't need deep equals:
-    if (propertyClassifier in context.irBuiltIns.primitiveArraysToPrimitiveTypes) {
         return null
     }
 
