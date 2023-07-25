@@ -176,7 +176,7 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
 
             // Map each primitive type to a `when` branch covering its respective primitive array
             // type:
-            *PrimitiveType.values().map { primitiveType ->
+            *PrimitiveType.entries.map { primitiveType ->
                 irArrayTypeCheckAndContentDeepHashCodeBranch(
                     value = value,
                     classSymbol = with(context) { primitiveType.toPrimitiveArrayClassSymbol() },

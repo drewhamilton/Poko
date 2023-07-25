@@ -144,7 +144,7 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
 
             // Map each primitive type to a `when` branch covering its respective primitive array
             // type:
-            *PrimitiveType.values().map { primitiveType ->
+            *PrimitiveType.entries.map { primitiveType ->
                 irArrayTypeCheckAndContentDeepToStringBranch(
                     value = value,
                     classSymbol = with(context) { primitiveType.toPrimitiveArrayClassSymbol() },
