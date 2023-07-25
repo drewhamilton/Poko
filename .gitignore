@@ -21,6 +21,7 @@
 .idea/misc.xml
 
 # Generated files
+.idea/**/artifacts
 .idea/**/contentModel.xml
 
 # Sensitive or high-churn files
