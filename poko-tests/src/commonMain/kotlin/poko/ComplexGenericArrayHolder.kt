@@ -1,4 +1,4 @@
-package api
+package poko
 
 import dev.drewhamilton.poko.ArrayContentBased
 import dev.drewhamilton.poko.ArrayContentSupport
