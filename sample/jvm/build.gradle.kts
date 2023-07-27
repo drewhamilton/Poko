@@ -3,10 +3,6 @@ plugins {
     id("dev.drewhamilton.poko")
 }
 
-poko {
-    enabled.set(true)
-}
-
 dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.assertk)

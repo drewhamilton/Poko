@@ -35,6 +35,7 @@ pluginManagement {
 rootProject.name = "PokoSample"
 
 include(":jvm")
+include(":mpp")
 
 // Android requires JDK 17; skip it on CI tests for lower JDKs
 private val ciJavaVersion = System.getenv()["ci_java_version"]?.toInt()
