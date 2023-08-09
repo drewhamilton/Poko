@@ -4,7 +4,8 @@
 Poko is a Kotlin compiler plugin that makes writing and maintaining data model classes for public
 APIs easy. Like with normal Kotlin data classes, all you have to do is provide properties in your
 class's primary constructor. With the `@Poko` annotation, this compiler plugin automatically
-generates `toString`, `equals`, and `hashCode` functions.
+generates `toString`, `equals`, and `hashCode` functions. Poko is compatible with all Kotlin
+Multiplatform targets.
 
 ## Use
 Mark your class as a `@Poko class` instead of a `data class`:
@@ -16,7 +17,7 @@ Mark your class as a `@Poko class` instead of a `data class`:
 )
 ```
 
-And enjoy the benefits of a readable `toString` and working `equals` and `hashCode`. Unlike normal
+And reap the benefits of a readable `toString` and working `equals` and `hashCode`. Unlike normal
 data classes, no `copy` or `componentN` functions are generated.
 
 Like normal data classes, Poko classes must have at least one property in their primary constructor.
@@ -70,7 +71,7 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version |
 |-----------------|--------------|
-| 1.9.0           | 0.14.0       |
+| 1.9.0           | 0.15.0       |
 | 1.8.20 – 1.8.22 | 0.13.1       |
 | 1.8.0 – 1.8.10  | 0.12.0       |
 | 1.7.0 – 1.7.21  | 0.11.0       |

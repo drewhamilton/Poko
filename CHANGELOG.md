@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.15.0
+_2023-08-09_
+
+Support Kotlin Multiplatform.
+
+Revert `poko-annotations` to an `implementation` dependency, because Kotlin/Native doesn't support
+`compileOnly`. The annotations are still source-retention, so the end-consumer's app binary can
+strip the annotations from the classpath during shrinking.
+
+Update the compiler plugin to be enabled by default and to use the default annotations by default.
+This brings the compiler plugin into alignment with the Gradle plugin.
+
 ## 0.14.0
 _2023-07-06_
 
