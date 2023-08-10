@@ -1,7 +1,9 @@
 package dev.drewhamilton.poko
 
+import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.PluginOption
@@ -119,6 +121,21 @@ class PokoCompilerPluginTest {
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR,
         ) {
             assertThat(it.messages).isEqualTo("e: Could not find class <nonexistent/ClassName>\n")
+        }
+    }
+    //endregion
+
+    //region Performance optimizations
+    @Test fun `int property does not emit hashCode method invocation`() {
+        testCompilation(
+            "api/Primitives",
+        ) {
+            val classFile = it.generatedFiles.single { it.name.endsWith(".class") }
+            val bytecode = bytecodeToText(classFile.readBytes())
+            assertThat(bytecode).all {
+                contains("java/lang/Long.hashCode")
+                doesNotContain("java/lang/Integer.hashCode")
+            }
         }
     }
     //endregion
