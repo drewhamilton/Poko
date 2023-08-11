@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.NATIVE_COMPILER_PLUGIN_CLASSPATH_CONFIGURATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.PLUGIN_CLASSPATH_CONFIGURATION_NAME
 
@@ -5,8 +6,23 @@ plugins {
   alias(libs.plugins.kotlin.multiplatform)
 }
 
+fun KotlinMultiplatformExtension.jvm(version: Int) {
+  jvm("jvm$version") {
+    compilations.configureEach {
+      jvmToolchain(version)
+    }
+
+    // Dummy value required to disambiguate these targets' configurations.
+    // See https://kotlinlang.org/docs/multiplatform-set-up-targets.html#distinguish-several-targets-for-one-platform
+    attributes.attribute(Attribute.of("com.example.JvmTarget", Int::class.javaObjectType), version)
+  }
+}
+
 kotlin {
-  jvm()
+  jvm(8)
+  jvm(11)
+  jvm(17)
+  jvm() // Build JDK which should be latest.
 
   js().nodejs()
 

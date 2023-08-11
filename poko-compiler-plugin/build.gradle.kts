@@ -30,25 +30,3 @@ tasks.withType<KotlinCompile>().configureEach {
         freeCompilerArgs.add("-Xcontext-receivers")
     }
 }
-
-// https://jakewharton.com/build-on-latest-java-test-through-lowest-java/
-// The normal test task will run on the latest JDK.
-for (javaVersion in listOf(8, 11, 17)) {
-    val jdkTest = tasks.register<Test>("testJdk$javaVersion") {
-        val javaToolchains  = project.extensions.getByType<JavaToolchainService>()
-        javaLauncher.set(
-            javaToolchains.launcherFor {
-                languageVersion.set(JavaLanguageVersion.of(javaVersion))
-            }
-        )
-
-        description = "Runs the test suite on JDK $javaVersion"
-        group = LifecycleBasePlugin.VERIFICATION_GROUP
-
-        val testTask = tasks.getByName("test") as Test
-        classpath = testTask.classpath
-        testClassesDirs = testTask.testClassesDirs
-    }
-
-    tasks.named("check").configure { dependsOn(jdkTest) }
-}
