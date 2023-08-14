@@ -7,7 +7,6 @@ import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.PluginOption
 import com.tschuchort.compiletesting.SourceFile
 import java.io.File
-import org.jetbrains.kotlin.backend.common.extensions.FirIncompatiblePluginAPI
 import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
@@ -167,7 +166,6 @@ class PokoCompilerPluginTest {
         additionalTesting(result)
     }
 
-    @OptIn(FirIncompatiblePluginAPI::class)
     private fun prepareCompilation(
         vararg sourceFiles: SourceFile,
         pokoAnnotationName: String,
@@ -177,7 +175,7 @@ class PokoCompilerPluginTest {
         inheritClassPath = true
         sources = sourceFiles.asList()
         verbose = false
-        jvmTarget = compilerJvmTarget.description
+        jvmTarget = JvmTarget.JVM_1_8.description
         useIR = true
 
         val commandLineProcessor = PokoCommandLineProcessor()
@@ -197,30 +195,4 @@ class PokoCompilerPluginTest {
     private fun SourceFile.Companion.fromPath(path: String): SourceFile = fromPath(File(path))
     //endregion
 
-    companion object {
-
-        private val compilerJvmTarget: JvmTarget by lazy {
-            val resolvedJvmDescription = getJavaRuntimeVersion()
-            val resolvedJvmTarget = JvmTarget.fromString(resolvedJvmDescription)
-            val default = JvmTarget.JVM_1_8
-
-            val message = if (resolvedJvmTarget == null) {
-                "${default.description} because test runtime JVM version <$resolvedJvmDescription> was not valid"
-            } else {
-                "${resolvedJvmTarget.description} determined from test runtime JVM"
-            }
-            println("${PokoCompilerPluginTest::class.java.simpleName}: Using jvmTarget $message")
-
-            resolvedJvmTarget ?: default
-        }
-
-        private fun getJavaRuntimeVersion(): String {
-            val runtimeVersionArray = System.getProperty("java.runtime.version").split(".", "_", "-b")
-            val prefix = runtimeVersionArray[0]
-            return if (prefix == "1")
-                "1.${runtimeVersionArray[1]}"
-            else
-                prefix
-        }
-    }
 }
