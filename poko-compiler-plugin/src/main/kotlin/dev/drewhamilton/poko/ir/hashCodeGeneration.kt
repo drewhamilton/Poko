@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
+import org.jetbrains.kotlin.ir.types.isInt
 import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.util.render
@@ -139,6 +140,11 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
     value: IrExpression,
     messageCollector: MessageCollector,
 ): IrExpression {
+    // Fast path for integers which are already their own hashCode value.
+    if (property.type.isInt()) {
+        return value
+    }
+
     val hasArrayContentBasedAnnotation = property.hasArrayContentBasedAnnotation()
     val classifier = property.type.classifierOrNull
 

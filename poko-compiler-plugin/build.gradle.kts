@@ -23,6 +23,7 @@ dependencies {
     testImplementation(libs.kotlin.compileTesting)
     testImplementation(libs.junit)
     testImplementation(libs.assertk)
+    testImplementation(libs.asm.util)
 }
 
 tasks.withType<KotlinCompile>().configureEach {

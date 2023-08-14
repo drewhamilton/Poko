@@ -27,6 +27,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 kotlin-gradleApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
 
 assertk = "com.willowtreeapps.assertk:assertk:0.26.1"
+asm-util = "org.ow2.asm:asm-util:9.5"
 
 [plugins]
 
