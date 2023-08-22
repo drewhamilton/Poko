@@ -31,7 +31,7 @@ asm-util = "org.ow2.asm:asm-util:9.5"
 
 [plugins]
 
-android-library = { id = "com.android.library", version = "8.1.0" }
+android-library = { id = "com.android.library", version = "8.1.1" }
 dokka = { id = "org.jetbrains.dokka", version = "1.8.20" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
