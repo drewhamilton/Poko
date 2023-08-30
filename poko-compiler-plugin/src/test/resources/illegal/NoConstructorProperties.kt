@@ -2,7 +2,9 @@ package illegal
 
 import dev.drewhamilton.poko.Poko
 
-@Suppress("unused")
+@Suppress("unused", "UNUSED_PARAMETER")
 @Poko class NoConstructorProperties(
-    @Suppress("UNUSED_PARAMETER") nonProperty: String,
-)
+    nonProperty: String,
+) {
+    val nonParameter: String = ""
+}

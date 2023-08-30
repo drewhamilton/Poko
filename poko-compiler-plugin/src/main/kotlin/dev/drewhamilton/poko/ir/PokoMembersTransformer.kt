@@ -1,10 +1,12 @@
 package dev.drewhamilton.poko.ir
 
+import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
+import org.jetbrains.kotlin.fir.backend.FirMetadataSource
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
@@ -109,9 +111,15 @@ internal class PokoMembersTransformer(
         val properties = parent.properties
             .toList()
             .filter {
-                // Can't figure out how to check this another way. FIR?
-                @OptIn(ObsoleteDescriptorBasedAPI::class)
-                it.symbol.descriptor.source.getPsi() is KtParameter
+                val metadata = it.metadata
+                if (metadata is FirMetadataSource.Property) {
+                    // Using K2:
+                    metadata.fir.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
+                } else {
+                    // Not using K2:
+                    @OptIn(ObsoleteDescriptorBasedAPI::class)
+                    it.symbol.descriptor.source.getPsi() is KtParameter
+                }
             }
         if (properties.isEmpty()) {
             messageCollector.log("No primary constructor properties")
