@@ -5,6 +5,8 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
+import com.google.testing.junit.testparameterinjector.TestParameter
+import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.PluginOption
 import com.tschuchort.compiletesting.SourceFile
@@ -17,9 +19,13 @@ import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
 
 @OptIn(ExperimentalCompilerApi::class)
-class PokoCompilerPluginTest {
+@RunWith(TestParameterInjector::class)
+class PokoCompilerPluginTest(
+    @TestParameter private val k2: Boolean,
+) {
 
     @JvmField
     @Rule var temporaryFolder: TemporaryFolder = TemporaryFolder()
@@ -119,7 +125,7 @@ class PokoCompilerPluginTest {
             pokoAnnotationName = "nonexistent/ClassName",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR,
         ) {
-            assertThat(it.messages).isEqualTo("e: Could not find class <nonexistent/ClassName>\n")
+            assertThat(it.messages).contains("e: Could not find class <nonexistent/ClassName>\n")
         }
     }
     //endregion
@@ -141,7 +147,7 @@ class PokoCompilerPluginTest {
 
     private inline fun testCompilation(
         vararg sourceFileNames: String,
-        pokoAnnotationName: String = Poko::class.java.name,
+        pokoAnnotationName: String = "dev/drewhamilton/poko/Poko",
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
         additionalTesting: (KotlinCompilation.Result) -> Unit = {}
     ) = testCompilation(
@@ -194,6 +200,9 @@ class PokoCompilerPluginTest {
         verbose = false
         jvmTarget = JvmTarget.JVM_1_8.description
         useIR = true
+        if (k2) {
+            languageVersion = "2.0"
+        }
 
         val commandLineProcessor = PokoCommandLineProcessor()
         commandLineProcessors = listOf(commandLineProcessor)
