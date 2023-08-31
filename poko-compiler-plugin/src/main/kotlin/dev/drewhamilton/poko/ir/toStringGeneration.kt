@@ -3,6 +3,7 @@ package dev.drewhamilton.poko.ir
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
+import org.jetbrains.kotlin.ir.IrBuiltIns
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
@@ -31,6 +32,8 @@ import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.util.OperatorNameConventions
 
 context(IrGeneratorContextInterface)
 internal fun IrFunction.isToString(): Boolean {
@@ -153,12 +156,26 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
 
             irElseBranch(
                 irCallToStringFunction(
-                    toStringFunctionSymbol = context.irBuiltIns.extensionToString,
+                    toStringFunctionSymbol = context.irBuiltIns.extensionToStringSafe(),
                     value = value,
                 ),
             ),
         ),
     )
+}
+
+// TODO: Remove when https://youtrack.jetbrains.com/issue/KT-61616 is fixed
+private fun IrBuiltIns.extensionToStringSafe(): IrSimpleFunctionSymbol {
+    return try {
+        extensionToString
+    } catch (exception: IllegalArgumentException) {
+        findFunctions(
+            OperatorNameConventions.TO_STRING,
+            StandardClassIds.BASE_KOTLIN_PACKAGE,
+        ).first { function ->
+            function.owner.extensionReceiverParameter?.type == anyNType
+        }
+    }
 }
 
 /**
