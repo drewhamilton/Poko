@@ -16,7 +16,7 @@ import org.jetbrains.kotlin.name.ClassId
 @AutoService(CompilerPluginRegistrar::class)
 public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
-    override val supportsK2: Boolean = true
+    override val supportsK2: Boolean get() = true
 
     override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
         if (!configuration.get(CompilerOptions.ENABLED, DEFAULT_POKO_ENABLED))
