@@ -9,5 +9,6 @@ dependencies {
 }
 
 tasks.named("test") {
+    dependsOn(":poko-tests:compileProductionExecutableKotlinJs")
     dependsOn(":poko-tests:compileKotlinJvm")
 }
