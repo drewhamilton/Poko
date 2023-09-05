@@ -20,4 +20,5 @@ include(
     ":poko-annotations",
     ":poko-gradle-plugin",
     ":poko-tests",
+    ":poko-tests:performance",
 )

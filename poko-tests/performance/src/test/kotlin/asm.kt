@@ -1,5 +1,3 @@
-package dev.drewhamilton.poko
-
 import java.io.PrintWriter
 import java.io.StringWriter
 import org.objectweb.asm.ClassReader
