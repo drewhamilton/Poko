@@ -7,7 +7,6 @@ import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
-import org.jetbrains.kotlin.ir.builders.irAs
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irElseBranch
@@ -19,6 +18,7 @@ import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irIfThenElse
 import org.jetbrains.kotlin.ir.builders.irIfThenReturnFalse
 import org.jetbrains.kotlin.ir.builders.irIfThenReturnTrue
+import org.jetbrains.kotlin.ir.builders.irImplicitCast
 import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irNotEquals
 import org.jetbrains.kotlin.ir.builders.irNotIs
@@ -70,7 +70,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
     +irIfThenReturnTrue(irEqeqeq(functionDeclaration.receiver(), irOther()))
     +irIfThenReturnFalse(irNotIs(irOther(), irType))
 
-    val otherWithCast = irTemporary(irAs(irOther(), irType), "other_with_cast")
+    val otherWithCast = irTemporary(irImplicitCast(irOther(), irType), "other_with_cast")
     for (property in classProperties) {
         val field = property.backingField!!
         val arg1 = irGetField(functionDeclaration.receiver(), field)

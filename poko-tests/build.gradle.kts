@@ -47,7 +47,11 @@ kotlin {
   jvm()
   jvm("jvmK2").applyK2()
 
-  js().nodejs()
+  js {
+    nodejs()
+    // Produce a JS file for performance tests.
+    binaries.executable()
+  }
   js("jsK2").applyK2().nodejs()
 
   mingwX64()
