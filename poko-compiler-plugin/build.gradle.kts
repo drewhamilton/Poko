@@ -23,7 +23,6 @@ dependencies {
     testImplementation(libs.kotlin.compileTesting)
     testImplementation(libs.junit)
     testImplementation(libs.assertk)
-    testImplementation(libs.asm.util)
     testImplementation(libs.testParameterInjector)
 }
 

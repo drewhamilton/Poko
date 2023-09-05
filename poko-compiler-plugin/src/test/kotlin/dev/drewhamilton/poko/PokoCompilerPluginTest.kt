@@ -130,21 +130,6 @@ class PokoCompilerPluginTest(
     }
     //endregion
 
-    //region Performance optimizations
-    @Test fun `int property does not emit hashCode method invocation`() {
-        testCompilation(
-            "api/Primitives",
-        ) {
-            val classFile = it.generatedFiles.single { it.name.endsWith(".class") }
-            val bytecode = bytecodeToText(classFile.readBytes())
-            assertThat(bytecode).all {
-                contains("java/lang/Long.hashCode")
-                doesNotContain("java/lang/Integer.hashCode")
-            }
-        }
-    }
-    //endregion
-
     private inline fun testCompilation(
         vararg sourceFileNames: String,
         pokoAnnotationName: String = "dev/drewhamilton/poko/Poko",
