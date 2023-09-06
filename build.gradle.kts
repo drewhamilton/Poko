@@ -32,18 +32,21 @@ allprojects {
         }
     }
 
-    val kotlinPluginHandler: AppliedPlugin.() -> Unit = {
-        val javaVersion = JavaVersion.VERSION_1_8
-        project.tasks.withType<JavaCompile>().configureEach {
-            sourceCompatibility = javaVersion.toString()
-            targetCompatibility = javaVersion.toString()
-        }
-        project.tasks.withType<KotlinCompile>().configureEach {
-            compilerOptions {
-                jvmTarget.set(JvmTarget.fromTarget(javaVersion.toString()))
+    // The tests vary their own JVM targets among multiple targets. Do not overwrite them.
+    if (path != ":poko-tests") {
+        val kotlinPluginHandler: AppliedPlugin.() -> Unit = {
+            val javaVersion = JavaVersion.VERSION_1_8
+            project.tasks.withType<JavaCompile>().configureEach {
+                sourceCompatibility = javaVersion.toString()
+                targetCompatibility = javaVersion.toString()
+            }
+            project.tasks.withType<KotlinCompile>().configureEach {
+                compilerOptions {
+                    jvmTarget.set(JvmTarget.fromTarget(javaVersion.toString()))
+                }
             }
         }
+        pluginManager.withPlugin("org.jetbrains.kotlin.jvm", kotlinPluginHandler)
+        pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform", kotlinPluginHandler)
     }
-    pluginManager.withPlugin("org.jetbrains.kotlin.jvm", kotlinPluginHandler)
-    pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform", kotlinPluginHandler)
 }
