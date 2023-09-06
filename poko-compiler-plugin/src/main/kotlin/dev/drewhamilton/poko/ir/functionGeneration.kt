@@ -134,3 +134,11 @@ internal fun IrClassSymbol.createArrayType(): IrSimpleType {
     }
     return createType(hasQuestionMark = false, arguments = typeArguments)
 }
+
+private val disableToStringGenerationnAnnotationFqName = ClassId(
+    FqName("dev.drewhamilton.poko"),
+    Name.identifier("DisableToStringGeneration"),
+).asSingleFqName()
+
+internal fun IrClass.hasDisableToStringGenerationAnnotation(): Boolean =
+    hasAnnotation(disableToStringGenerationnAnnotationFqName)

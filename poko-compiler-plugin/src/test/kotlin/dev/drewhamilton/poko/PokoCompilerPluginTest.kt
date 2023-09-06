@@ -3,8 +3,10 @@ package dev.drewhamilton.poko
 import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
+import assertk.assertions.isNotEqualTo
+import assertk.assertions.prop
+import assertk.assertions.startsWith
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.tschuchort.compiletesting.KotlinCompilation
@@ -32,9 +34,41 @@ class PokoCompilerPluginTest(
 
     //region Primitives
     @Test fun `compilation of valid class succeeds`() {
-        testCompilation("api/Primitives")
+        testCompilation("api/Primitives") { result ->
+            val testClass = result.classLoader.loadClass("api.Primitives")
+            val primaryTestInstance = testClass.declaredConstructors[0].newInstance(
+                "a", 1f, 2.0, 3L, 4, 5.toShort(), 6.toByte(), true
+            )
+            val cloneOfPrimaryTestInstance = testClass.declaredConstructors[0].newInstance(
+                "a", 1f, 2.0, 3L, 4, 5.toShort(), 6.toByte(), true
+            )
+            val otherTestInstance = testClass.declaredConstructors[0].newInstance(
+                "b", 8f, 9.0, 11L, 4, 9.toShort(), 1.toByte(), false
+            )
+
+            assertThat(primaryTestInstance).all {
+                prop(Any::toString).isEqualTo("Primitives(string=a, float=1.0, double=2.0, long=3, int=4, short=5, byte=6, boolean=true)")
+                prop(Any::hashCode).isNotEqualTo(System.identityHashCode(primaryTestInstance))
+
+                isEqualTo(primaryTestInstance)
+                isEqualTo(cloneOfPrimaryTestInstance)
+                isNotEqualTo(otherTestInstance)
+            }
+        }
     }
     //endregion
+
+    //region ToStringGenerationDisabled
+    @Test fun `compilation of valid class with disabled to string generation succeeds`() {
+        testCompilation("api/ToStringGenerationDisabled") { result ->
+            val testClass = result.classLoader.loadClass("api.ToStringGenerationDisabled")
+            val testInstance = testClass.declaredConstructors[0].newInstance("hello world")
+            // note @ at the end of assumed toString value, it indicates that default toString was used
+            assertThat(testInstance.toString()).startsWith("api.ToStringGenerationDisabled@")
+        }
+    }
+    //endregion
+
 
     //region data class
     @Test fun `compilation of data class fails`() {
