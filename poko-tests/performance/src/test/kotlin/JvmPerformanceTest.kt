@@ -14,6 +14,15 @@ class JvmPerformanceTest {
         }
     }
 
+    @Test fun `uint property does not emit hashCode method invocation`() {
+        val classfile = jvmOutput("performance/UIntAndLong.class")
+        val bytecode = bytecodeToText(classfile.readBytes())
+        assertThat(bytecode).all {
+            contains("java/lang/Long.hashCode")
+            doesNotContain("kotlin/UInt.hashCode-impl")
+        }
+    }
+
     @Test fun `toString uses invokedynamic on modern JDKs`() {
         val classfile = jvmOutput("performance/IntAndLong.class", version = 11)
         val bytecode = bytecodeToText(classfile.readBytes())

@@ -2,6 +2,7 @@ package dev.drewhamilton.poko.ir
 
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.builtins.PrimitiveType
+import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
@@ -33,6 +34,7 @@ import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isInt
 import org.jetbrains.kotlin.ir.types.isNullable
+import org.jetbrains.kotlin.ir.types.isUInt
 import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
@@ -143,6 +145,14 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
     // Fast path for integers which are already their own hashCode value.
     if (property.type.isInt()) {
         return value
+    }
+    if (property.type.isUInt()) {
+        val uintToInt = referenceClass(StandardNames.FqNames.uInt)!!
+            .functions
+            .first { it.owner.name.asString() == "toInt" }
+        return irCall(uintToInt).apply {
+            dispatchReceiver = value
+        }
     }
 
     val hasArrayContentBasedAnnotation = property.hasArrayContentBasedAnnotation()
