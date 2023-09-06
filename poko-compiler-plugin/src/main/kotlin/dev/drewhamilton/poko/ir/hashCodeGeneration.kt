@@ -149,7 +149,7 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
     if (property.type.isUInt()) {
         val uintToInt = referenceClass(StandardNames.FqNames.uInt)!!
             .functions
-            .first { it.owner.name.asString() == "toInt" }
+            .single { it.owner.name.asString() == "toInt" }
         return irCall(uintToInt).apply {
             dispatchReceiver = value
         }
