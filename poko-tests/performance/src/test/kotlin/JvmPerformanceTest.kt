@@ -13,4 +13,13 @@ class JvmPerformanceTest {
             doesNotContain("java/lang/Integer.hashCode")
         }
     }
+
+    @Test fun `toString uses invokedynamic on modern JDKs`() {
+        val classfile = jvmOutput("performance/IntAndLong.class", version = 11)
+        val bytecode = bytecodeToText(classfile.readBytes())
+        assertThat(bytecode).all {
+            contains("INVOKEDYNAMIC makeConcatWithConstants")
+            doesNotContain("StringBuilder")
+        }
+    }
 }
