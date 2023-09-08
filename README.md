@@ -1,5 +1,4 @@
 # Poko
-
 [![](https://github.com/drewhamilton/Poko/workflows/CI/badge.svg?branch=main)](https://github.com/drewhamilton/Poko/actions?query=workflow%3ACI+branch%3Amain)
 
 Poko is a Kotlin compiler plugin that makes writing and maintaining data model classes for public
@@ -9,9 +8,7 @@ generates `toString`, `equals`, and `hashCode` functions. Poko is compatible wit
 Multiplatform targets.
 
 ## Use
-
 Mark your class as a `@Poko class` instead of a `data class`:
-
 ```kotlin
 @Poko class MyData(
     val int: Int,
@@ -31,7 +28,6 @@ is not recommended, and if they are used, it is recommended to override `equals`
 manually.
 
 ### Arrays
-
 By default, Poko does nothing to inspect the contents of array properties. [This aligns with data
 classes](https://blog.jetbrains.com/kotlin/2015/09/feedback-request-limitations-on-data-classes/#Appendix.Comparingarrays).
 
@@ -58,14 +54,13 @@ Generated `toString` implementations add to the string pool, and can't be remove
 contexts to skip `toString` and only generate `equals` and `hashCode` for internal value types.
 
 ### Annotation
-
 By default, the `dev.drewhamilton.poko.Poko` annotation is used to mark classes for Poko generation.
-If you prefer, you can create a different annotation and supply it to the Gradle plugin.
+If you prefer, you can create a different annotation and supply it to the Gradle  plugin.
 
 ```groovy
 apply plugin: "dev.drewhamilton.poko"
 poko {
-    pokoAnnotation.set "com.example.MyDataAnnotation"
+  pokoAnnotation.set "com.example.MyDataAnnotation"
 }
 ```
 
@@ -101,7 +96,6 @@ Snapshots of the development version are available in [Sonatype's Snapshots
 repository](https://oss.sonatype.org/#view-repositories;snapshots~browsestorage).
 
 To use Poko, apply the Gradle plugin in your project:
-
 ```kotlin
 // Root project:
 plugins {
@@ -117,16 +111,14 @@ plugins {
 \*Versions prior to 0.7.0 use plugin name `dev.drewhamilton.extracare`.
 
 ## To-do
-
 * Generate an inner Builder class
-* Propagate the constructor default values to the Builder
+* Propagate the constructor default values to the Builder 
 * Mark the constructor as private
 * Generate a top-level DSL initializer
 * Write an IDE plugin?
 * Multiplatform support?
 
 ## License
-
 ```
 Copyright 2020 Drew Hamilton
 
