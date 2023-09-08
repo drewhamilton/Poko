@@ -4,6 +4,9 @@ public abstract interface annotation class dev/drewhamilton/poko/ArrayContentBas
 public abstract interface annotation class dev/drewhamilton/poko/ArrayContentSupport : java/lang/annotation/Annotation {
 }
 
+public abstract interface annotation class dev/drewhamilton/poko/DisableToStringGeneration : java/lang/annotation/Annotation {
+}
+
 public abstract interface annotation class dev/drewhamilton/poko/Poko : java/lang/annotation/Annotation {
 }
 
