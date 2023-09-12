@@ -7,10 +7,9 @@ import kotlin.test.Test
 import poko.GenericArrayHolder
 
 class GenericArrayHolderTest {
-    @Suppress("RemoveExplicitTypeArguments") // https://youtrack.jetbrains.com/issue/KT-61627
     @Test fun two_GenericArrayHolder_instances_with_equivalent_typed_arrays_are_equals() {
-        val a = GenericArrayHolder(arrayOf<Any>(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)))
-        val b = GenericArrayHolder(arrayOf<Any>(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)))
+        val a = GenericArrayHolder(arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)))
+        val b = GenericArrayHolder(arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)))
         assertThat(a).isEqualTo(b)
         assertThat(b).isEqualTo(a)
         assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
