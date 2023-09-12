@@ -20,6 +20,11 @@ pluginManagement {
         }
         mavenCentral()
         google()
+
+        if (extra["kotlin_dev_version_enabled"] == "true") {
+            logger.lifecycle("Adding Kotlin dev repository for plugins")
+            maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
+        }
     }
 
     resolutionStrategy {
