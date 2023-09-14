@@ -1,5 +1,7 @@
 import dev.drewhamilton.poko.build.setUpLocalSigning
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -9,6 +11,12 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator) apply false
     alias(libs.plugins.ksp) apply false
+}
+
+plugins.withType<NodeJsRootPlugin> {
+    extensions.getByType<NodeJsRootExtension>().apply {
+        nodeVersion = "20.0.0"
+    }
 }
 
 allprojects {
