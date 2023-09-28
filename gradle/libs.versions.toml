@@ -32,7 +32,7 @@ testParameterInjector = "com.google.testparameterinjector:test-parameter-injecto
 
 [plugins]
 
-android-library = { id = "com.android.library", version = "8.1.1" }
+android-library = { id = "com.android.library", version = "8.1.2" }
 dokka = { id = "org.jetbrains.dokka", version = "1.9.0" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
