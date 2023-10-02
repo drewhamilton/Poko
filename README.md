@@ -107,7 +107,6 @@ plugins {
 * Mark the constructor as private
 * Generate a top-level DSL initializer
 * Write an IDE plugin?
-* Multiplatform support?
 
 ## License
 ```
