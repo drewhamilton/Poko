@@ -1,3 +1,4 @@
+import assertk.all
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.hashCodeFun
@@ -5,6 +6,7 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
 import assertk.assertions.toStringFun
 import kotlin.test.Test
+import data.Complex as ComplexData
 import poko.Complex as ComplexPoko
 
 class ComplexTest {
@@ -93,6 +95,49 @@ class ComplexTest {
         )
         assertThat(a).isNotEqualTo(b)
         assertThat(b).isNotEqualTo(a)
+    }
+
+    @Test fun compiled_Complex_class_instance_has_expected_hashCode_and_toString() {
+        val arrayReferenceType = arrayOf("one string", "another string")
+        val arrayPrimitiveType = intArrayOf(3, 4, 5)
+        val poko = ComplexPoko(
+            referenceType = "Text",
+            nullableReferenceType = null,
+            int = 2,
+            nullableInt = null,
+            long = 12345L,
+            float = 67f,
+            double = 89.0,
+            arrayReferenceType = arrayReferenceType,
+            nullableArrayReferenceType = null,
+            arrayPrimitiveType = arrayPrimitiveType,
+            nullableArrayPrimitiveType = null,
+            genericCollectionType = listOf(4, 6, 8).map { EvenInt(it) },
+            nullableGenericCollectionType = null,
+            genericType = EvenInt(2),
+            nullableGenericType = null,
+        )
+        val data = ComplexData(
+            referenceType = "Text",
+            nullableReferenceType = null,
+            int = 2,
+            nullableInt = null,
+            long = 12345L,
+            float = 67f,
+            double = 89.0,
+            arrayReferenceType = arrayReferenceType,
+            nullableArrayReferenceType = null,
+            arrayPrimitiveType = arrayPrimitiveType,
+            nullableArrayPrimitiveType = null,
+            genericCollectionType = listOf(4, 6, 8).map { EvenInt(it) },
+            nullableGenericCollectionType = null,
+            genericType = EvenInt(2),
+            nullableGenericType = null,
+        )
+        assertThat(poko).all {
+            hashCodeFun().isEqualTo(data.hashCode())
+            toStringFun().isEqualTo(data.toString())
+        }
     }
 
     data class EvenInt(private val value: Int) : Number() {
