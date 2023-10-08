@@ -6,6 +6,8 @@ import dev.drewhamilton.poko.Poko
 @Poko class Complex<T>(
     val referenceType: String,
     val nullableReferenceType: String?,
+    val boolean: Boolean,
+    val nullableBoolean: Boolean?,
     val int: Int,
     val nullableInt: Int?,
     val long: Long,

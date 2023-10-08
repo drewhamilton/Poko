@@ -16,6 +16,8 @@ class ComplexTest {
         val a = ComplexPoko(
             referenceType = "Text",
             nullableReferenceType = null,
+            boolean = true,
+            nullableBoolean = null,
             int = 2,
             nullableInt = null,
             long = 12345L,
@@ -33,6 +35,8 @@ class ComplexTest {
         val b = ComplexPoko(
             referenceType = "Text",
             nullableReferenceType = null,
+            boolean = true,
+            nullableBoolean = null,
             int = 2,
             nullableInt = null,
             long = 12345L,
@@ -62,6 +66,8 @@ class ComplexTest {
         val a = ComplexPoko(
             referenceType = "Text",
             nullableReferenceType = null,
+            boolean = true,
+            nullableBoolean = null,
             int = 2,
             nullableInt = null,
             long = 12345L,
@@ -79,6 +85,8 @@ class ComplexTest {
         val b = ComplexPoko(
             referenceType = "Text",
             nullableReferenceType = "non-null",
+            boolean = true,
+            nullableBoolean = null,
             int = 2,
             nullableInt = null,
             long = 12345L,
@@ -103,6 +111,8 @@ class ComplexTest {
         val poko = ComplexPoko(
             referenceType = "Text",
             nullableReferenceType = null,
+            boolean = true,
+            nullableBoolean = null,
             int = 2,
             nullableInt = null,
             long = 12345L,
@@ -120,6 +130,8 @@ class ComplexTest {
         val data = ComplexData(
             referenceType = "Text",
             nullableReferenceType = null,
+            boolean = true,
+            nullableBoolean = null,
             int = 2,
             nullableInt = null,
             long = 12345L,
