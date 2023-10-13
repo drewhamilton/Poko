@@ -28,7 +28,7 @@ kotlin-gradleApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", v
 
 assertk = "com.willowtreeapps.assertk:assertk:0.27.0"
 asm-util = "org.ow2.asm:asm-util:9.6"
-testParameterInjector = "com.google.testparameterinjector:test-parameter-injector:1.12"
+testParameterInjector = "com.google.testparameterinjector:test-parameter-injector:1.13"
 
 [plugins]
 
