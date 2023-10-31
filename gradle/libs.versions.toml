@@ -4,8 +4,7 @@
 androidx-compose-compiler = "1.5.4-dev-k1.9.20-50f08dfa4b4"
 androidx-compose-runtime = "1.5.4"
 kotlin = "1.9.20"
-# If this ends with "-local", we use a checked-in jar instead of the public artifact:
-kotlinCompileTesting = "1.5.1-pr394-local"
+kotlinCompileTesting = "1.5.1"
 kotlinCompileTestingFork = "0.4.0"
 # https://github.com/google/ksp/releases:
 ksp = "1.9.20-1.0.13"
@@ -20,8 +19,8 @@ autoService-ksp = { module = "dev.zacsweers.autoservice:auto-service-ksp", versi
 
 junit = { module = "junit:junit", version = "4.13.2" }
 
-kotlin-compileTesting = { module = "com.github.tschuchortdev:kotlin-compile-testing", version.ref = "kotlinCompileTesting" }
-kotlin-compileTestingFork = { module = "dev.zacsweers.kctfork:core", version.ref = "kotlinCompileTestingFork" }
+kotlinCompileTesting = { module = "com.github.tschuchortdev:kotlin-compile-testing", version.ref = "kotlinCompileTesting" }
+kotlinCompileTestingFork = { module = "dev.zacsweers.kctfork:core", version.ref = "kotlinCompileTestingFork" }
 
 kotlin-embeddableCompiler = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }

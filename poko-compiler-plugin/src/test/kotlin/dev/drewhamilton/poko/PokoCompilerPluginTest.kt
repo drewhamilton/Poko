@@ -5,6 +5,7 @@ import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
+import com.tschuchort.compiletesting.JvmCompilationResult
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.PluginOption
 import com.tschuchort.compiletesting.SourceFile
@@ -132,7 +133,7 @@ class PokoCompilerPluginTest(
         vararg sourceFileNames: String,
         pokoAnnotationName: String = "dev/drewhamilton/poko/Poko",
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
-        additionalTesting: (KotlinCompilation.Result) -> Unit = {}
+        additionalTesting: (JvmCompilationResult) -> Unit = {}
     ) = testCompilation(
         *sourceFileNames.map { SourceFile.fromPath("src/test/resources/$it.kt") }.toTypedArray(),
         pokoAnnotationName = pokoAnnotationName,
@@ -144,7 +145,7 @@ class PokoCompilerPluginTest(
         vararg sourceFiles: SourceFile,
         pokoAnnotationName: String,
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
-        additionalTesting: (KotlinCompilation.Result) -> Unit = {}
+        additionalTesting: (JvmCompilationResult) -> Unit = {}
     ) {
         val result =
             prepareCompilation(*sourceFiles, pokoAnnotationName = pokoAnnotationName).compile()
