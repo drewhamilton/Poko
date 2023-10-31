@@ -30,7 +30,7 @@ dependencies {
         testImplementation(files("libs/$kctName-$kctVersion.jar"))
         // Copied from KCT's build.gradle:
         testImplementation("com.squareup.okio:okio:3.3.0")
-        testImplementation("io.github.classgraph:classgraph:4.8.158")
+        testImplementation("io.github.classgraph:classgraph:4.8.163")
         testImplementation("org.jetbrains.kotlin:kotlin-annotation-processing-embeddable:${libs.versions.kotlin.get()}")
     } else {
         testImplementation(libs.kotlin.compileTesting)
