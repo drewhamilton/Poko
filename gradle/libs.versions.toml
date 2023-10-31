@@ -1,14 +1,14 @@
 [versions]
 
 # https://androidx.dev/storage/compose-compiler/repository for versions matching new Kotlin versions:
-androidx-compose-compiler = "1.5.4-dev-k1.9.20-RC2-93f1625925e"
+androidx-compose-compiler = "1.5.4-dev-k1.9.20-50f08dfa4b4"
 androidx-compose-runtime = "1.5.4"
-kotlin = "1.9.20-RC2"
+kotlin = "1.9.20"
 # If this ends with "-local", we use a checked-in jar instead of the public artifact:
 kotlinCompileTesting = "1.5.1-pr394-local"
 kotlinCompileTestingFork = "0.3.2"
 # https://github.com/google/ksp/releases:
-ksp = "1.9.20-RC2-1.0.13"
+ksp = "1.9.20-1.0.13"
 
 [libraries]
 
