@@ -6,7 +6,7 @@ androidx-compose-runtime = "1.5.4"
 kotlin = "1.9.20"
 # If this ends with "-local", we use a checked-in jar instead of the public artifact:
 kotlinCompileTesting = "1.5.1-pr394-local"
-kotlinCompileTestingFork = "0.3.2"
+kotlinCompileTestingFork = "0.4.0"
 # https://github.com/google/ksp/releases:
 ksp = "1.9.20-1.0.13"
 
