@@ -1,9 +1,7 @@
 package dev.drewhamilton.poko
 
-import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
@@ -184,7 +182,6 @@ class PokoCompilerPluginTest(
         sources = sourceFiles.asList()
         verbose = false
         jvmTarget = JvmTarget.JVM_1_8.description
-        useIR = true
         if (k2) {
             languageVersion = "2.0"
         }
