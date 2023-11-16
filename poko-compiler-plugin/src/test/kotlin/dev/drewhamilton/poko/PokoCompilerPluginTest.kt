@@ -4,8 +4,6 @@ import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
-import com.google.testing.junit.testparameterinjector.TestParameter
-import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.tschuchort.compiletesting.JvmCompilationResult
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.PluginOption
@@ -19,13 +17,9 @@ import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.junit.runner.RunWith
 
 @OptIn(ExperimentalCompilerApi::class)
-@RunWith(TestParameterInjector::class)
-class PokoCompilerPluginTest(
-    @TestParameter private val k2: Boolean,
-) {
+class PokoCompilerPluginTest {
 
     @JvmField
     @Rule var temporaryFolder: TemporaryFolder = TemporaryFolder()
@@ -231,9 +225,7 @@ class PokoCompilerPluginTest(
         sources = sourceFiles.asList()
         verbose = false
         jvmTarget = JvmTarget.JVM_1_8.description
-        if (k2) {
-            languageVersion = "2.0"
-        }
+        languageVersion = "2.0"
 
         val commandLineProcessor = PokoCommandLineProcessor()
         commandLineProcessors = listOf(commandLineProcessor)
