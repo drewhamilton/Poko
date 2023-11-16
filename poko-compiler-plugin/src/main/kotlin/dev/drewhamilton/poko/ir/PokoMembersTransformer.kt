@@ -23,8 +23,6 @@ import org.jetbrains.kotlin.ir.util.isFakeOverride
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
 import org.jetbrains.kotlin.name.ClassId
-import org.jetbrains.kotlin.psi.KtParameter
-import org.jetbrains.kotlin.resolve.source.getPsi
 
 internal class PokoMembersTransformer(
     private val pokoAnnotationName: ClassId,
@@ -111,15 +109,8 @@ internal class PokoMembersTransformer(
         val properties = parent.properties
             .toList()
             .filter {
-                val metadata = it.metadata
-                if (metadata is FirMetadataSource.Property) {
-                    // Using K2:
-                    metadata.fir.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
-                } else {
-                    // Not using K2:
-                    @OptIn(ObsoleteDescriptorBasedAPI::class)
-                    it.symbol.descriptor.source.getPsi() is KtParameter
-                }
+                val metadata = it.metadata as FirMetadataSource.Property
+                metadata.fir.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
             }
         if (properties.isEmpty()) {
             messageCollector.log("No primary constructor properties")
