@@ -41,4 +41,5 @@ include(
     ":poko-gradle-plugin",
     ":poko-tests",
     ":poko-tests:performance",
+    ":poko-tests-without-k2",
 )
