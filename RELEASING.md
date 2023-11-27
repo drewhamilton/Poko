@@ -1,6 +1,6 @@
 # Releasing
 
- 1. Make sure you're on the main branch.
+ 1. Make sure you're on the latest commit on the main branch.
  2. Change `VERSION_NAME` in gradle.properties to a non-SNAPSHOT version.
  3. Update README.md for the impending release.
  4. Update CHANGELOG.md for the impending release.

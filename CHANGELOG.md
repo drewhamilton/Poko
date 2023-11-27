@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.15.1
+_2023-11-27_
+
+Compile with Kotlin 1.9.20. Support compilation with K2. Support Java 20.
+
+Optimize JS `equals` implementation as well as bytecode for `Int` and `UInt` properties.
+
 ## 0.15.0
 _2023-08-09_
 
