@@ -81,8 +81,8 @@ kotlin {
   tvosSimulatorArm64()
   tvosSimulatorArm64("tvosSimulatorArm64K2").applyK2()
 
-  wasm().nodejs()
-  wasm("wasmK2").applyK2().nodejs()
+  wasmJs().nodejs()
+  wasmJs("wasmJsK2").applyK2().nodejs()
 
   watchosArm32()
   watchosArm32("watchosArm32K2").applyK2()

@@ -15,7 +15,7 @@ plugins {
 
 plugins.withType<NodeJsRootPlugin> {
     extensions.getByType<NodeJsRootExtension>().apply {
-        nodeVersion = "20.0.0"
+        nodeVersion = "21.0.0"
     }
 }
 
