@@ -43,7 +43,7 @@ jobs:
         ci_java_version: [ 8, 11, 17, 20 ]
     steps:
       - name: Check out the repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        uses: actions/checkout@v4
       - name: Install JDK ${{ matrix.ci_java_version }}
         uses: actions/setup-java@v4
         with:
