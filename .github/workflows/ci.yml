@@ -19,7 +19,7 @@ jobs:
             8
             11
             17
-            20
+            21
       - name: Build
         uses: gradle/gradle-build-action@v2
         with:
@@ -40,7 +40,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        ci_java_version: [ 8, 11, 17, 20 ]
+        ci_java_version: [ 8, 11, 17, 21 ]
     steps:
       - name: Check out the repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
