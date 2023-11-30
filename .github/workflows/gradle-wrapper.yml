@@ -1,4 +1,4 @@
-name: 'Validate Gradle wrapper'
+name: 'Gradle wrapper'
 
 on:
   pull_request:
