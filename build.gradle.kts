@@ -22,9 +22,10 @@ allprojects {
         // KSP:
         google()
 
-        if (rootProject.property("snapshot_dependencies_enabled") == "true") {
-            logger.lifecycle("Adding snapshots repository for ${this@allprojects}")
-            maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
+        val snapshotsRepository = rootProject.findProperty("snapshots_repository")
+        if (snapshotsRepository != null) {
+            logger.lifecycle("Adding <$snapshotsRepository> repository for ${this@allprojects}")
+            maven { url = uri(snapshotsRepository) }
         }
         val kotlinDevRepository = rootProject.findProperty("kotlin_dev_repository")
         if (kotlinDevRepository != null) {
