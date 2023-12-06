@@ -27,7 +27,7 @@ kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-gradleApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
 
-assertk = "com.willowtreeapps.assertk:assertk:0.27.0"
+assertk = "com.willowtreeapps.assertk:assertk:0.28.0"
 asm-util = "org.ow2.asm:asm-util:9.6"
 testParameterInjector = "com.google.testparameterinjector:test-parameter-injector:1.14"
 
