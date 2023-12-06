@@ -31,9 +31,10 @@ allprojects {
         }
         mavenCentral()
 
-        if (rootProject.property("kotlin_dev_version_enabled") == "true") {
-            logger.lifecycle("Adding Kotlin dev repository for ${this@allprojects}")
-            maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
+        val kotlinDevRepository = rootProject.findProperty("kotlin_dev_repository")
+        if (kotlinDevRepository != null) {
+            logger.lifecycle("Adding <$kotlinDevRepository> repository for ${this@allprojects}")
+            maven { url = uri(kotlinDevRepository) }
         }
     }
 

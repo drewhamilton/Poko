@@ -18,9 +18,10 @@ pluginManagement {
         // KSP:
         google()
 
-        if (extra["kotlin_dev_version_enabled"] == "true") {
-            logger.lifecycle("Adding Kotlin dev repository for plugins")
-            maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
+        if (extra.has("kotlin_dev_repository")) {
+            val kotlinDevRepository = extra["kotlin_dev_repository"]!!
+            logger.lifecycle("Adding <$kotlinDevRepository> repository for plugins")
+            maven { url = uri(kotlinDevRepository) }
         }
     }
 }

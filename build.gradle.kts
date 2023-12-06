@@ -22,13 +22,15 @@ allprojects {
         // KSP:
         google()
 
-        if (rootProject.property("snapshot_dependencies_enabled") == "true") {
-            logger.lifecycle("Adding snapshots repository for ${this@allprojects}")
-            maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
+        val snapshotsRepository = rootProject.findProperty("snapshots_repository")
+        if (snapshotsRepository != null) {
+            logger.lifecycle("Adding <$snapshotsRepository> repository for ${this@allprojects}")
+            maven { url = uri(snapshotsRepository) }
         }
-        if (rootProject.property("kotlin_dev_version_enabled") == "true") {
-            logger.lifecycle("Adding Kotlin dev repository for ${this@allprojects}")
-            maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
+        val kotlinDevRepository = rootProject.findProperty("kotlin_dev_repository")
+        if (kotlinDevRepository != null) {
+            logger.lifecycle("Adding <$kotlinDevRepository> repository for ${this@allprojects}")
+            maven { url = uri(kotlinDevRepository) }
         }
     }
 
