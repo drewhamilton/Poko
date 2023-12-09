@@ -2,6 +2,7 @@ import dev.drewhamilton.poko.build.setUpLocalSigning
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
+import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -15,8 +16,13 @@ plugins {
 
 plugins.withType<NodeJsRootPlugin> {
     extensions.getByType<NodeJsRootExtension>().apply {
-        nodeVersion = "21.0.0"
+        nodeVersion = "22.0.0-v8-canary202312089dd1cd78d4"
+        nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
     }
+}
+
+tasks.withType<KotlinNpmInstallTask>().configureEach {
+    args.add("--ignore-engines")
 }
 
 allprojects {
