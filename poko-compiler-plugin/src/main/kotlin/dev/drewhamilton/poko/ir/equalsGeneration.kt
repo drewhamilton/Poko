@@ -184,8 +184,8 @@ private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
             condition = irIs(argument, type),
             thenPart = irCallContentDeepEquals(
                 classifier = classSymbol,
-                receiver = receiver,
-                argument = argument,
+                receiver = irImplicitCast(receiver, type),
+                argument = irImplicitCast(argument, type),
             ),
             elsePart = irFalse(),
         ),

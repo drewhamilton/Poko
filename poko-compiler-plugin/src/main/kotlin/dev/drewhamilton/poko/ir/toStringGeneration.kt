@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irConcat
 import org.jetbrains.kotlin.ir.builders.irElseBranch
 import org.jetbrains.kotlin.ir.builders.irGetField
+import org.jetbrains.kotlin.ir.builders.irImplicitCast
 import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irReturn
 import org.jetbrains.kotlin.ir.builders.irString
@@ -175,7 +176,7 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
         condition = irIs(value, type),
         result = irCallToStringFunction(
             toStringFunctionSymbol = findContentDeepToStringFunctionSymbol(classSymbol),
-            value = value,
+            value = irImplicitCast(value, type),
         ),
     )
 }
