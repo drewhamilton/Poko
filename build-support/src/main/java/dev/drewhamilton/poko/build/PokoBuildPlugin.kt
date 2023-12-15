@@ -10,14 +10,15 @@ import org.gradle.api.tasks.SourceSetContainer
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtensionConfig
 
-private const val pokoGroupId = "dev.drewhamilton.poko"
-private const val pokoVersion = "0.15.0-SNAPSHOT"
+private val Project.pokoGroupId get() = property("PUBLISH_GROUP") as String
+private val Project.pokoVersion get() = property("PUBLISH_VERSION") as String
 
 @Suppress("unused") // Invoked reflectively by Gradle.
 class PokoBuildPlugin : Plugin<Project> {
+
     override fun apply(target: Project) {
-        target.group = pokoGroupId
-        target.version = pokoVersion
+        target.group = target.pokoGroupId
+        target.version = target.pokoVersion
 
         target.extensions.add(
             PokoBuildExtension::class.java,
@@ -34,14 +35,16 @@ class PokoBuildPlugin : Plugin<Project> {
         }
     }
 
-    private class PokoBuildExtensionImpl(private val project: Project) : PokoBuildExtension {
+    private class PokoBuildExtensionImpl(
+        private val project: Project,
+    ) : PokoBuildExtension {
         override fun publishing(pomDescription: String) {
             project.pluginManager.apply("com.vanniktech.maven.publish")
 
             val mavenPublishing = project.extensions.getByName("mavenPublishing") as MavenPublishBaseExtension
             @Suppress("UnstableApiUsage")
             mavenPublishing.apply {
-                coordinates(pokoGroupId, project.name, pokoVersion)
+                coordinates(project.pokoGroupId, project.name, project.pokoVersion)
 
                 pom {
                     description.set(pomDescription)
@@ -66,7 +69,7 @@ class PokoBuildPlugin : Plugin<Project> {
             val generateArtifactInfoProvider = project.tasks.register(
                 "generateArtifactInfo",
                 Copy::class.java,
-                GenerateArtifactInfoAction(basePackage),
+                GenerateArtifactInfoAction(basePackage, project.pokoGroupId, project.pokoVersion),
             )
             generateArtifactInfoProvider.configure {
                 from(project.rootProject.layout.projectDirectory.dir("artifact-info-template"))
@@ -79,6 +82,8 @@ class PokoBuildPlugin : Plugin<Project> {
 
         class GenerateArtifactInfoAction(
             private val basePackage: String,
+            private val pokoGroupId: String,
+            private val pokoVersion: String,
         ) : Action<Copy> {
             override fun execute(t: Copy) {
                 t.expand(
