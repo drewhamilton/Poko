@@ -1,5 +1,8 @@
 import dev.drewhamilton.poko.build.setUpLocalSigning
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
+import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -9,6 +12,19 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator) apply false
     alias(libs.plugins.ksp) apply false
+}
+
+plugins.withType<NodeJsRootPlugin> {
+    extensions.getByType<NodeJsRootExtension>().apply {
+        // WASM requires a canary Node.js version. This is the last v21 canary, and has both
+        // darwin-arm64 and darwin-x64 artifacts:
+        nodeVersion = "21.0.0-v8-canary20231024d0ddc81258"
+        nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
+    }
+}
+
+tasks.withType<KotlinNpmInstallTask>().configureEach {
+    args.add("--ignore-engines")
 }
 
 allprojects {

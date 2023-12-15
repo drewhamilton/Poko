@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.ir.builders.irElseBranch
 import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irIfNull
+import org.jetbrains.kotlin.ir.builders.irImplicitCast
 import org.jetbrains.kotlin.ir.builders.irInt
 import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irReturn
@@ -232,7 +233,7 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
             callee = findArrayContentDeepHashCodeFunction(classSymbol),
             type = context.irBuiltIns.intType,
         ).apply {
-            extensionReceiver = value
+            extensionReceiver = irImplicitCast(value, type)
         }
     )
 }
