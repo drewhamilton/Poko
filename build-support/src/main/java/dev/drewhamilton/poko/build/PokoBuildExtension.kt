@@ -1,6 +1,6 @@
 package dev.drewhamilton.poko.build
 
 interface PokoBuildExtension {
-    fun publishing(pomDescription: String)
+    fun publishing(pomName: String)
     fun generateArtifactInfo(basePackage: String)
 }

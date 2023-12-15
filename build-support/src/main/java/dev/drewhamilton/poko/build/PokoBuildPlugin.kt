@@ -38,7 +38,7 @@ class PokoBuildPlugin : Plugin<Project> {
     private class PokoBuildExtensionImpl(
         private val project: Project,
     ) : PokoBuildExtension {
-        override fun publishing(pomDescription: String) {
+        override fun publishing(pomName: String) {
             project.pluginManager.apply("com.vanniktech.maven.publish")
 
             val mavenPublishing = project.extensions.getByName("mavenPublishing") as MavenPublishBaseExtension
@@ -47,7 +47,7 @@ class PokoBuildPlugin : Plugin<Project> {
                 coordinates(project.pokoGroupId, project.name, project.pokoVersion)
 
                 pom {
-                    description.set(pomDescription)
+                    name.set(pomName)
                 }
             }
 
