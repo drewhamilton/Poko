@@ -16,7 +16,9 @@ plugins {
 
 plugins.withType<NodeJsRootPlugin> {
     extensions.getByType<NodeJsRootExtension>().apply {
-        nodeVersion = "22.0.0-v8-canary202312089dd1cd78d4"
+        // WASM requires a canary Node.js version. This is the last v21 canary, and has both
+        // darwin-arm64 and darwin-x64 artifacts:
+        nodeVersion = "21.0.0-v8-canary20231024d0ddc81258"
         nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
     }
 }
