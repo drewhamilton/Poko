@@ -1,6 +1,7 @@
 package dev.drewhamilton.poko.build
 
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -48,7 +49,38 @@ class PokoBuildPlugin : Plugin<Project> {
 
                 pom {
                     name.set(pomName)
+
+                    description.set("A Kotlin compiler plugin for generating equals, hashCode, and toString for plain old Kotlin objects.")
+                    url.set("https://github.com/drewhamilton/Poko")
+
+                    licenses {
+                        license {
+                            name.set("The Apache Software License, Version 2.0")
+                            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                            distribution.set("repo")
+                        }
+                    }
+
+                    scm {
+                        url.set("https://github.com/drewhamilton/Poko/tree/main")
+                        connection.set("scm:git:github.com/drewhamilton/Poko.git")
+                        developerConnection.set("scm:git:ssh://github.com/drewhamilton/Poko.git")
+                    }
+
+                    developers {
+                        developer {
+                            id.set("drewhamilton")
+                            name.set("Drew Hamilton")
+                            email.set("software@drewhamilton.dev")
+                        }
+                    }
                 }
+
+                signAllPublications()
+                publishToMavenCentral(
+                    host = SonatypeHost.DEFAULT,
+                    automaticRelease = true,
+                )
             }
 
             project.pluginManager.apply("org.jetbrains.dokka")
