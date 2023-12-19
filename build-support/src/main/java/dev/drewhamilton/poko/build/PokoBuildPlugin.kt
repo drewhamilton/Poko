@@ -1,12 +1,13 @@
 package dev.drewhamilton.poko.build
 
-import com.github.gmazzo.gradle.plugins.BuildConfigExtension
+import com.github.gmazzo.buildconfig.BuildConfigExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.AppliedPlugin
+import org.gradle.kotlin.dsl.buildConfigField
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtensionConfig
 
@@ -102,12 +103,12 @@ class PokoBuildPlugin : Plugin<Project> {
             val buildConfig = project.extensions.getByName("buildConfig") as BuildConfigExtension
             buildConfig.apply {
                 packageName(basePackage)
-                buildConfigField("String", "GROUP", "\"${project.pokoGroupId}\"")
-                buildConfigField("String", "VERSION", "\"${project.pokoVersion}\"")
-                buildConfigField("String", "ANNOTATIONS_ARTIFACT", "\"poko-annotations\"")
-                buildConfigField("String", "COMPILER_PLUGIN_ARTIFACT", "\"poko-compiler-plugin\"")
-                buildConfigField("boolean", "DEFAULT_POKO_ENABLED", "${true}")
-                buildConfigField("String", "DEFAULT_POKO_ANNOTATION", "\"dev/drewhamilton/poko/Poko\"")
+                buildConfigField("GROUP", project.pokoGroupId)
+                buildConfigField("VERSION", project.pokoVersion)
+                buildConfigField("ANNOTATIONS_ARTIFACT", "poko-annotations")
+                buildConfigField("COMPILER_PLUGIN_ARTIFACT", "poko-compiler-plugin")
+                buildConfigField("DEFAULT_POKO_ENABLED", true)
+                buildConfigField("DEFAULT_POKO_ANNOTATION", "dev/drewhamilton/poko/Poko")
             }
         }
     }
