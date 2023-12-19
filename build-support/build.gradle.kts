@@ -5,10 +5,12 @@ plugins {
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
 }
 
 dependencies {
     implementation(libs.kotlin.gradleApi)
+    implementation(libs.plugin.buildconfig)
     implementation(libs.plugin.mavenPublish)
     implementation(libs.plugin.dokka)
 }

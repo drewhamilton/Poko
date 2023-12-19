@@ -31,13 +31,13 @@ assertk = "com.willowtreeapps.assertk:assertk:0.28.0"
 asm-util = "org.ow2.asm:asm-util:9.6"
 testParameterInjector = "com.google.testparameterinjector:test-parameter-injector:1.14"
 
+plugin-buildconfig = "com.github.gmazzo.buildconfig:plugin:4.2.0"
 plugin-mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.25.3"
 plugin-dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.9.10"
 
 [plugins]
 
 android-library = { id = "com.android.library", version = "8.2.0" }
-buildconfig = { id = "com.github.gmazzo.buildconfig", version = "3.1.0" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

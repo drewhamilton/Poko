@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.build
 
+import com.github.gmazzo.gradle.plugins.BuildConfigExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.Action
@@ -98,6 +99,19 @@ class PokoBuildPlugin : Plugin<Project> {
         }
 
         override fun generateArtifactInfo(basePackage: String) {
+            project.pluginManager.apply("com.github.gmazzo.buildconfig")
+
+            val buildConfig = project.extensions.getByName("buildConfig") as BuildConfigExtension
+            buildConfig.apply {
+                packageName(basePackage)
+                buildConfigField("String", "GROUP", "\"${project.pokoGroupId}\"")
+                buildConfigField("String", "VERSION", "\"${project.pokoVersion}\"")
+                buildConfigField("String", "ANNOTATIONS_ARTIFACT", "\"poko-annotations\"")
+                buildConfigField("String", "COMPILER_PLUGIN_ARTIFACT", "\"poko-compiler-plugin\"")
+                buildConfigField("boolean", "DEFAULT_POKO_ENABLED", "${true}")
+                buildConfigField("String", "DEFAULT_POKO_ANNOTATION", "\"dev/drewhamilton/poko/Poko\"")
+            }
+
             val generateArtifactInfoProvider = project.tasks.register(
                 "generateArtifactInfo",
                 Copy::class.java,

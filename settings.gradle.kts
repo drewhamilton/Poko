@@ -18,6 +18,9 @@ pluginManagement {
         // KSP:
         google()
 
+        // buildconfig plugin:
+        gradlePluginPortal()
+
         if (extra.has("kotlin_dev_repository")) {
             val kotlinDevRepository = extra["kotlin_dev_repository"]!!
             logger.lifecycle("Adding <$kotlinDevRepository> repository for plugins")
