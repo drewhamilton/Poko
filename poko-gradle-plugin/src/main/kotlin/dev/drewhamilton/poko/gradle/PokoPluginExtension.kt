@@ -1,7 +1,7 @@
 package dev.drewhamilton.poko.gradle
 
-import dev.drewhamilton.poko.gradle.ArtifactInfo.DEFAULT_POKO_ANNOTATION
-import dev.drewhamilton.poko.gradle.ArtifactInfo.DEFAULT_POKO_ENABLED
+import dev.drewhamilton.poko.gradle.BuildConfig.DEFAULT_POKO_ANNOTATION
+import dev.drewhamilton.poko.gradle.BuildConfig.DEFAULT_POKO_ENABLED
 import javax.inject.Inject
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property

@@ -1,13 +1,13 @@
 package dev.drewhamilton.poko.build
 
+import com.github.gmazzo.buildconfig.BuildConfigExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.AppliedPlugin
-import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.kotlin.dsl.buildConfigField
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtensionConfig
 
@@ -97,37 +97,18 @@ class PokoBuildPlugin : Plugin<Project> {
             project.pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform", kotlinPluginHandler)
         }
 
-        override fun generateArtifactInfo(basePackage: String) {
-            val generateArtifactInfoProvider = project.tasks.register(
-                "generateArtifactInfo",
-                Copy::class.java,
-                GenerateArtifactInfoAction(basePackage, project.pokoGroupId, project.pokoVersion),
-            )
-            generateArtifactInfoProvider.configure {
-                from(project.rootProject.layout.projectDirectory.dir("artifact-info-template"))
-                into(project.layout.buildDirectory.dir("generated/source/artifact-info-template/main"))
-            }
-            project.extensions.configure<SourceSetContainer>("sourceSets") {
-                getByName("main").java.srcDir(generateArtifactInfoProvider)
-            }
-        }
+        override fun generateBuildConfig(basePackage: String) {
+            project.pluginManager.apply("com.github.gmazzo.buildconfig")
 
-        class GenerateArtifactInfoAction(
-            private val basePackage: String,
-            private val pokoGroupId: String,
-            private val pokoVersion: String,
-        ) : Action<Copy> {
-            override fun execute(t: Copy) {
-                t.expand(
-                    mapOf(
-                        "basePackage" to basePackage,
-                        "publishGroup" to pokoGroupId,
-                        "publishVersion" to pokoVersion,
-                        "annotationsArtifact" to "poko-annotations",
-                        "compilerPluginArtifact" to "poko-compiler-plugin",
-                    )
-                )
-                t.filteringCharset = "UTF-8"
+            val buildConfig = project.extensions.getByName("buildConfig") as BuildConfigExtension
+            buildConfig.apply {
+                packageName(basePackage)
+                buildConfigField("GROUP", project.pokoGroupId)
+                buildConfigField("VERSION", project.pokoVersion)
+                buildConfigField("ANNOTATIONS_ARTIFACT", "poko-annotations")
+                buildConfigField("COMPILER_PLUGIN_ARTIFACT", "poko-compiler-plugin")
+                buildConfigField("DEFAULT_POKO_ENABLED", true)
+                buildConfigField("DEFAULT_POKO_ANNOTATION", "dev/drewhamilton/poko/Poko")
             }
         }
     }

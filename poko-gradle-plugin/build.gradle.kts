@@ -5,7 +5,7 @@ plugins {
 
 pokoBuild {
     publishing("Poko Gradle Plugin")
-    generateArtifactInfo("dev.drewhamilton.poko.gradle")
+    generateBuildConfig("dev.drewhamilton.poko.gradle")
 }
 
 gradlePlugin {
