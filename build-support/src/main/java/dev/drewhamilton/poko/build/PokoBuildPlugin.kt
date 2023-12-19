@@ -1,5 +1,7 @@
 package dev.drewhamilton.poko.build
 
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -9,9 +11,16 @@ import org.gradle.api.tasks.SourceSetContainer
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtensionConfig
 
+private val Project.pokoGroupId get() = property("PUBLISH_GROUP") as String
+private val Project.pokoVersion get() = property("PUBLISH_VERSION") as String
+
 @Suppress("unused") // Invoked reflectively by Gradle.
 class PokoBuildPlugin : Plugin<Project> {
+
     override fun apply(target: Project) {
+        target.group = target.pokoGroupId
+        target.version = target.pokoVersion
+
         target.extensions.add(
             PokoBuildExtension::class.java,
             "pokoBuild",
@@ -27,10 +36,53 @@ class PokoBuildPlugin : Plugin<Project> {
         }
     }
 
-    private class PokoBuildExtensionImpl(private val project: Project) : PokoBuildExtension {
-        override fun publishing() {
-            // TODO Use version catalog references here.
+    private class PokoBuildExtensionImpl(
+        private val project: Project,
+    ) : PokoBuildExtension {
+        override fun publishing(pomName: String) {
             project.pluginManager.apply("com.vanniktech.maven.publish")
+
+            val mavenPublishing = project.extensions.getByName("mavenPublishing") as MavenPublishBaseExtension
+            @Suppress("UnstableApiUsage")
+            mavenPublishing.apply {
+                coordinates(project.pokoGroupId, project.name, project.pokoVersion)
+
+                pom {
+                    name.set(pomName)
+
+                    description.set("A Kotlin compiler plugin for generating equals, hashCode, and toString for plain old Kotlin objects.")
+                    url.set("https://github.com/drewhamilton/Poko")
+
+                    licenses {
+                        license {
+                            name.set("The Apache Software License, Version 2.0")
+                            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                            distribution.set("repo")
+                        }
+                    }
+
+                    scm {
+                        url.set("https://github.com/drewhamilton/Poko/tree/main")
+                        connection.set("scm:git:github.com/drewhamilton/Poko.git")
+                        developerConnection.set("scm:git:ssh://github.com/drewhamilton/Poko.git")
+                    }
+
+                    developers {
+                        developer {
+                            id.set("drewhamilton")
+                            name.set("Drew Hamilton")
+                            email.set("software@drewhamilton.dev")
+                        }
+                    }
+                }
+
+                signAllPublications()
+                publishToMavenCentral(
+                    host = SonatypeHost.DEFAULT,
+                    automaticRelease = true,
+                )
+            }
+
             project.pluginManager.apply("org.jetbrains.dokka")
             project.pluginManager.apply("org.jetbrains.kotlinx.binary-compatibility-validator")
 
@@ -49,7 +101,7 @@ class PokoBuildPlugin : Plugin<Project> {
             val generateArtifactInfoProvider = project.tasks.register(
                 "generateArtifactInfo",
                 Copy::class.java,
-                GenerateArtifactInfoAction(project, basePackage),
+                GenerateArtifactInfoAction(basePackage, project.pokoGroupId, project.pokoVersion),
             )
             generateArtifactInfoProvider.configure {
                 from(project.rootProject.layout.projectDirectory.dir("artifact-info-template"))
@@ -61,25 +113,21 @@ class PokoBuildPlugin : Plugin<Project> {
         }
 
         class GenerateArtifactInfoAction(
-            private val project: Project,
             private val basePackage: String,
+            private val pokoGroupId: String,
+            private val pokoVersion: String,
         ) : Action<Copy> {
             override fun execute(t: Copy) {
                 t.expand(
                     mapOf(
                         "basePackage" to basePackage,
-                        "publishGroup" to "${project.group}",
-                        "publishVersion" to "${project.version}",
-                        "annotationsArtifact" to artifactIdForProject("poko-annotations"),
-                        "compilerPluginArtifact" to artifactIdForProject("poko-compiler-plugin"),
-                        "gradlePluginArtifact" to artifactIdForProject("poko-gradle-plugin"),
+                        "publishGroup" to pokoGroupId,
+                        "publishVersion" to pokoVersion,
+                        "annotationsArtifact" to "poko-annotations",
+                        "compilerPluginArtifact" to "poko-compiler-plugin",
                     )
                 )
                 t.filteringCharset = "UTF-8"
-            }
-
-            private fun artifactIdForProject(projectName: String): Any {
-                return project.rootProject.project(projectName).property("POM_ARTIFACT_ID")!!
             }
         }
     }

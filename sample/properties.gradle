@@ -4,9 +4,6 @@
 List<String> propertiesFiles = [
     "../gradle.properties",
     "../local.properties",
-    "../poko-annotations/gradle.properties",
-    "../poko-compiler-plugin/gradle.properties",
-    "../poko-gradle-plugin/gradle.properties",
 ]
 
 propertiesFiles.each { fileName ->

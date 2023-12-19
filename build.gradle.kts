@@ -6,8 +6,6 @@ import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    alias(libs.plugins.dokka) apply false
-    alias(libs.plugins.mavenPublish) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator) apply false
@@ -28,8 +26,6 @@ tasks.withType<KotlinNpmInstallTask>().configureEach {
 }
 
 allprojects {
-    group = rootProject.property("GROUP")!!
-    version = rootProject.property("VERSION_NAME")!!
     setUpLocalSigning()
 
     repositories {
