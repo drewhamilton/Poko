@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 @ExperimentalCompilerApi
 public class PokoCommandLineProcessor : CommandLineProcessor {
 
-    override val pluginId: String = ArtifactInfo.COMPILER_PLUGIN_ARTIFACT
+    override val pluginId: String = BuildConfig.COMPILER_PLUGIN_ARTIFACT
 
     override val pluginOptions: Collection<AbstractCliOption> = listOf(
         CliOption(CompilerOptions.ENABLED.toString(), "<true|false>", "", required = false),

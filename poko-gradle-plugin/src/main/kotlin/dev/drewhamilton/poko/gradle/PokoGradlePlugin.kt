@@ -1,6 +1,6 @@
 package dev.drewhamilton.poko.gradle
 
-import dev.drewhamilton.poko.gradle.ArtifactInfo.DEFAULT_POKO_ANNOTATION
+import dev.drewhamilton.poko.gradle.BuildConfig.DEFAULT_POKO_ANNOTATION
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
 import org.gradle.api.provider.Provider
@@ -18,7 +18,7 @@ public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
         target.afterEvaluate {
             val annotationDependency = when (extension.pokoAnnotation.get()) {
-                DEFAULT_POKO_ANNOTATION -> ArtifactInfo.annotationsDependency
+                DEFAULT_POKO_ANNOTATION -> BuildConfig.annotationsDependency
                 else -> null
             }
             if (annotationDependency != null) {
@@ -38,12 +38,12 @@ public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean = true
 
-    override fun getCompilerPluginId(): String = ArtifactInfo.COMPILER_PLUGIN_ARTIFACT
+    override fun getCompilerPluginId(): String = BuildConfig.COMPILER_PLUGIN_ARTIFACT
 
     override fun getPluginArtifact(): SubpluginArtifact = SubpluginArtifact(
-        groupId = ArtifactInfo.GROUP,
+        groupId = BuildConfig.GROUP,
         artifactId = getCompilerPluginId(),
-        version = ArtifactInfo.VERSION
+        version = BuildConfig.VERSION
     )
 
     override fun applyToCompilation(
@@ -60,6 +60,6 @@ public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
         }
     }
 
-    private val ArtifactInfo.annotationsDependency: String
+    private val BuildConfig.annotationsDependency: String
         get() = "$GROUP:$ANNOTATIONS_ARTIFACT:$VERSION"
 }

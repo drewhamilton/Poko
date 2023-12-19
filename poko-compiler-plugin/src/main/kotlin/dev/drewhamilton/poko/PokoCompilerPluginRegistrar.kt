@@ -1,8 +1,8 @@
 package dev.drewhamilton.poko
 
 import com.google.auto.service.AutoService
-import dev.drewhamilton.poko.ArtifactInfo.DEFAULT_POKO_ANNOTATION
-import dev.drewhamilton.poko.ArtifactInfo.DEFAULT_POKO_ENABLED
+import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ANNOTATION
+import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ENABLED
 import dev.drewhamilton.poko.ir.PokoIrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
