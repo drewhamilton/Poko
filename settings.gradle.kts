@@ -31,6 +31,7 @@ pluginManagement {
 
 plugins {
     id("dev.drewhamilton.poko.settings")
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
 }
 
 rootProject.name = "Poko"
