@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, "drew/kotlin-2.0" ]
     tags: [ "*" ]
 
 jobs:
