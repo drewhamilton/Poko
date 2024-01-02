@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.15.2
+_2024-01-02_
+
+Support WASM target for Kotlin Multiplatform.
+
+Compile with Kotlin 1.9.22. Support Java 21.
+
 ## 0.15.1
 _2023-11-27_
 
