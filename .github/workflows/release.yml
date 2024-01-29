@@ -20,12 +20,12 @@ jobs:
           distribution: zulu
           java-version: 21
       - name: Assemble for release
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           gradle-version: wrapper
           arguments: assemble
       - name: Publish
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           gradle-version: wrapper
           arguments: publish --no-configuration-cache

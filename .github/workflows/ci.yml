@@ -21,7 +21,7 @@ jobs:
             17
             21
       - name: Build
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           gradle-version: wrapper
           arguments: build publishToMavenLocal --stacktrace
@@ -55,7 +55,7 @@ jobs:
           name: MavenLocal
           path: ~/.m2/repository/dev/drewhamilton/poko/
       - name: Build sample
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           build-root-directory: sample
           gradle-version: wrapper
