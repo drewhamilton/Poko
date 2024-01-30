@@ -60,7 +60,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build sample
-        run: ./sample/gradlew build --stacktrace
+        run: cd sample && ./gradlew build --stacktrace
         env:
           ci_java_version: ${{ matrix.ci_java_version }}
 
