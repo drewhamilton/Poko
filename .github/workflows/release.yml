@@ -19,16 +19,14 @@ jobs:
         with:
           distribution: zulu
           java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Assemble for release
-        uses: gradle/gradle-build-action@v3
-        with:
-          gradle-version: wrapper
-          arguments: assemble
+        run: ./gradlew assemble
       - name: Publish
-        uses: gradle/gradle-build-action@v3
-        with:
-          gradle-version: wrapper
-          arguments: publish --no-configuration-cache
+        run: ./gradlew publish --no-configuration-cache
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesUsername }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalSonatypeIssuesPassword }}
