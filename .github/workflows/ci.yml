@@ -20,11 +20,12 @@ jobs:
             11
             17
             21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Build
-        uses: gradle/gradle-build-action@v3
-        with:
-          gradle-version: wrapper
-          arguments: build publishToMavenLocal --stacktrace
+        run: ./gradlew build publishToMavenLocal --stacktrace
         env:
           ORG_GRADLE_PROJECT_personalGpgKey: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgKey }}
           ORG_GRADLE_PROJECT_personalGpgPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgPassword }}
@@ -54,12 +55,12 @@ jobs:
         with:
           name: MavenLocal
           path: ~/.m2/repository/dev/drewhamilton/poko/
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Build sample
-        uses: gradle/gradle-build-action@v3
-        with:
-          build-root-directory: sample
-          gradle-version: wrapper
-          arguments: build --stacktrace
+        run: cd sample && ./gradlew build --stacktrace
         env:
           ci_java_version: ${{ matrix.ci_java_version }}
 
