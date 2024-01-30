@@ -101,13 +101,6 @@ plugins {
 
 \*Versions prior to 0.7.0 use plugin name `dev.drewhamilton.extracare`.
 
-## To-do
-* Generate an inner Builder class
-* Propagate the constructor default values to the Builder 
-* Mark the constructor as private
-* Generate a top-level DSL initializer
-* Write an IDE plugin?
-
 ## License
 ```
 Copyright 2020 Drew Hamilton
