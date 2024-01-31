@@ -1,8 +1,11 @@
 package dev.drewhamilton.poko.fir
 
 import org.jetbrains.kotlin.KtFakeSourceElementKind
+import org.jetbrains.kotlin.com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
+import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategies
+import org.jetbrains.kotlin.diagnostics.error0
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -36,18 +39,13 @@ internal class PokoFirCheckersExtension(
             if (matcher.pokoAnnotation(declaration) == null) return
 
             val errorFactory = when {
-                declaration.classKind != ClassKind.CLASS ->
-                    PokoErrors.POKO_ON_NON_CLASS_ERROR
-                declaration.isData ->
-                    PokoErrors.POKO_ON_DATA_CLASS_ERROR
-                declaration.hasModifier(KtTokens.VALUE_KEYWORD) ->
-                    PokoErrors.POKO_ON_VALUE_CLASS_ERROR
-                declaration.isInner ->
-                    PokoErrors.POKO_ON_INNER_CLASS_ERROR
+                declaration.classKind != ClassKind.CLASS -> Errors.PokoOnNonClass
+                declaration.isData -> Errors.PokoOnDataClass
+                declaration.hasModifier(KtTokens.VALUE_KEYWORD) -> Errors.PokoOnValueClass
+                declaration.isInner -> Errors.PokoOnInnerClass
                 declaration.primaryConstructorIfAny(context.session) == null ->
-                    PokoErrors.POKO_REQUIRES_PRIMARY_CONSTRUCTOR_ERROR
-                else ->
-                    null
+                    Errors.PrimaryConstructorRequired
+                else -> null
             }
             if (errorFactory != null) {
                 reporter.reportOn(
@@ -65,10 +63,37 @@ internal class PokoFirCheckersExtension(
             if (constructorProperties.isEmpty()) {
                 reporter.reportOn(
                     source = declaration.source,
-                    factory = PokoErrors.POKO_REQUIRES_PRIMARY_CONSTRUCTOR_PROPERTIES_ERROR,
+                    factory = Errors.PrimaryConstructorPropertiesRequired,
                     context = context,
                 )
             }
         }
+    }
+
+    // TODO: Custom errors https://youtrack.jetbrains.com/issue/KT-53510
+    private object Errors {
+        val PokoOnNonClass by error0<PsiElement>(
+            positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
+        )
+
+        val PokoOnDataClass by error0<PsiElement>(
+            positioningStrategy = SourceElementPositioningStrategies.DATA_MODIFIER,
+        )
+
+        val PokoOnValueClass by error0<PsiElement>(
+            positioningStrategy = SourceElementPositioningStrategies.INLINE_OR_VALUE_MODIFIER,
+        )
+
+        val PokoOnInnerClass by error0<PsiElement>(
+            positioningStrategy = SourceElementPositioningStrategies.INNER_MODIFIER,
+        )
+
+        val PrimaryConstructorRequired by error0<PsiElement>(
+            positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
+        )
+
+        val PrimaryConstructorPropertiesRequired by error0<PsiElement>(
+            positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
+        )
     }
 }
