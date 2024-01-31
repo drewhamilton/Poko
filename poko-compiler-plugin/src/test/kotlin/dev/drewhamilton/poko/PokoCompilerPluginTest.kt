@@ -41,7 +41,12 @@ class PokoCompilerPluginTest(
             "illegal/Data",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            assertThat(result.messages).contains("Poko does not support data classes")
+            val expectedMessage = if (k2) {
+                "Data.kt:6:7"
+            } else {
+                "Poko does not support data classes"
+            }
+            assertThat(result.messages).contains(expectedMessage)
         }
     }
     //endregion
@@ -52,7 +57,12 @@ class PokoCompilerPluginTest(
             "illegal/Value",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            assertThat(result.messages).contains("Poko does not support value classes")
+            val expectedMessage = if (k2) {
+                "Value.kt:6:18"
+            } else {
+                "Poko does not support value classes"
+            }
+            assertThat(result.messages).contains(expectedMessage)
         }
     }
     //endregion
@@ -63,7 +73,12 @@ class PokoCompilerPluginTest(
             "illegal/NoPrimaryConstructor",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            assertThat(result.messages).contains("Poko classes must have a primary constructor")
+            val expectedMessage = if (k2) {
+                "NoPrimaryConstructor.kt:6:13"
+            } else {
+                "Poko classes must have a primary constructor"
+            }
+            assertThat(result.messages).contains(expectedMessage)
         }
     }
     //endregion
@@ -74,19 +89,28 @@ class PokoCompilerPluginTest(
             "illegal/NoConstructorProperties",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            assertThat(result.messages)
-                .contains("Poko classes must have at least one property in the primary constructor")
+            val expectedMessage = if (k2) {
+                "NoConstructorProperties.kt:6:13"
+            } else {
+                "Poko classes must have at least one property in the primary constructor"
+            }
+            assertThat(result.messages).contains(expectedMessage)
         }
     }
     //endregion
 
-    //region Nested
+    //region inner class
     @Test fun `compilation of inner class fails`() {
         testCompilation(
             "illegal/OuterClass",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            assertThat(result.messages).contains("Poko cannot be applied to inner classes")
+            val expectedMessage = if (k2) {
+                "OuterClass.kt:8:11"
+            } else {
+                "Poko cannot be applied to inner classes"
+            }
+            assertThat(result.messages).contains(expectedMessage)
         }
     }
     //endregion
