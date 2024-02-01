@@ -151,7 +151,7 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
 
             // Map each primitive type to a `when` branch covering its respective primitive array
             // type:
-            *PrimitiveType.values().map { primitiveType ->
+            *PrimitiveType.entries.map { primitiveType ->
                 irArrayTypeCheckAndContentDeepEqualsBranch(
                     receiver = receiver,
                     argument = argument,
