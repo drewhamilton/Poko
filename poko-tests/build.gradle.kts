@@ -36,14 +36,11 @@ fun <T : KotlinTarget> T.applyK2(): T {
   return this
 }
 
+val jvmToolchainVersion: Int? = System.getenv()["poko_tests_jvm_toolchain_version"]?.toInt()
+
 kotlin {
-  jvm(8)
-  jvm(8, "jvmK2").applyK2()
-  jvm(11)
-  jvm(11, "jvmK2").applyK2()
-  jvm(17)
-  jvm(17, "jvmK2").applyK2()
-  // Build JDK which should be latest:
+  jvmToolchainVersion?.let { jvmToolchain(it) }
+
   jvm()
   jvm("jvmK2").applyK2()
 
