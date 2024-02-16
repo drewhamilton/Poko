@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
 import org.jetbrains.kotlin.diagnostics.rendering.RootDiagnosticRendererFactory
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.DeclarationCheckers
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirRegularClassChecker
@@ -32,7 +33,9 @@ internal class PokoFirCheckersExtension(
                 setOf(PokoFirRegularClassChecker)
         }
 
-    internal object PokoFirRegularClassChecker : FirRegularClassChecker() {
+    internal object PokoFirRegularClassChecker : FirRegularClassChecker(
+        mppKind = MppCheckerKind.Common,
+    ) {
         override fun check(
             declaration: FirRegularClass,
             context: CheckerContext,
