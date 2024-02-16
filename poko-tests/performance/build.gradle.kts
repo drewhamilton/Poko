@@ -11,5 +11,4 @@ dependencies {
 tasks.named("test") {
     dependsOn(":poko-tests:compileProductionExecutableKotlinJs")
     dependsOn(":poko-tests:compileKotlinJvm")
-    dependsOn(":poko-tests:compileKotlinJvm11")
 }

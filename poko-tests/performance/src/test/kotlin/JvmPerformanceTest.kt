@@ -2,6 +2,7 @@ import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
+import org.junit.AssumptionViolatedException
 import org.junit.Test
 
 class JvmPerformanceTest {
@@ -24,11 +25,22 @@ class JvmPerformanceTest {
     }
 
     @Test fun `toString uses invokedynamic on modern JDKs`() {
-        val classfile = jvmOutput("performance/IntAndLong.class", version = 11)
-        val bytecode = bytecodeToText(classfile.readBytes())
+        val classfile = jvmOutput("performance/IntAndLong.class")
+        val bytecode = bytecodeToText(classfile.readBytes()).also {
+            it.assumeMinimumClassVersion(55)
+        }
+
         assertThat(bytecode).all {
             contains("INVOKEDYNAMIC makeConcatWithConstants")
             doesNotContain("StringBuilder")
+        }
+    }
+
+    private fun String.assumeMinimumClassVersion(version: Int) {
+        val classVersionRegex = Regex("class version [\\d.]* \\((\\d*)\\)")
+        val actualClassVersion = classVersionRegex.find(this)!!.groups.last()!!.value.toInt()
+        if (actualClassVersion < version) {
+            throw AssumptionViolatedException("This test only works class version $version+")
         }
     }
 }
