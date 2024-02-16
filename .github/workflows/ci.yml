@@ -54,6 +54,8 @@ jobs:
 
       - name: Test
         run: ./gradlew :poko-tests:jvmTest :poko-tests:jvmK2Test --stacktrace
+        env:
+          poko_tests_jvm_toolchain_version: ${{ matrix.poko_tests_jvm_toolchain_version }}
 
   build-sample:
     runs-on: ubuntu-latest
