@@ -27,6 +27,7 @@ class JvmPerformanceTest {
     @Test fun `toString uses invokedynamic on modern JDKs`() {
         val classfile = jvmOutput("performance/IntAndLong.class")
         val bytecode = bytecodeToText(classfile.readBytes()).also {
+            // Class version 55 == Java 11
             it.assumeMinimumClassVersion(55)
         }
 
