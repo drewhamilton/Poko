@@ -15,11 +15,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: |
-            8
-            11
-            17
-            21
+          java-version: 21
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -35,6 +31,29 @@ jobs:
           name: MavenLocal
           path: ~/.m2/repository/dev/drewhamilton/poko/
           if-no-files-found: error
+
+  test-with-jdk:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        poko_tests_jvm_toolchain_version: [ 8, 11, 17 ]
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Install JDK ${{ matrix.poko_tests_jvm_toolchain_version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: |
+            ${{ matrix.poko_tests_jvm_toolchain_version }}
+            21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Test
+        run: ./gradlew :poko-tests:jvmTest :poko-tests:jvmK2Test --stacktrace
 
   build-sample:
     runs-on: ubuntu-latest
