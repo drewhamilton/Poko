@@ -1,28 +1,13 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.plugin.NATIVE_COMPILER_PLUGIN_CLASSPATH_CONFIGURATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.PLUGIN_CLASSPATH_CONFIGURATION_NAME
-import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 
 plugins {
   alias(libs.plugins.kotlin.multiplatform)
 }
 
-fun KotlinMultiplatformExtension.jvm(
-  version: Int,
-  baseName: String = "jvm",
-): KotlinJvmTarget {
-  return jvm(baseName.replace("jvm", "jvm$version")) {
-    compilations.configureEach {
-      jvmToolchain(version)
-    }
-
-    // Dummy value required to disambiguate these targets' configurations.
-    // See https://kotlinlang.org/docs/multiplatform-set-up-targets.html#distinguish-several-targets-for-one-platform
-    attributes.attribute(Attribute.of("com.example.JvmTarget", Int::class.javaObjectType), version)
-  }
-}
+val jvmToolchainVersion: Int? = System.getenv()["poko_tests_jvm_toolchain_version"]?.toInt()
 
 fun <T : KotlinTarget> T.applyK2(): T {
   compilations.configureEach {
@@ -37,13 +22,8 @@ fun <T : KotlinTarget> T.applyK2(): T {
 }
 
 kotlin {
-  jvm(8)
-  jvm(8, "jvmK2").applyK2()
-  jvm(11)
-  jvm(11, "jvmK2").applyK2()
-  jvm(17)
-  jvm(17, "jvmK2").applyK2()
-  // Build JDK which should be latest:
+  jvmToolchainVersion?.let { jvmToolchain(it) }
+
   jvm()
   jvm("jvmK2").applyK2()
 
