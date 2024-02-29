@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.plugin.NATIVE_COMPILER_PLUGIN_CLASSPATH_CONFIGURATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.PLUGIN_CLASSPATH_CONFIGURATION_NAME
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
   alias(libs.plugins.kotlin.multiplatform)
@@ -34,6 +35,7 @@ kotlin {
   tvosX64()
   tvosSimulatorArm64()
 
+  @OptIn(ExperimentalWasmDsl::class)
   wasmJs().nodejs()
 
   watchosArm32()
