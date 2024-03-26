@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
-import org.jetbrains.kotlin.ir.declarations.impl.IrValueParameterImpl
+import org.jetbrains.kotlin.ir.declarations.impl.IrFactoryImpl
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.util.hasAnnotation
@@ -151,7 +151,7 @@ internal class PokoMembersTransformer(
     private fun IrFunction.mutateWithNewDispatchReceiverParameterForParentClass() {
         val parentClass = parent as IrClass
         val originalReceiver = requireNotNull(dispatchReceiverParameter)
-        dispatchReceiverParameter = IrValueParameterImpl(
+        dispatchReceiverParameter = IrFactoryImpl.createValueParameter(
             startOffset = originalReceiver.startOffset,
             endOffset = originalReceiver.endOffset,
             origin = originalReceiver.origin,

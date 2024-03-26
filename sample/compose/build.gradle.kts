@@ -8,7 +8,7 @@ plugins {
 }
 
 poko {
-    pokoAnnotation.set("dev.drewhamilton.poko.sample.compose.Poko")
+    pokoAnnotation.set("dev/drewhamilton/poko/sample/compose/Poko")
 }
 
 if (jvmToolchainLanguageVersion != null) {

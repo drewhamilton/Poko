@@ -16,8 +16,8 @@ plugins.withType<NodeJsRootPlugin> {
     extensions.getByType<NodeJsRootExtension>().apply {
         // WASM requires a canary Node.js version. This is the last v21 canary, and has both
         // darwin-arm64 and darwin-x64 artifacts:
-        nodeVersion = "21.0.0-v8-canary20231024d0ddc81258"
-        nodeDownloadBaseUrl = "https://nodejs.org/download/v8-canary"
+        version = "21.0.0-v8-canary20231024d0ddc81258"
+        downloadBaseUrl = "https://nodejs.org/download/v8-canary"
     }
 }
 
@@ -47,7 +47,7 @@ allprojects {
     }
 
     // The tests vary their own JVM targets among multiple targets. Do not overwrite them.
-    if (path != ":poko-tests") {
+    if (path !in setOf(":poko-tests", ":poko-tests-without-k2")) {
         val kotlinPluginHandler: AppliedPlugin.() -> Unit = {
             val javaVersion = JavaVersion.VERSION_1_8
             project.tasks.withType<JavaCompile>().configureEach {
