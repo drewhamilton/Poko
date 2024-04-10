@@ -7,7 +7,7 @@ kotlin = "2.0.0-RC1"
 kotlinCompileTesting = "1.5.1"
 kotlinCompileTestingFork = "0.4.1"
 # https://github.com/google/ksp/releases:
-ksp = "2.0.0-Beta5-1.0.19"
+ksp = "2.0.0-RC1-1.0.20"
 
 [libraries]
 
