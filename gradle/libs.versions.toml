@@ -1,17 +1,14 @@
 [versions]
 
-# https://androidx.dev/storage/compose-compiler/repository for versions matching new Kotlin versions:
-androidx-compose-compiler = "1.5.11-dev-k2.0.0-Beta5-b5a216d0ac6"
 androidx-compose-runtime = "1.6.7"
-kotlin = "2.0.0-Beta5"
+kotlin = "2.0.0-RC1"
 kotlinCompileTesting = "1.5.1"
-kotlinCompileTestingFork = "0.4.1"
+kotlinCompileTestingFork = "0.5.0-alpha07"
 # https://github.com/google/ksp/releases:
-ksp = "2.0.0-Beta5-1.0.19"
+ksp = "2.0.0-RC1-1.0.20"
 
 [libraries]
 
-androidx-compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "androidx-compose-compiler" }
 androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version.ref = "androidx-compose-runtime" }
 
 autoService-annotations = { module = "com.google.auto.service:auto-service-annotations", version = "1.1.1" }
@@ -41,5 +38,6 @@ android-library = { id = "com.android.library", version = "8.4.0" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-compose-plugin = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinx-binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version = "0.14.0" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
