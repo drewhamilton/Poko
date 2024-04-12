@@ -124,7 +124,7 @@ class PokoCompilerPluginTest(
             pokoAnnotationName = "nonexistent/ClassName",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR,
         ) {
-            assertThat(it.messages).contains("e: Could not find class <nonexistent/ClassName>\n")
+            assertThat(it.messages).contains("e: Could not find class <nonexistent/ClassName>${System.lineSeparator()}")
         }
     }
     //endregion
