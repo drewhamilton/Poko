@@ -44,6 +44,15 @@ mutating data can affect the results of `equals` and `hashCode` over time, which
 unexpected. For this reason, `@ArrayContentBased` should only be used in very performance-sensitive
 APIs.
 
+### Disable `toString` generation
+
+You can disable `toString` generation on per-class basis with `DisableToStringGeneration`
+annotation.
+
+Generated `toString` implementations add to the string pool, and can't be removed by optimizers like
+`R8` due to the general widely-used nature of toString. For this reason it is desirable in some
+contexts to skip `toString` and only generate `equals` and `hashCode` for internal value types.
+
 ### Annotation
 By default, the `dev.drewhamilton.poko.Poko` annotation is used to mark classes for Poko generation.
 If you prefer, you can create a different annotation and supply it to the Gradle  plugin.

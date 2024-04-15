@@ -56,14 +56,15 @@ internal class PokoMembersTransformer(
                         )
                     }
 
-                    declaration.isToString() -> declaration.convertToGenerated { properties ->
-                        generateToStringMethodBody(
-                            irClass = declarationParent,
-                            functionDeclaration = declaration,
-                            classProperties = properties,
-                            messageCollector = messageCollector,
-                        )
-                    }
+                    declaration.isToString() && !declarationParent.hasDisableToStringGenerationAnnotation() ->
+                        declaration.convertToGenerated { properties ->
+                            generateToStringMethodBody(
+                                irClass = declarationParent,
+                                functionDeclaration = declaration,
+                                classProperties = properties,
+                                messageCollector = messageCollector,
+                            )
+                        }
                 }
             }
         }
@@ -72,7 +73,7 @@ internal class PokoMembersTransformer(
     }
 
     private fun IrClass.isPokoClass(): Boolean = when {
-        !hasAnnotation(pokoAnnotationName.asSingleFqName()) -> {
+        !hasPokoClassAnnotation() -> {
             messageCollector.log("Not Poko class")
             false
         }
@@ -172,5 +173,9 @@ internal class PokoMembersTransformer(
         ).apply {
             parent = this@mutateWithNewDispatchReceiverParameterForParentClass
         }
+    }
+
+    private fun IrClass.hasPokoClassAnnotation(): Boolean {
+        return hasAnnotation(pokoAnnotationName.asSingleFqName())
     }
 }
