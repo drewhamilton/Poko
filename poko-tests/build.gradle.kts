@@ -63,6 +63,8 @@ kotlin {
 
   wasmJs().nodejs()
   wasmJs("wasmJsK2").applyK2().nodejs()
+  wasmWasi().nodejs()
+  wasmWasi("wasmWasiK2").applyK2().nodejs()
 
   watchosArm32()
   watchosArm32("watchosArm32K2").applyK2()
