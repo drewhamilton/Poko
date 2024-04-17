@@ -75,6 +75,16 @@ kotlin {
   watchosX64()
   watchosX64("watchosX64K2").applyK2()
 
+  androidNativeArm32()
+  androidNativeArm32("androidNativeArm32K2").applyK2()
+  androidNativeArm64()
+  androidNativeArm64("androidNativeArm64K2").applyK2()
+
+  androidNativeX86()
+  androidNativeX86("androidNativeX86K2").applyK2()
+  androidNativeX64()
+  androidNativeX64("androidNativeX64K2").applyK2()
+
   sourceSets {
     commonMain {
       dependencies {
