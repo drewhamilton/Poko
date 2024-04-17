@@ -28,6 +28,7 @@ kotlin {
   tvosSimulatorArm64()
 
   wasmJs().nodejs()
+  wasmWasi().nodejs()
 
   watchosArm32()
   watchosArm64()
