@@ -30,13 +30,32 @@ class PokoCompilerPluginTest(
     @JvmField
     @Rule var temporaryFolder: TemporaryFolder = TemporaryFolder()
 
-    //region Primitives
     @Test fun `compilation of valid class succeeds`() {
         testCompilation("api/Primitives")
     }
-    //endregion
 
-    //region data class
+    @Test fun `compilation of interface fails`() {
+        testCompilation(
+            "illegal/Interface",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            val expectedLocation = if (k2) {
+                "Interface.kt:6:17"
+            } else {
+                "Interface.kt"
+            }
+            val expectedMessage = if (k2) {
+                "Poko can only be applied to a class"
+            } else {
+                "Poko class must have a primary constructor"
+            }
+            assertThat(result.messages).all {
+                contains(expectedLocation)
+                contains(expectedMessage)
+            }
+        }
+    }
+
     @Test fun `compilation of data class fails`() {
         testCompilation(
             "illegal/Data",
@@ -53,9 +72,7 @@ class PokoCompilerPluginTest(
             }
         }
     }
-    //endregion
 
-    //region value class
     @Test fun `compilation of value class fails`() {
         testCompilation(
             "illegal/Value",
@@ -72,9 +89,7 @@ class PokoCompilerPluginTest(
             }
         }
     }
-    //endregion
 
-    //region No primary constructor
     @Test fun `compilation without primary constructor fails`() {
         testCompilation(
             "illegal/NoPrimaryConstructor",
@@ -91,9 +106,7 @@ class PokoCompilerPluginTest(
             }
         }
     }
-    //endregion
 
-    //region No constructor properties
     @Test fun `compilation without constructor properties fails`() {
         testCompilation(
             "illegal/NoConstructorProperties",
@@ -110,9 +123,7 @@ class PokoCompilerPluginTest(
             }
         }
     }
-    //endregion
 
-    //region inner class
     @Test fun `compilation of inner class fails`() {
         testCompilation(
             "illegal/OuterClass",
@@ -129,7 +140,6 @@ class PokoCompilerPluginTest(
             }
         }
     }
-    //endregion
 
     //region Array content
     @Test fun `compilation reading array content of generic type with unsupported upper bound fails`() {
@@ -157,7 +167,6 @@ class PokoCompilerPluginTest(
     }
     //endregion
 
-    //region Unknown annotation name
     @Test fun `unknown annotation name produces expected error message`() {
         testCompilation(
             "api/Primitives",
@@ -167,7 +176,6 @@ class PokoCompilerPluginTest(
             assertThat(it.messages).contains("e: Could not find class <nonexistent/ClassName>${System.lineSeparator()}")
         }
     }
-    //endregion
 
     private inline fun testCompilation(
         vararg sourceFileNames: String,
