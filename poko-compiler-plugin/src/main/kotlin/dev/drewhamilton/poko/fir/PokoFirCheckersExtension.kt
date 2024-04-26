@@ -4,8 +4,11 @@ import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
+import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactoryToRendererMap
 import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategies
 import org.jetbrains.kotlin.diagnostics.error0
+import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
+import org.jetbrains.kotlin.diagnostics.rendering.RootDiagnosticRendererFactory
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -70,8 +73,8 @@ internal class PokoFirCheckersExtension(
         }
     }
 
-    // TODO: Custom errors https://youtrack.jetbrains.com/issue/KT-53510
-    private object Errors {
+    private object Errors : BaseDiagnosticRendererFactory() {
+
         val PokoOnNonClass by error0<PsiElement>(
             positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
         )
@@ -95,5 +98,36 @@ internal class PokoFirCheckersExtension(
         val PrimaryConstructorPropertiesRequired by error0<PsiElement>(
             positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
         )
+
+        override val MAP = KtDiagnosticFactoryToRendererMap("Poko").apply {
+            put(
+                factory = PokoOnNonClass,
+                message = "Poko can only be applied to a class",
+            )
+            put(
+                factory = PokoOnDataClass,
+                message = "Poko cannot be applied to a data class",
+            )
+            put(
+                factory = PokoOnValueClass,
+                message = "Poko cannot be applied to a value class",
+            )
+            put(
+                factory = PokoOnInnerClass,
+                message = "Poko cannot be applied to an inner class"
+            )
+            put(
+                factory = PrimaryConstructorRequired,
+                message = "Poko class must have a primary constructor"
+            )
+            put(
+                factory = PrimaryConstructorPropertiesRequired,
+                message = "Poko class primary constructor must have at least one property",
+            )
+        }
+
+        init {
+            RootDiagnosticRendererFactory.registerFactory(this)
+        }
     }
 }
