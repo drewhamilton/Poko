@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko
 
+import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
@@ -29,67 +30,116 @@ class PokoCompilerPluginTest(
     @JvmField
     @Rule var temporaryFolder: TemporaryFolder = TemporaryFolder()
 
-    //region Primitives
     @Test fun `compilation of valid class succeeds`() {
         testCompilation("api/Primitives")
     }
-    //endregion
 
-    //region data class
+    @Test fun `compilation of interface fails`() {
+        testCompilation(
+            "illegal/Interface",
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
+        ) { result ->
+            val expectedLocation = if (k2) {
+                "Interface.kt:6:17"
+            } else {
+                "Interface.kt"
+            }
+            val expectedMessage = if (k2) {
+                "Poko can only be applied to a class"
+            } else {
+                "Poko class must have a primary constructor"
+            }
+            assertThat(result.messages).all {
+                contains(expectedLocation)
+                contains(expectedMessage)
+            }
+        }
+    }
+
     @Test fun `compilation of data class fails`() {
         testCompilation(
             "illegal/Data",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            assertThat(result.messages).contains("Poko does not support data classes")
+            val expectedLocation = if (k2) {
+                "Data.kt:6:7"
+            } else {
+                "Data.kt"
+            }
+            assertThat(result.messages).all {
+                contains(expectedLocation)
+                contains("Poko cannot be applied to a data class")
+            }
         }
     }
-    //endregion
 
-    //region value class
     @Test fun `compilation of value class fails`() {
         testCompilation(
             "illegal/Value",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            assertThat(result.messages).contains("Poko does not support value classes")
+            val expectedLocation = if (k2) {
+                "Value.kt:6:18"
+            } else {
+                "Value.kt"
+            }
+            assertThat(result.messages).all {
+                contains(expectedLocation)
+                contains("Poko cannot be applied to a value class")
+            }
         }
     }
-    //endregion
 
-    //region No primary constructor
     @Test fun `compilation without primary constructor fails`() {
         testCompilation(
             "illegal/NoPrimaryConstructor",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            assertThat(result.messages).contains("Poko classes must have a primary constructor")
+            val expectedLocation = if (k2) {
+                "NoPrimaryConstructor.kt:6:13"
+            } else {
+                "NoPrimaryConstructor.kt"
+            }
+            assertThat(result.messages).all {
+                contains(expectedLocation)
+                contains("Poko class must have a primary constructor")
+            }
         }
     }
-    //endregion
 
-    //region No constructor properties
     @Test fun `compilation without constructor properties fails`() {
         testCompilation(
             "illegal/NoConstructorProperties",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            assertThat(result.messages)
-                .contains("Poko classes must have at least one property in the primary constructor")
+            val expectedLocation = if (k2) {
+                "NoConstructorProperties.kt:6:13"
+            } else {
+                "NoConstructorProperties.kt"
+            }
+            assertThat(result.messages).all {
+                contains(expectedLocation)
+                contains("Poko class primary constructor must have at least one property")
+            }
         }
     }
-    //endregion
 
-    //region Nested
     @Test fun `compilation of inner class fails`() {
         testCompilation(
             "illegal/OuterClass",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            assertThat(result.messages).contains("Poko cannot be applied to inner classes")
+            val expectedLocation = if (k2) {
+                "OuterClass.kt:8:11"
+            } else {
+                "OuterClass.kt"
+            }
+            assertThat(result.messages).all {
+                contains(expectedLocation)
+                contains("Poko cannot be applied to an inner class")
+            }
         }
     }
-    //endregion
 
     //region Array content
     @Test fun `compilation reading array content of generic type with unsupported upper bound fails`() {
@@ -117,7 +167,6 @@ class PokoCompilerPluginTest(
     }
     //endregion
 
-    //region Unknown annotation name
     @Test fun `unknown annotation name produces expected error message`() {
         testCompilation(
             "api/Primitives",
@@ -127,7 +176,6 @@ class PokoCompilerPluginTest(
             assertThat(it.messages).contains("e: Could not find class <nonexistent/ClassName>${System.lineSeparator()}")
         }
     }
-    //endregion
 
     private inline fun testCompilation(
         vararg sourceFileNames: String,

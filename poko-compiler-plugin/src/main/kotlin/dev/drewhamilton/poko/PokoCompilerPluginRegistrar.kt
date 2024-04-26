@@ -3,6 +3,7 @@ package dev.drewhamilton.poko
 import com.google.auto.service.AutoService
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ANNOTATION
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ENABLED
+import dev.drewhamilton.poko.fir.PokoFirExtensionRegistrar
 import dev.drewhamilton.poko.ir.PokoIrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
@@ -10,6 +11,7 @@ import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
 import org.jetbrains.kotlin.name.ClassId
 
 @ExperimentalCompilerApi
@@ -31,6 +33,10 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
         IrGenerationExtension.registerExtension(
             PokoIrGenerationExtension(pokoAnnotationClassId, messageCollector)
+        )
+
+        FirExtensionRegistrarAdapter.registerExtension(
+            PokoFirExtensionRegistrar(pokoAnnotationClassId)
         )
     }
 }

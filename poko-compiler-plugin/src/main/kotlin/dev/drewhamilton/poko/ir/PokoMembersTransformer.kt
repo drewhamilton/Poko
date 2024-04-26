@@ -78,24 +78,24 @@ internal class PokoMembersTransformer(
         }
         isData -> {
             messageCollector.log("Data class")
-            messageCollector.reportErrorOnClass(this, "Poko does not support data classes")
+            messageCollector.reportErrorOnClass(this, "Poko cannot be applied to a data class")
             false
         }
         isValue -> {
             messageCollector.log("Value class")
-            messageCollector.reportErrorOnClass(this, "Poko does not support value classes")
+            messageCollector.reportErrorOnClass(this, "Poko cannot be applied to a value class")
             false
         }
         isInner -> {
             messageCollector.log("Inner class")
-            messageCollector.reportErrorOnClass(this, "Poko cannot be applied to inner classes")
+            messageCollector.reportErrorOnClass(this, "Poko cannot be applied to an inner class")
             false
         }
         primaryConstructor == null -> {
             messageCollector.log("No primary constructor")
             messageCollector.reportErrorOnClass(
                 irClass = this,
-                message = "Poko classes must have a primary constructor",
+                message = "Poko class must have a primary constructor",
             )
             false
         }
@@ -125,7 +125,7 @@ internal class PokoMembersTransformer(
             messageCollector.log("No primary constructor properties")
             messageCollector.reportErrorOnClass(
                 irClass = parent,
-                message = "Poko classes must have at least one property in the primary constructor",
+                message = "Poko class primary constructor must have at least one property",
             )
             return
         }
