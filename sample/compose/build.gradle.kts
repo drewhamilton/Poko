@@ -20,11 +20,6 @@ if (jvmToolchainLanguageVersion != null) {
     }
 }
 
-composeCompiler {
-    // https://youtrack.jetbrains.com/issue/KT-67216
-    suppressKotlinVersionCompatibilityCheck = libs.versions.kotlin
-}
-
 android {
     namespace = "dev.drewhamilton.poko.sample.compose"
     compileSdk = 33
