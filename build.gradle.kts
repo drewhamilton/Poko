@@ -12,10 +12,6 @@ plugins {
     alias(libs.plugins.ksp) apply false
 }
 
-tasks.withType<KotlinNpmInstallTask>().configureEach {
-    args.add("--ignore-engines")
-}
-
 allprojects {
     setUpLocalSigning()
 
