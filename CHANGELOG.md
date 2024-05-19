@@ -1,9 +1,18 @@
 # Changelog
 
+## 0.15.3
+_2024-05-19_
+
+Support Android native targets and Wasm-WASI target for Kotlin Multiplatform. Implement error checks
+in FIR to support automatic IDE warnings in future IntelliJ releases.
+
+Compile with Kotlin 1.9.24. Use Node v22 for Wasm and JS targets. Compile released artifacts with
+`-Xjdk-release` flag to ensure JVM 1.8 compatibility.
+
 ## 0.15.2
 _2024-01-02_
 
-Support WASM target for Kotlin Multiplatform.
+Support Wasm-JS target for Kotlin Multiplatform.
 
 Compile with Kotlin 1.9.22. Support Java 21.
 
