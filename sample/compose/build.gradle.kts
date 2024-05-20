@@ -4,11 +4,12 @@ import dev.drewhamilton.poko.sample.build.resolvedJavaVersion
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose.plugin)
     id("dev.drewhamilton.poko")
 }
 
 poko {
-    pokoAnnotation.set("dev.drewhamilton.poko.sample.compose.Poko")
+    pokoAnnotation.set("dev/drewhamilton/poko/sample/compose/Poko")
 }
 
 if (jvmToolchainLanguageVersion != null) {
@@ -46,10 +47,6 @@ android {
         shaders = false
         androidResources = false
     }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.androidx.compose.compiler.get().version
-    }
 }
 
 dependencies {
@@ -61,8 +58,4 @@ dependencies {
 
 repositories {
     google()
-    if (android.composeOptions.kotlinCompilerExtensionVersion!!.contains("dev")) {
-        logger.lifecycle("Adding Compose compiler dev repository")
-        maven { url = uri("https://androidx.dev/storage/compose-compiler/repository") }
-    }
 }

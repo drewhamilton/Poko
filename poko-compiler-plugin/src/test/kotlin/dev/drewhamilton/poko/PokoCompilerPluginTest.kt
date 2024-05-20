@@ -232,7 +232,10 @@ class PokoCompilerPluginTest(
         verbose = false
         jvmTarget = JvmTarget.JVM_1_8.description
         if (k2) {
-            languageVersion = "2.0"
+            supportsK2 = true
+        } else {
+            supportsK2 = false
+            languageVersion = "1.9"
         }
 
         val commandLineProcessor = PokoCommandLineProcessor()

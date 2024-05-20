@@ -8,8 +8,8 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.AppliedPlugin
 import org.gradle.kotlin.dsl.buildConfigField
-import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtensionConfig
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 private val Project.pokoGroupId get() = property("PUBLISH_GROUP") as String
 private val Project.pokoVersion get() = property("PUBLISH_VERSION") as String
@@ -31,8 +31,8 @@ class PokoBuildPlugin : Plugin<Project> {
     }
 
     private fun commonKotlinConfiguration(project: Project) {
-        project.tasks.withType(KotlinCompile::class.java).configureEach {
-            kotlinOptions.freeCompilerArgs += "-progressive"
+        project.tasks.withType(KotlinCompilationTask::class.java).configureEach {
+            compilerOptions.freeCompilerArgs.add("-progressive")
         }
     }
 
