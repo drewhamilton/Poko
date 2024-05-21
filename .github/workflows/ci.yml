@@ -67,7 +67,8 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 22
+          # TODO: Bump to 22 when Gradle supports Kotlin 2.0 in buildSrc
+          java-version: 21
       - name: Download MavenLocal
         uses: actions/download-artifact@v4
         with:
