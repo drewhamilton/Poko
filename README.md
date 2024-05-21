@@ -28,8 +28,8 @@ is not recommended, and if they are used, it is recommended to override `equals`
 manually.
 
 ### Arrays
-By default, Poko does nothing to inspect the contents of array properties. [This aligns with data
-classes](https://blog.jetbrains.com/kotlin/2015/09/feedback-request-limitations-on-data-classes/#Appendix.Comparingarrays).
+By default, Poko does nothing to inspect the contents of array properties. [This aligns with the
+behavior of data classes](https://blog.jetbrains.com/kotlin/2015/09/feedback-request-limitations-on-data-classes/#Appendix.Comparingarrays).
 
 Poko consumers can change this behavior on a per-property basis with the `@ArrayContentBased`
 annotation. On properties of a typed array type, this annotation will generate a `contentDeepEquals`
@@ -51,7 +51,7 @@ If you prefer, you can create a different annotation and supply it to the Gradle
 ```groovy
 apply plugin: "dev.drewhamilton.poko"
 poko {
-  pokoAnnotation.set "com.example.MyDataAnnotation"
+  pokoAnnotation.set "com/example/MyDataAnnotation"
 }
 ```
 
@@ -69,20 +69,20 @@ might break something in this compiler plugin.
 Since the Kotlin compiler has frequent breaking changes, different versions of Kotlin are
 exclusively compatible with specific versions of Poko.
 
-| Kotlin version  | Poko version    |
-|-----------------|-----------------|
-| 2.0.0-RC3       | 0.16.0-SNAPSHOT |
-| 1.9.0 – 1.9.24  | 0.15.3          |
-| 1.8.20 – 1.8.22 | 0.13.1          |
-| 1.8.0 – 1.8.10  | 0.12.0          |
-| 1.7.0 – 1.7.21  | 0.11.0          |
-| 1.6.20 – 1.6.21 | 0.10.0          | 
-| 1.6.0 – 1.6.10  | 0.9.0           |
-| 1.5.0 – 1.5.31  | 0.8.1           |
-| 1.4.30 – 1.4.32 | 0.7.4           |
-| 1.4.20 – 1.4.21 | 0.5.0*          |
-| 1.4.0 – 1.4.10  | 0.3.1*          |
-| 1.3.72          | 0.2.4*          |
+| Kotlin version  | Poko version  |
+|-----------------|---------------|
+| 2.0.0-RC3       | 0.16.0-beta01 |
+| 1.9.0 – 1.9.24  | 0.15.3        |
+| 1.8.20 – 1.8.22 | 0.13.1        |
+| 1.8.0 – 1.8.10  | 0.12.0        |
+| 1.7.0 – 1.7.21  | 0.11.0        |
+| 1.6.20 – 1.6.21 | 0.10.0        | 
+| 1.6.0 – 1.6.10  | 0.9.0         |
+| 1.5.0 – 1.5.31  | 0.8.1         |
+| 1.4.30 – 1.4.32 | 0.7.4         |
+| 1.4.20 – 1.4.21 | 0.5.0*        |
+| 1.4.0 – 1.4.10  | 0.3.1*        |
+| 1.3.72          | 0.2.4*        |
 
 Snapshots of the development version are available in [Sonatype's Snapshots
 repository](https://oss.sonatype.org/#view-repositories;snapshots~browsestorage).

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.0-beta01
+_2024-05-20_
+
+Compile with Kotlin 2.0.0-RC3. The syntax for custom annotation references now uses `/` to denote
+packages, e.g. `com/example/MyAnnotationClass`.
+
 ## 0.15.3
 _2024-05-19_
 
