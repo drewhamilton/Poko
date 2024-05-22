@@ -23,7 +23,6 @@ package dev.drewhamilton.poko
  * different `equals` and `hashCode` results at different times. This annotation should only be used
  * by consumers for whom performant code is more important than safe code.
  */
-@ArrayContentSupport
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.PROPERTY)
 public annotation class ArrayContentBased
