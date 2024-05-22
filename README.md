@@ -55,6 +55,11 @@ poko {
 }
 ```
 
+In either case, you must add the annotation library as a dependency to your project. `compileOnly`
+is recommended, because the annotation is only used by the plugin during compilation. But for Kotlin
+Multiplatform projects with native targets, `implementation` must be used because `compileOnly` is
+not supported.
+
 Note that this only affects the primary marker annotation. Supplemental annotations such as
 `@ArrayContentBased` do not support customization.
 
@@ -97,6 +102,10 @@ plugins {
 // Per module:
 plugins {
     id("dev.drewhamilton.poko")
+}
+
+dependencies {
+    compileOnly("dev.drewhamilton.poko:poko-annotations:$pokoVersion")
 }
 ```
 

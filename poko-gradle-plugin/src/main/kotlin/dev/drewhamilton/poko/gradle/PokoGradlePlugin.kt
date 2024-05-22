@@ -1,39 +1,16 @@
 package dev.drewhamilton.poko.gradle
 
-import dev.drewhamilton.poko.gradle.BuildConfig.DEFAULT_POKO_ANNOTATION
 import org.gradle.api.Project
-import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
 import org.gradle.api.provider.Provider
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerPluginSupportPlugin
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.Companion.COMMON_MAIN_SOURCE_SET_NAME
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetContainer
 import org.jetbrains.kotlin.gradle.plugin.SubpluginArtifact
 import org.jetbrains.kotlin.gradle.plugin.SubpluginOption
 
 public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun apply(target: Project) {
-        val extension = target.extensions.create("poko", PokoPluginExtension::class.java)
-
-        target.afterEvaluate {
-            val annotationDependency = when (extension.pokoAnnotation.get()) {
-                DEFAULT_POKO_ANNOTATION -> BuildConfig.annotationsDependency
-                else -> null
-            }
-            if (annotationDependency != null) {
-                if (target.plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
-                    val kotlin = target.extensions.getByName("kotlin") as KotlinSourceSetContainer
-                    kotlin.sourceSets.getByName(COMMON_MAIN_SOURCE_SET_NAME) { sourceSet ->
-                        sourceSet.dependencies {
-                            implementation(annotationDependency)
-                        }
-                    }
-                } else {
-                    target.dependencies.add(IMPLEMENTATION_CONFIGURATION_NAME, annotationDependency)
-                }
-            }
-        }
+        target.extensions.create("poko", PokoPluginExtension::class.java)
     }
 
     override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean = true
@@ -59,7 +36,4 @@ public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
             )
         }
     }
-
-    private val BuildConfig.annotationsDependency: String
-        get() = "$GROUP:$ANNOTATIONS_ARTIFACT:$VERSION"
 }
