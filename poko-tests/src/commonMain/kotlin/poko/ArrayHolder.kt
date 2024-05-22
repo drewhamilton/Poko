@@ -1,11 +1,9 @@
 package poko
 
 import dev.drewhamilton.poko.ArrayContentBased
-import dev.drewhamilton.poko.ArrayContentSupport
 import dev.drewhamilton.poko.Poko
 
 @Suppress("Unused")
-@OptIn(ArrayContentSupport::class)
 @Poko class ArrayHolder(
     @ArrayContentBased val stringArray: Array<String>,
     @ArrayContentBased val nullableStringArray: Array<String>?,
