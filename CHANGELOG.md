@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.16.0-beta01
+## 0.16.0
+_2024-05-28_
+
+Compile with Kotlin 2.0.0. The syntax for custom annotation references now uses `/` to denote
+packages, e.g. `com/example/MyAnnotationClass`.
+
+Deprecate `@ArrayContentSupport` annotation and stop requiring it for using `@ArrayContentBased`
+annotation.
+
+### 0.16.0-beta01
 _2024-05-20_
 
 Compile with Kotlin 2.0.0-RC3. The syntax for custom annotation references now uses `/` to denote
