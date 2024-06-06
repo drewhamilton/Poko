@@ -18,8 +18,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          ## TODO: Bump to 22 when Gradle supports it
-          java-version: 21
+          java-version: 22
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
