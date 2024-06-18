@@ -1,6 +1,7 @@
 [versions]
 
 androidx-compose-runtime = "1.6.8"
+
 kotlin = "2.0.0"
 kotlinCompileTesting = "1.6.0"
 kotlinCompileTestingFork = "0.5.1"
@@ -36,8 +37,6 @@ plugin-dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.9.20"
 
 android-library = { id = "com.android.library", version = "8.5.0" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlin-compose-plugin = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinx-binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version = "0.15.1" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
