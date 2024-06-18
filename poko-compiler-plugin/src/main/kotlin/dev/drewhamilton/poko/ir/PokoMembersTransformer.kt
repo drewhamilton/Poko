@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
+import org.jetbrains.kotlin.descriptors.ParameterDescriptor
 import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
 import org.jetbrains.kotlin.fir.backend.FirMetadataSource
 import org.jetbrains.kotlin.ir.IrStatement
@@ -18,6 +19,7 @@ import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.impl.IrFactoryImpl
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.types.createType
+import org.jetbrains.kotlin.ir.util.IdSignature
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isFakeOverride
 import org.jetbrains.kotlin.ir.util.primaryConstructor
@@ -158,8 +160,9 @@ internal class PokoMembersTransformer(
             symbol = IrValueParameterSymbolImpl(
                 // IrValueParameterSymbolImpl requires a descriptor; same type as
                 // originalReceiver.symbol:
-                @OptIn(ObsoleteDescriptorBasedAPI::class)
+                descriptor = @OptIn(ObsoleteDescriptorBasedAPI::class)
                 LazyClassReceiverParameterDescriptor(parentClass.descriptor),
+                signature = parentClass.symbol.signature,
             ),
             name = originalReceiver.name,
             index = originalReceiver.index,
@@ -171,6 +174,33 @@ internal class PokoMembersTransformer(
             isAssignable = originalReceiver.isAssignable
         ).apply {
             parent = this@mutateWithNewDispatchReceiverParameterForParentClass
+        }
+    }
+
+    /**
+     * Instantiate an [IrValueParameterSymbolImpl] via reflection if the known constructor is not
+     * available. Provides forward compatibility with 2.0.20, which changes the constructor's
+     * signature.
+     */
+    private fun IrValueParameterSymbolImpl(
+        descriptor: ParameterDescriptor,
+        signature: IdSignature?,
+    ): IrValueParameterSymbolImpl {
+        try {
+            // Constructor available pre-2.0.20:
+            return IrValueParameterSymbolImpl(descriptor)
+        } catch (noSuchMethodError: NoSuchMethodError) {
+            // Constructor signature changes in 2.0.20+:
+            val implClass = IrValueParameterSymbolImpl::class.java
+            val newConstructor = implClass.declaredConstructors.single {
+                it.parameters.size == 2 &&
+                    it.parameters.first().type == ParameterDescriptor::class.java &&
+                    it.parameters.last().type == IdSignature::class.java
+            }
+            return newConstructor.newInstance(
+                descriptor, // param: descriptor
+                signature, // param: signature
+            ) as IrValueParameterSymbolImpl
         }
     }
 }

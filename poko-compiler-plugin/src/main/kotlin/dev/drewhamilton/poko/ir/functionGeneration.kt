@@ -9,11 +9,14 @@ import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.expressions.IrGetValue
+import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
+import org.jetbrains.kotlin.ir.symbols.IrValueSymbol
 import org.jetbrains.kotlin.ir.types.IrSimpleType
+import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
@@ -46,16 +49,42 @@ internal fun IrFunction.receiver(): IrGetValue = IrGetValueImpl(dispatchReceiver
 
 /**
  * Gets the value of the given [parameter].
+ *
+ * Invoke [IrGetValueImpl] via reflection if the known function is not available. Provides forward
+ * compatibility with 2.0.20, which changes the constructor's signature.
  */
 context(IrBlockBodyBuilder)
 internal fun IrGetValueImpl(
     parameter: IrValueParameter,
-) = IrGetValueImpl(
-    startOffset = startOffset,
-    endOffset = endOffset,
-    type = parameter.type,
-    symbol = parameter.symbol,
-)
+) = try {
+    IrGetValueImpl(
+        startOffset = startOffset,
+        endOffset = endOffset,
+        type = parameter.type,
+        symbol = parameter.symbol,
+    )
+} catch (noClassDefFoundError: NoClassDefFoundError) {
+    javaClass.classLoader.loadClass("org.jetbrains.kotlin.ir.expressions.impl.BuildersKt")
+        .methods
+        .single { function ->
+            function.name == "IrGetValueImpl" &&
+                function.parameters.map { it.type } == listOf(
+                    Int::class.java,
+                    Int::class.java,
+                    IrType::class.java,
+                    IrValueSymbol::class.java,
+                    IrStatementOrigin::class.java,
+                )
+        }
+        .invoke(
+            null, // static invocation
+            startOffset, // param: startOffset
+            endOffset, // param: endOffset
+            parameter.type, // param: type
+            parameter.symbol, // param: symbol
+            null, // param: origin (default value is null)
+        ) as IrGetValueImpl
+}
 
 internal fun IrProperty.hasArrayContentBasedAnnotation(): Boolean =
     hasAnnotation(arrayContentBasedAnnotationFqName)
