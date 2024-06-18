@@ -77,6 +77,8 @@ dependencyResolutionManagement {
         create("libs") {
             from(parentLibsVersionsToml)
         }
+
+        // Allows compiling the sample project with a different Kotlin version than Poko:
         create("sampleLibs") {
             val ciKotlinVersion: String? = System.getenv()["poko_sample_kotlin_version"]
             // If there is no CI-defined version, manually parse libs.versions.toml, which we can't
@@ -88,7 +90,6 @@ dependencyResolutionManagement {
                     .value
             logger.lifecycle("Compiling sample app with Kotlin $kotlinVersion")
 
-            // Allows compiling the sample app with a different Kotlin version than Poko:
             version("kotlin", kotlinVersion)
             library("kotlin-test", "org.jetbrains.kotlin", "kotlin-test").versionRef("kotlin")
             plugin("kotlin-android", "org.jetbrains.kotlin.android").versionRef("kotlin")
