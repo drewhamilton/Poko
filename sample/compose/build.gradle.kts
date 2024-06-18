@@ -3,8 +3,8 @@ import dev.drewhamilton.poko.sample.build.resolvedJavaVersion
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose.plugin)
+    alias(sampleLibs.plugins.kotlin.android)
+    alias(sampleLibs.plugins.kotlin.compose)
     id("dev.drewhamilton.poko")
 }
 

@@ -9,9 +9,9 @@ plugins {
     if (ciJavaVersion == null || ciJavaVersion >= 17) {
         alias(libs.plugins.android.library) apply false
     }
-    alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(sampleLibs.plugins.kotlin.android) apply false
+    alias(sampleLibs.plugins.kotlin.jvm) apply false
+    alias(sampleLibs.plugins.kotlin.multiplatform) apply false
     id("dev.drewhamilton.poko") apply false
 }
 apply(from = "properties.gradle")
