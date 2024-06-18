@@ -83,7 +83,7 @@ dependencyResolutionManagement {
             val ciKotlinVersion: String? = System.getenv()["poko_sample_kotlin_version"]
             // If there is no CI-defined version, manually parse libs.versions.toml, which we can't
             // yet read the normal way because we're in settings.gradle:
-            val kotlinVersion = ciKotlinVersion
+            val kotlinVersion = ciKotlinVersion?.nullIfBlank()
                 ?: Regex("kotlin = \\\"(?<kotlinVersion>.*)\\\"")
                     .find(parentLibsVersionsToml.singleFile.readText())!!
                     .groups["kotlinVersion"]!!
@@ -99,3 +99,5 @@ dependencyResolutionManagement {
         }
     }
 }
+
+private fun String.nullIfBlank(): String? = if (isNullOrBlank()) null else this
