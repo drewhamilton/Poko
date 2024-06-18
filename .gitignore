@@ -19,6 +19,7 @@
 .idea/.name
 .idea/**/compiler.xml
 .idea/misc.xml
+.idea/other.xml
 
 # Generated files
 .idea/**/artifacts
