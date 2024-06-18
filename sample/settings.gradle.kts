@@ -76,5 +76,14 @@ dependencyResolutionManagement {
         create("libs") {
             from(files("../gradle/libs.versions.toml"))
         }
+        create("sampleLibs") {
+            // Allows compiling the sample app with a different Kotlin version than Poko:
+            version("kotlin", "2.0.20-Beta1")
+            library("kotlin-test", "org.jetbrains.kotlin", "kotlin-test").versionRef("kotlin")
+            plugin("kotlin-android", "org.jetbrains.kotlin.android").versionRef("kotlin")
+            plugin("kotlin-compose", "org.jetbrains.kotlin.plugin.compose").versionRef("kotlin")
+            plugin("kotlin-jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
+            plugin("kotlin-multiplatform", "org.jetbrains.kotlin.multiplatform").versionRef("kotlin")
+        }
     }
 }

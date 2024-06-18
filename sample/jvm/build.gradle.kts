@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    alias(sampleLibs.plugins.kotlin.jvm)
     id("dev.drewhamilton.poko")
 }
 
