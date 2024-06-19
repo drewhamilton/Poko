@@ -157,11 +157,12 @@ internal class PokoMembersTransformer(
             startOffset = originalReceiver.startOffset,
             endOffset = originalReceiver.endOffset,
             origin = originalReceiver.origin,
-            symbol = IrValueParameterSymbolImpl(
+            symbol = IrValueParameterSymbolImplCompat(
                 // IrValueParameterSymbolImpl requires a descriptor; same type as
                 // originalReceiver.symbol:
-                descriptor = @OptIn(ObsoleteDescriptorBasedAPI::class)
-                LazyClassReceiverParameterDescriptor(parentClass.descriptor),
+                descriptor = LazyClassReceiverParameterDescriptor(
+                    @OptIn(ObsoleteDescriptorBasedAPI::class) parentClass.descriptor,
+                ),
                 signature = parentClass.symbol.signature,
             ),
             name = originalReceiver.name,
@@ -182,24 +183,22 @@ internal class PokoMembersTransformer(
      * available. Provides forward compatibility with 2.0.20, which changes the constructor's
      * signature.
      */
-    private fun IrValueParameterSymbolImpl(
+    @Suppress("FunctionName") // Factory
+    private fun IrValueParameterSymbolImplCompat(
         descriptor: ParameterDescriptor,
         signature: IdSignature?,
     ): IrValueParameterSymbolImpl {
         try {
-            // Constructor available pre-2.0.20:
-            return IrValueParameterSymbolImpl(descriptor)
+            // Constructor available in 2.0.20+:
+            return IrValueParameterSymbolImpl(descriptor, signature)
         } catch (noSuchMethodError: NoSuchMethodError) {
-            // Constructor signature changes in 2.0.20+:
+            // Old constructor pre-2.0.20:
             val implClass = IrValueParameterSymbolImpl::class.java
-            val newConstructor = implClass.declaredConstructors.single {
-                it.parameters.size == 2 &&
-                    it.parameters.first().type == ParameterDescriptor::class.java &&
-                    it.parameters.last().type == IdSignature::class.java
+            val newConstructor = implClass.constructors.single {
+                it.parameters.single().type == ParameterDescriptor::class.java
             }
             return newConstructor.newInstance(
                 descriptor, // param: descriptor
-                signature, // param: signature
             ) as IrValueParameterSymbolImpl
         }
     }
