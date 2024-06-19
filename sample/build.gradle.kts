@@ -16,6 +16,7 @@ plugins {
 }
 apply(from = "properties.gradle")
 
+logger.lifecycle("Compiling sample app with Kotlin ${libs.versions.kotlin.get()}")
 logger.lifecycle("Targeting Java version $resolvedJavaVersion")
 
 allprojects {

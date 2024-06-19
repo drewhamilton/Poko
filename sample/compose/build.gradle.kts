@@ -4,7 +4,7 @@ import dev.drewhamilton.poko.sample.build.resolvedJavaVersion
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose.plugin)
+    alias(libs.plugins.kotlin.compose)
     id("dev.drewhamilton.poko")
 }
 
