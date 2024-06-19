@@ -57,6 +57,7 @@ context(IrBlockBodyBuilder)
 internal fun IrGetValueImpl(
     parameter: IrValueParameter,
 ) = try {
+    // Available in 2.0.20+:
     IrGetValueImpl(
         startOffset = startOffset,
         endOffset = endOffset,
@@ -64,7 +65,8 @@ internal fun IrGetValueImpl(
         symbol = parameter.symbol,
     )
 } catch (noClassDefFoundError: NoClassDefFoundError) {
-    javaClass.classLoader.loadClass("org.jetbrains.kotlin.ir.expressions.impl.BuildersKt")
+    // Old parent class pre-2.0.20:
+    javaClass.classLoader.loadClass("org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImplKt")
         .methods
         .single { function ->
             function.name == "IrGetValueImpl" &&
