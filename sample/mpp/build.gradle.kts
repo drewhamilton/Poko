@@ -1,5 +1,5 @@
 plugins {
-    alias(sampleLibs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.multiplatform)
     id("dev.drewhamilton.poko")
 }
 

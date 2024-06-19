@@ -72,30 +72,15 @@ if (!isCi) {
 }
 
 dependencyResolutionManagement {
-    val parentLibsVersionsToml = files("../gradle/libs.versions.toml")
     versionCatalogs {
         create("libs") {
-            from(parentLibsVersionsToml)
-        }
+            from(files("../gradle/libs.versions.toml"))
 
-        // Allows compiling the sample project with a different Kotlin version than Poko:
-        create("sampleLibs") {
-            val ciKotlinVersion: String? = System.getenv()["poko_sample_kotlin_version"]
-            // If there is no CI-defined version, manually parse libs.versions.toml, which we can't
-            // yet read the normal way because we're in settings.gradle:
-            val kotlinVersion = ciKotlinVersion?.nullIfBlank()
-                ?: Regex("kotlin = \\\"(?<kotlinVersion>.*)\\\"")
-                    .find(parentLibsVersionsToml.singleFile.readText())!!
-                    .groups["kotlinVersion"]!!
-                    .value
-            logger.lifecycle("Compiling sample app with Kotlin $kotlinVersion")
-
-            version("kotlin", kotlinVersion)
-            library("kotlin-test", "org.jetbrains.kotlin", "kotlin-test").versionRef("kotlin")
-            plugin("kotlin-android", "org.jetbrains.kotlin.android").versionRef("kotlin")
-            plugin("kotlin-compose", "org.jetbrains.kotlin.plugin.compose").versionRef("kotlin")
-            plugin("kotlin-jvm", "org.jetbrains.kotlin.jvm").versionRef("kotlin")
-            plugin("kotlin-multiplatform", "org.jetbrains.kotlin.multiplatform").versionRef("kotlin")
+            // Compile sample project with different Kotlin version than Poko, if provided:
+            val kotlinVersionOverride = System.getenv()["poko_sample_kotlin_version"]?.nullIfBlank()
+            kotlinVersionOverride?.let { kotlinVersion ->
+                version("kotlin", kotlinVersion)
+            }
         }
     }
 }
