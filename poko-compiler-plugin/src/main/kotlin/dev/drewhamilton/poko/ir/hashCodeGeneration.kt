@@ -30,7 +30,9 @@ import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
+import org.jetbrains.kotlin.ir.symbols.IrVariableSymbol
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
+import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isInt
@@ -72,7 +74,7 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
 
     val irIntType = context.irBuiltIns.intType
 
-    val irResultVar = IrVariableImpl(
+    val irResultVar = IrVariableImplCompat(
         startOffset = startOffset,
         endOffset = endOffset,
         origin = IrDeclarationOrigin.DEFINED,
@@ -330,4 +332,52 @@ private fun IrBlockBodyBuilder.irCallHashCodeFunction(
             else -> putValueArgument(0, value)
         }
     }
+}
+
+/**
+ * Instantiate an [IrVariableImpl]. Forward-compatible with Kotlin 2.0.20—which replaces the
+ * constructor with a factory function—via reflection.
+ */
+@Suppress("FunctionName", "SameParameterValue") // Factory
+private fun IrVariableImplCompat(
+    startOffset: Int,
+    endOffset: Int,
+    origin: IrDeclarationOrigin,
+    symbol: IrVariableSymbol,
+    name: Name,
+    type: IrType,
+    isVar: Boolean,
+    isConst: Boolean,
+    isLateinit: Boolean,
+): IrVariableImpl = try {
+    // Constructor available pre-2.0.20:
+    IrVariableImpl(
+        startOffset = startOffset,
+        endOffset = endOffset,
+        origin = origin,
+        symbol = symbol,
+        name = name,
+        type = type,
+        isVar = isVar,
+        isConst = isConst,
+        isLateinit = isLateinit,
+    )
+} catch (noSuchMethodError: NoSuchMethodError) {
+    // Factory function replaces constructor in 2.0.20+:
+    origin.javaClass.classLoader
+        .loadClass("org.jetbrains.kotlin.ir.declarations.impl.BuildersKt")
+        .methods
+        .single { it.name == "IrVariableImpl" }
+        .invoke(
+            null, // static invocation
+            startOffset, // param: startOffset
+            endOffset, // param: endOffset
+            origin, // param: origin
+            symbol, // param: symbol
+            name, // param: name
+            type, // param: type
+            isVar, // param: isVar
+            isConst, // param: isConst
+            isLateinit, // param: isLateinit
+        ) as IrVariableImpl
 }
