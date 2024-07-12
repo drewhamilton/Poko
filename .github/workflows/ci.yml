@@ -60,6 +60,9 @@ jobs:
   build-sample:
     runs-on: ubuntu-latest
     needs: build
+    strategy:
+      matrix:
+        poko_sample_kotlin_version: [ ~, "2.0.10-RC" ]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -80,6 +83,8 @@ jobs:
 
       - name: Build sample
         run: cd sample && ./gradlew build --stacktrace
+        env:
+          poko_sample_kotlin_version: ${{ matrix.poko_sample_kotlin_version }}
 
 env:
   GRADLE_OPTS: >-
