@@ -18,7 +18,7 @@ jobs:
           java-version: 22
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build
         run: ./gradlew build publishToMavenLocal --stacktrace
@@ -50,7 +50,7 @@ jobs:
             22
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Test
         run: ./gradlew :poko-tests:jvmTest :poko-tests-without-k2:jvmTest --stacktrace
@@ -79,7 +79,7 @@ jobs:
           path: ~/.m2/repository/dev/drewhamilton/poko/
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build sample
         run: cd sample && ./gradlew build --stacktrace
