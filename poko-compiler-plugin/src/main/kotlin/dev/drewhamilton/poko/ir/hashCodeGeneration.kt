@@ -335,8 +335,8 @@ private fun IrBlockBodyBuilder.irCallHashCodeFunction(
 }
 
 /**
- * Instantiate an [IrVariableImpl]. Forward-compatible with Kotlin 2.0.20—which replaces the
- * constructor with a factory function—via reflection.
+ * Instantiate an [IrVariableImpl]. Backward-compatible with Kotlin 2.0.0—which used a
+ * constructor instead of a factory function—via reflection.
  */
 @Suppress("FunctionName", "SameParameterValue") // Factory
 private fun IrVariableImplCompat(
@@ -350,7 +350,7 @@ private fun IrVariableImplCompat(
     isConst: Boolean,
     isLateinit: Boolean,
 ): IrVariableImpl = try {
-    // Constructor available pre-2.0.20:
+    // Factory function available in 2.0.20+:
     IrVariableImpl(
         startOffset = startOffset,
         endOffset = endOffset,
@@ -363,13 +363,13 @@ private fun IrVariableImplCompat(
         isLateinit = isLateinit,
     )
 } catch (noSuchMethodError: NoSuchMethodError) {
-    // Factory function replaces constructor in 2.0.20+:
+    // TODO: Test whether this is the write exception type
+    // Constructor pre-2.0.20:
     origin.javaClass.classLoader
-        .loadClass("org.jetbrains.kotlin.ir.declarations.impl.BuildersKt")
-        .methods
-        .single { it.name == "IrVariableImpl" }
-        .invoke(
-            null, // static invocation
+        .loadClass("org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl")
+        .constructors
+        .single()
+        .newInstance(
             startOffset, // param: startOffset
             endOffset, // param: endOffset
             origin, // param: origin
