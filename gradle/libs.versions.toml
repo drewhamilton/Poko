@@ -2,7 +2,7 @@
 
 androidx-compose-runtime = "1.6.8"
 
-kotlin = "2.0.10"
+kotlin = "2.0.20"
 kotlinCompileTesting = "1.6.0"
 kotlinCompileTestingFork = "0.5.1"
 # https://github.com/google/ksp/releases:
