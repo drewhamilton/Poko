@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.17.0
+_2024-08-22_
+
+Compile with Kotlin 2.0.20. Support Java 22.
+
 ## 0.16.0
 _2024-05-28_
 
