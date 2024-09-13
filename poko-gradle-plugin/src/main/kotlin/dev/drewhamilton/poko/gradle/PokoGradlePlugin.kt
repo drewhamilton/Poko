@@ -30,6 +30,9 @@ public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
                         }
                     }
                 } else {
+                    if (target.plugins.hasPlugin("org.gradle.java-test-fixtures")) {
+                        target.dependencies.add("testFixturesImplementation", annotationDependency)
+                    }
                     target.dependencies.add(IMPLEMENTATION_CONFIGURATION_NAME, annotationDependency)
                 }
             }
