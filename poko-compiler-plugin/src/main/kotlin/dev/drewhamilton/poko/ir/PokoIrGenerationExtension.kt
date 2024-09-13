@@ -16,7 +16,7 @@ internal class PokoIrGenerationExtension(
 
     override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
         if (pluginContext.referenceClass(pokoAnnotationName) == null) {
-            moduleFragment.report("Could not find class <$pokoAnnotationName>")
+            moduleFragment.reportError("Could not find class <$pokoAnnotationName>")
             return
         }
 
@@ -28,9 +28,9 @@ internal class PokoIrGenerationExtension(
         moduleFragment.transform(pokoMembersTransformer, null)
     }
 
-    private fun IrModuleFragment.report(message: String) {
+    private fun IrModuleFragment.reportError(message: String) {
         val psi = descriptor.findPsi()
         val location = MessageUtil.psiElementToMessageLocation(psi)
-        messageCollector.report(CompilerMessageSeverity.INFO, message, location)
+        messageCollector.report(CompilerMessageSeverity.ERROR, message, location)
     }
 }
