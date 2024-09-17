@@ -20,6 +20,7 @@
 .idea/**/compiler.xml
 .idea/misc.xml
 .idea/other.xml
+.idea/caches
 
 # Generated files
 .idea/**/artifacts
