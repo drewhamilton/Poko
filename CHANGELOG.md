@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.17.1
+_2024-09-17_
+
+Automatically add the Poko annotation dependency to test fixtures when they are enabled on JVM
+projects.
+
 ## 0.17.0
 _2024-08-22_
 
