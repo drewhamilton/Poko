@@ -20,6 +20,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Update Yarn lock file
+        run: ./gradlew kotlinUpgradeYarnLock
+
       - name: Build
         run: ./gradlew build publishToMavenLocal --stacktrace
         env:
