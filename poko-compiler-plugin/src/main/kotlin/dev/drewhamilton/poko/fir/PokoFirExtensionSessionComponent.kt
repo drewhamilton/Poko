@@ -20,6 +20,7 @@ internal class PokoFirExtensionSessionComponent(
         }
     }
 
+    @OptIn(org.jetbrains.kotlin.fir.symbols.SymbolInternals::class)
     private fun FirAnnotation.classId(): ClassId? =
         annotationTypeRef.coneTypeSafe<ConeClassLikeType>()?.classId
 
