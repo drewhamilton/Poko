@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isNullable
+import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
@@ -82,7 +83,7 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
                 )
             }
 
-            with(context) { classifier.isArrayOrPrimitiveArray() } -> {
+            classifier.isArrayOrPrimitiveArray(context.irBuiltIns) -> {
                 irCallToStringFunction(
                     toStringFunctionSymbol = context.irBuiltIns.dataClassArrayMemberToStringSymbol,
                     value = propertyValue,
@@ -110,7 +111,7 @@ private fun IrBlockBodyBuilder.maybeFindArrayDeepToStringFunction(
 ): IrSimpleFunctionSymbol? {
     val propertyClassifier = property.type.classifierOrFail
 
-    val isArray = with(context) { propertyClassifier.isArrayOrPrimitiveArray() }
+    val isArray = propertyClassifier.isArrayOrPrimitiveArray(context.irBuiltIns)
     if (!isArray) {
         messageCollector.reportErrorOnProperty(
             property = property,

@@ -39,6 +39,7 @@ import org.jetbrains.kotlin.ir.types.isInt
 import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.types.isUInt
 import org.jetbrains.kotlin.ir.util.functions
+import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
@@ -251,7 +252,7 @@ private fun IrBlockBodyBuilder.maybeFindArrayContentHashCodeFunction(
 ): IrSimpleFunctionSymbol? {
     val propertyClassifier = property.type.classifierOrFail
 
-    val isArray = with(context) { propertyClassifier.isArrayOrPrimitiveArray() }
+    val isArray = propertyClassifier.isArrayOrPrimitiveArray(context.irBuiltIns)
     if (!isArray) {
         messageCollector.reportErrorOnProperty(
             property = property,
@@ -288,7 +289,7 @@ private fun IrBlockBodyBuilder.findArrayContentDeepHashCodeFunction(
 private fun IrBlockBodyBuilder.getStandardHashCodeFunctionSymbol(
     classifier: IrClassifierSymbol?,
 ): IrSimpleFunctionSymbol = when {
-    with(context) { classifier.isArrayOrPrimitiveArray() } ->
+    classifier.isArrayOrPrimitiveArray(context.irBuiltIns) ->
         context.irBuiltIns.dataClassArrayMemberHashCodeSymbol
     classifier is IrClassSymbol ->
         getHashCodeFunctionForClass(classifier.owner)
