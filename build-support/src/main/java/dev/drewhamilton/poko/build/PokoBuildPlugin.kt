@@ -32,7 +32,7 @@ class PokoBuildPlugin : Plugin<Project> {
 
     private fun commonKotlinConfiguration(project: Project) {
         project.tasks.withType(KotlinCompilationTask::class.java).configureEach {
-            compilerOptions.freeCompilerArgs.add("-progressive")
+            compilerOptions.progressiveMode.convention(true)
         }
     }
 

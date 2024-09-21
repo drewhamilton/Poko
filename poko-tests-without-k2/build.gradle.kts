@@ -9,7 +9,10 @@ plugins {
 }
 
 tasks.withType<KotlinCompile>().configureEach {
-  compilerOptions.languageVersion.set(KotlinVersion.KOTLIN_1_9)
+  compilerOptions {
+    languageVersion = KotlinVersion.KOTLIN_1_9
+    progressiveMode = false
+  }
 }
 
 val jvmToolchainVersion: Int? = System.getenv()["poko_tests_jvm_toolchain_version"]?.toInt()
