@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
   alias(libs.plugins.kotlin.multiplatform)
 }
@@ -27,7 +29,9 @@ kotlin {
   tvosX64()
   tvosSimulatorArm64()
 
+  @OptIn(ExperimentalWasmDsl::class)
   wasmJs().nodejs()
+  @OptIn(ExperimentalWasmDsl::class)
   wasmWasi().nodejs()
 
   watchosArm32()
