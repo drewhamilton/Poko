@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.ir.expressions.addArgument
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
+import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isNullable
@@ -186,6 +187,7 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
  * `contentToString` function if it is a primitive array.
  */
 context(IrPluginContext)
+@OptIn(UnsafeDuringIrConstructionAPI::class)
 private fun IrBuilderWithScope.findContentDeepToStringFunctionSymbol(
     propertyClassifier: IrClassifierSymbol,
 ): IrSimpleFunctionSymbol {
@@ -208,6 +210,7 @@ private fun IrBuilderWithScope.findContentDeepToStringFunctionSymbol(
     }
 }
 
+@OptIn(UnsafeDuringIrConstructionAPI::class)
 private fun IrBlockBodyBuilder.irCallToStringFunction(
     toStringFunctionSymbol: IrSimpleFunctionSymbol,
     value: IrExpression,

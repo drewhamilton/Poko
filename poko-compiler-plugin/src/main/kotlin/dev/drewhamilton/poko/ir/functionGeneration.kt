@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.IrValueSymbol
+import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
@@ -133,6 +134,7 @@ private val IrTypeParameterSymbol.hasArrayOrPrimitiveArrayUpperBound: Boolean
         return false
     }
 
+@OptIn(UnsafeDuringIrConstructionAPI::class)
 internal val IrTypeParameter.erasedUpperBound: IrClass
     get() {
         // Pick the (necessarily unique) non-interface upper bound if it exists
