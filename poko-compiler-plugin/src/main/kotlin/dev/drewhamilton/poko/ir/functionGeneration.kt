@@ -97,15 +97,6 @@ private val arrayContentBasedAnnotationFqName = ClassId(
 ).asSingleFqName()
 
 /**
- * Returns true if the classifier represents a typed or primitive array.
- */
-context(IrGeneratorContextInterface)
-internal fun IrClassifierSymbol?.isArrayOrPrimitiveArray(): Boolean {
-    return this == irBuiltIns.arrayClass ||
-        this in irBuiltIns.primitiveArraysToPrimitiveTypes
-}
-
-/**
  * Returns true if the classifier represents a type that may be an array at runtime (e.g. [Any] or
  * a generic type).
  */

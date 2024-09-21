@@ -37,6 +37,7 @@ import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.defaultType
+import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
@@ -110,7 +111,7 @@ private fun IrBuilderWithScope.irArrayContentDeepEquals(
     val propertyType = property.type
     val propertyClassifier = propertyType.classifierOrFail
 
-    val isArray = with(context) { propertyClassifier.isArrayOrPrimitiveArray() }
+    val isArray = propertyClassifier.isArrayOrPrimitiveArray(context.irBuiltIns)
     if (!isArray) {
         val mayBeRuntimeArray = with(context) { propertyClassifier.mayBeRuntimeArray() }
         return if (mayBeRuntimeArray) {
