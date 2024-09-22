@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.impl.IrFactoryImpl
+import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.util.IdSignature
@@ -73,6 +74,7 @@ internal class PokoMembersTransformer(
         return super.visitFunctionNew(declaration)
     }
 
+    @OptIn(UnsafeDuringIrConstructionAPI::class)
     private fun IrClass.isPokoClass(): Boolean = when {
         !hasAnnotation(pokoAnnotationName.asSingleFqName()) -> {
             messageCollector.log("Not Poko class")
@@ -106,6 +108,7 @@ internal class PokoMembersTransformer(
         }
     }
 
+    @OptIn(UnsafeDuringIrConstructionAPI::class)
     private inline fun IrFunction.convertToGenerated(
         generateFunctionBody: IrBlockBodyBuilder.(List<IrProperty>) -> Unit
     ) {

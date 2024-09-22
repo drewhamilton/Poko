@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.IrVariableSymbol
+import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classifierOrFail
@@ -141,6 +142,7 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
  * [org.jetbrains.kotlin.fir.backend.generators.DataClassMembersGenerator].
  */
 context(IrPluginContext)
+@OptIn(UnsafeDuringIrConstructionAPI::class)
 private fun IrBlockBodyBuilder.getHashCodeOf(
     property: IrProperty,
     value: IrExpression,
@@ -265,6 +267,7 @@ private fun IrBlockBodyBuilder.maybeFindArrayContentHashCodeFunction(
 }
 
 context(IrPluginContext)
+@OptIn(UnsafeDuringIrConstructionAPI::class)
 private fun IrBlockBodyBuilder.findArrayContentDeepHashCodeFunction(
     propertyClassifier: IrClassifierSymbol,
 ): IrSimpleFunctionSymbol {
@@ -286,6 +289,7 @@ private fun IrBlockBodyBuilder.findArrayContentDeepHashCodeFunction(
     }
 }
 
+@OptIn(UnsafeDuringIrConstructionAPI::class)
 private fun IrBlockBodyBuilder.getStandardHashCodeFunctionSymbol(
     classifier: IrClassifierSymbol?,
 ): IrSimpleFunctionSymbol = when {
@@ -299,6 +303,7 @@ private fun IrBlockBodyBuilder.getStandardHashCodeFunctionSymbol(
         error("Unknown classifier kind $classifier")
 }
 
+@OptIn(UnsafeDuringIrConstructionAPI::class)
 private fun IrBlockBodyBuilder.getHashCodeFunctionForClass(
     irClass: IrClass
 ): IrSimpleFunctionSymbol {
@@ -311,6 +316,7 @@ private fun IrBlockBodyBuilder.getHashCodeFunctionForClass(
         ?: context.irBuiltIns.anyClass.functions.single { it.owner.name.asString() == "hashCode" }
 }
 
+@OptIn(UnsafeDuringIrConstructionAPI::class)
 private fun IrBlockBodyBuilder.irCallHashCodeFunction(
     hashCodeFunctionSymbol: IrSimpleFunctionSymbol,
     value: IrExpression,
