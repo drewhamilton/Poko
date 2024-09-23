@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
-import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irConcat
@@ -33,13 +32,6 @@ import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
-
-context(IrGeneratorContextInterface)
-internal fun IrFunction.isToString(): Boolean {
-    return name == Name.identifier("toString") &&
-        returnType == irBuiltIns.stringType &&
-        valueParameters.isEmpty()
-}
 
 /**
  * Generate the body of the toString method. Adapted from

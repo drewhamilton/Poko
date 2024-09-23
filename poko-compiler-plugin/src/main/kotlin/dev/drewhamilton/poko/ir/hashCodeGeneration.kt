@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
-import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irCallOp
@@ -44,16 +43,6 @@ import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
-
-/**
- * True if the function's signature matches the standard `hashCode` function signature.
- */
-context(IrGeneratorContextInterface)
-internal fun IrFunction.isHashCode(): Boolean {
-    return name == Name.identifier("hashCode") &&
-        returnType == irBuiltIns.intType &&
-        valueParameters.isEmpty()
-}
 
 /**
  * Generate the body of the hashCode method. Adapted from

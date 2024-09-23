@@ -6,7 +6,6 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
-import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irElseBranch
@@ -42,17 +41,6 @@ import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
-
-/**
- * True if the function's signature matches the standard `equals` function signature.
- */
-context(IrGeneratorContextInterface)
-internal fun IrFunction.isEquals(): Boolean {
-    val valueParameters = valueParameters
-    return name == Name.identifier("equals") &&
-        returnType == irBuiltIns.booleanType &&
-        valueParameters.size == 1 && valueParameters[0].type == irBuiltIns.anyNType
-}
 
 /**
  * Generate the body of the equals method. Adapted from
