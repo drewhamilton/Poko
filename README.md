@@ -88,6 +88,14 @@ exclusively compatible with specific versions of Poko.
 Snapshots of the development version are available in [Sonatype's Snapshots
 repository](https://oss.sonatype.org/#view-repositories;snapshots~browsestorage).
 
+Releases are signed with [this key](https://keyserver.ubuntu.com/pks/lookup?search=09939C73246B4BA7444CAA453D002DBC5EA9615F&fingerprint=on&op=index).
+```
+pub   rsa4096 2020-02-02
+      09939C73246B4BA7444CAA453D002DBC5EA9615F
+uid   Drew Hamilton <drew.hamilton.0@gmail.com>
+sig   3D002DBC5EA9615F 2020-02-02
+```
+
 To use Poko, apply the Gradle plugin in your project:
 ```kotlin
 // Root project:
