@@ -5,10 +5,12 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
+import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irCallOp
 import org.jetbrains.kotlin.ir.builders.irElseBranch
+import org.jetbrains.kotlin.ir.builders.irEqualsNull
 import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irIfNull
@@ -25,6 +27,8 @@ import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.expressions.impl.IrBranchImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrWhenImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
@@ -116,13 +120,26 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
     val field = property.backingField!!
     val irGetField = { irGetField(function.receiver(), field) }
     return when {
-        property.type.isNullable() -> irIfNull(
+        property.type.isNullable() -> irIfNullCompat(
             type = context.irBuiltIns.intType,
             subject = irGetField(),
             thenPart = irInt(0),
             elsePart = getHashCodeOf(property, irGetField(), messageCollector)
         )
         else -> getHashCodeOf(property, irGetField(), messageCollector)
+    }
+}
+
+// TODO: Revert to standard irIfNull when 2.0.x support is dropped
+private fun IrBuilderWithScope.irIfNullCompat(
+    type: IrType,
+    subject: IrExpression,
+    thenPart: IrExpression,
+    elsePart: IrExpression,
+): IrWhenImpl {
+    return IrWhenImpl(startOffset, endOffset, type, null).apply {
+        branches.add(IrBranchImpl(startOffset, endOffset, irEqualsNull(subject), thenPart))
+        branches.add(irElseBranch(elsePart))
     }
 }
 
