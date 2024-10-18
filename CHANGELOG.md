@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.17.2
+_2024-10-18_
+
+Compile with Kotlin 2.0.21. Implement compatibility with Kotlin 2.0.0 – 2.1.0-Beta2.
+
 ## 0.17.1
 _2024-09-17_
 
