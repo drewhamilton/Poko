@@ -351,6 +351,7 @@ private fun IrBlockBodyBuilder.irCallHashCodeFunction(
  * Instantiate an [IrVariableImpl]. Backward-compatible with Kotlin 2.0.0—which used a
  * constructor instead of a factory function—via reflection.
  */
+// TODO: Revert to standard IrVariableImpl when 2.0.10 support is dropped
 @Suppress("FunctionName", "SameParameterValue") // Factory
 private fun IrVariableImplCompat(
     startOffset: Int,
@@ -376,7 +377,6 @@ private fun IrVariableImplCompat(
         isLateinit = isLateinit,
     )
 } catch (noSuchMethodError: NoSuchMethodError) {
-    // TODO: Test whether this is the write exception type
     // Constructor pre-2.0.20:
     origin.javaClass.classLoader
         .loadClass("org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl")

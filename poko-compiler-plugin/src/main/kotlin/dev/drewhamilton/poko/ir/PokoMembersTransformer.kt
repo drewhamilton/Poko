@@ -189,6 +189,7 @@ internal class PokoMembersTransformer(
      * available. Provides forward compatibility with 2.0.20, which changes the constructor's
      * signature.
      */
+    // TODO: Revert to standard IrValueParameterSymbolImpl when support for 2.0.10 is dropped
     @Suppress("FunctionName") // Factory
     private fun IrValueParameterSymbolImplCompat(
         descriptor: ParameterDescriptor,

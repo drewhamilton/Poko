@@ -54,6 +54,7 @@ internal fun IrFunction.receiver(): IrGetValue = IrGetValueImpl(dispatchReceiver
  * Invoke [IrGetValueImpl] via reflection if the known function is not available. Provides forward
  * compatibility with 2.0.20, which changes the constructor's signature.
  */
+// TODO: Revert to standard IrGetValueImpl when support for 2.0.10 is dropped
 context(IrBlockBodyBuilder)
 internal fun IrGetValueImpl(
     parameter: IrValueParameter,
