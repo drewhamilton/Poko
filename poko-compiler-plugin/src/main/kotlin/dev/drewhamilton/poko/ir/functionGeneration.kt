@@ -8,9 +8,12 @@ import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
+import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.IrGetValue
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
+import org.jetbrains.kotlin.ir.expressions.impl.IrBranchImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrWhenImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
@@ -48,6 +51,7 @@ internal val IrProperty.type
 context(IrBlockBodyBuilder)
 internal fun IrFunction.receiver(): IrGetValue = IrGetValueImpl(dispatchReceiverParameter!!)
 
+//region Compat/reflection
 /**
  * Gets the value of the given [parameter].
  *
@@ -89,6 +93,76 @@ internal fun IrGetValueImpl(
             null, // param: origin (default value is null)
         ) as IrGetValueImpl
 }
+
+// TODO: Remove when support for 2.0.10 is dropped
+@Suppress("FunctionName") // Factory
+internal fun Any.IrWhenImplCompat(
+    startOffset: Int,
+    endOffset: Int,
+    type: IrType,
+    origin: IrStatementOrigin? = null,
+): IrWhenImpl {
+    return try {
+        IrWhenImpl(
+            startOffset = startOffset,
+            endOffset = endOffset,
+            type = type,
+            origin = origin
+        )
+    } catch (noClassDefFoundError: NoClassDefFoundError) {
+        javaClass.classLoader.loadClass("org.jetbrains.kotlin.ir.expressions.impl.IrWhenImplKt")
+            .methods
+            .single { function ->
+                function.name == "IrWhenImpl" &&
+                    function.parameters.map { it.type } == listOf(
+                    Int::class.java,
+                    Int::class.java,
+                    IrType::class.java,
+                    IrStatementOrigin::class.java,
+                )
+            }
+            .invoke(
+                null, // static invocation
+                startOffset, // param: startOffset
+                endOffset, // param: endOffset
+                type, // param: type
+                origin, // param: origin
+            ) as IrWhenImpl
+    }
+}
+
+// TODO: Remove when support for 2.0.10 is dropped
+@Suppress("FunctionName") // Factory
+internal fun Any.IrBranchImplCompat(
+    startOffset: Int,
+    endOffset: Int,
+    condition: IrExpression,
+    result: IrExpression,
+): IrBranchImpl {
+    return try {
+        IrBranchImpl(startOffset, endOffset, condition, result)
+    } catch (noClassDefFoundError: NoClassDefFoundError) {
+        javaClass.classLoader.loadClass("org.jetbrains.kotlin.ir.expressions.impl.IrBranchImplKt")
+            .methods
+            .single { function ->
+                function.name == "IrBranchImpl" &&
+                    function.parameters.map { it.type } == listOf(
+                    Int::class.java,
+                    Int::class.java,
+                    IrExpression::class.java,
+                    IrExpression::class.java,
+                )
+            }
+            .invoke(
+                null, // static invocation
+                startOffset, // param: startOffset
+                endOffset, // param: endOffset
+                condition, // param: condition
+                result, // param: result
+            ) as IrBranchImpl
+    }
+}
+//endregion
 
 internal fun IrProperty.hasArrayContentBasedAnnotation(): Boolean =
     hasAnnotation(arrayContentBasedAnnotationFqName)

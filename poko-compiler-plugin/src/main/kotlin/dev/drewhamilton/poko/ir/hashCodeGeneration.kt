@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrExpression
-import org.jetbrains.kotlin.ir.expressions.impl.IrBranchImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrWhenImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
@@ -137,8 +136,8 @@ private fun IrBuilderWithScope.irIfNullCompat(
     thenPart: IrExpression,
     elsePart: IrExpression,
 ): IrWhenImpl {
-    return IrWhenImpl(startOffset, endOffset, type, null).apply {
-        branches.add(IrBranchImpl(startOffset, endOffset, irEqualsNull(subject), thenPart))
+    return IrWhenImplCompat(startOffset, endOffset, type).apply {
+        branches.add(IrBranchImplCompat(startOffset, endOffset, irEqualsNull(subject), thenPart))
         branches.add(irElseBranch(elsePart))
     }
 }
@@ -376,7 +375,7 @@ private fun IrVariableImplCompat(
         isConst = isConst,
         isLateinit = isLateinit,
     )
-} catch (noSuchMethodError: NoSuchMethodError) {
+} catch (noClassDefFoundError: NoClassDefFoundError) {
     // Constructor pre-2.0.20:
     origin.javaClass.classLoader
         .loadClass("org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl")

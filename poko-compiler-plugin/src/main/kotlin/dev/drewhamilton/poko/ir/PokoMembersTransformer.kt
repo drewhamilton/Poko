@@ -202,7 +202,8 @@ internal class PokoMembersTransformer(
             // Old constructor pre-2.0.20:
             val implClass = IrValueParameterSymbolImpl::class.java
             val newConstructor = implClass.constructors.single {
-                it.parameters.single().type == ParameterDescriptor::class.java
+                it.parameters.size == 1 &&
+                    it.parameters.single().type == ParameterDescriptor::class.java
             }
             return newConstructor.newInstance(
                 descriptor, // param: descriptor
