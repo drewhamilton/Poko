@@ -62,7 +62,9 @@ jobs:
     needs: build
     strategy:
       matrix:
-        poko_sample_kotlin_version: [ 2.0.20, ~ ]
+        poko_sample_kotlin_version: [ 2.0.20, ~, 2.1.0-Beta2 ]
+    env:
+      poko_sample_kotlin_version: ${{ matrix.poko_sample_kotlin_version }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -81,10 +83,12 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Upgrade yarn lock
+        if: ${{ matrix.poko_sample_kotlin_version != null }}
+        run: cd sample && ./gradlew kotlinUpgradeYarnLock
+
       - name: Build sample
         run: cd sample && ./gradlew build --stacktrace
-        env:
-          poko_sample_kotlin_version: ${{ matrix.poko_sample_kotlin_version }}
 
 env:
   GRADLE_OPTS: >-

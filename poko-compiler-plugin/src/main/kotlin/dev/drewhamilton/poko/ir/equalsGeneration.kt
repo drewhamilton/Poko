@@ -15,12 +15,11 @@ import org.jetbrains.kotlin.ir.builders.irFalse
 import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irIfThenElse
-import org.jetbrains.kotlin.ir.builders.irIfThenReturnFalse
-import org.jetbrains.kotlin.ir.builders.irIfThenReturnTrue
 import org.jetbrains.kotlin.ir.builders.irImplicitCast
 import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irNotEquals
 import org.jetbrains.kotlin.ir.builders.irNotIs
+import org.jetbrains.kotlin.ir.builders.irReturnFalse
 import org.jetbrains.kotlin.ir.builders.irReturnTrue
 import org.jetbrains.kotlin.ir.builders.irTemporary
 import org.jetbrains.kotlin.ir.builders.irWhen
@@ -29,6 +28,8 @@ import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.expressions.impl.IrBranchImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrWhenImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
@@ -57,8 +58,8 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
     val irType = irClass.defaultType
     fun irOther(): IrExpression = IrGetValueImpl(functionDeclaration.valueParameters.single())
 
-    +irIfThenReturnTrue(irEqeqeq(functionDeclaration.receiver(), irOther()))
-    +irIfThenReturnFalse(irNotIs(irOther(), irType))
+    +irIfThenReturnBool(true, irEqeqeq(functionDeclaration.receiver(), irOther()))
+    +irIfThenReturnBool(false, irNotIs(irOther(), irType))
 
     val otherWithCast = irTemporary(irImplicitCast(irOther(), irType), "other_with_cast")
     for (property in classProperties) {
@@ -81,7 +82,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
                 irNotEquals(arg1, arg2)
             }
         }
-        +irIfThenReturnFalse(irNotEquals)
+        +irIfThenReturnBool(false, irNotEquals)
     }
     +irReturnTrue()
 }
@@ -224,5 +225,16 @@ private fun IrBuilderWithScope.findContentDeepEqualsFunctionSymbol(
         functionSymbol.owner.extensionReceiverParameter?.type?.let {
             it.classifierOrNull == classifier && it.isNullable()
         } ?: false
+    }
+}
+
+// TODO: Replace with direct call to irIfThenReturnTrue/False when support for 2.0.x is dropped
+private fun IrBuilderWithScope.irIfThenReturnBool(
+    bool: Boolean,
+    condition: IrExpression,
+): IrWhenImpl {
+    val thenPart = if (bool) irReturnTrue() else irReturnFalse()
+    return IrWhenImpl(startOffset, endOffset, context.irBuiltIns.unitType, null).apply {
+        branches.add(IrBranchImpl(startOffset, endOffset, condition, thenPart))
     }
 }
