@@ -48,8 +48,9 @@ internal val IrProperty.type
  * In the context of Poko, only works properly after the overridden method has had its
  * `dispatchReceiverParameter` updated to the current parent class.
  */
-context(IrBlockBodyBuilder)
-internal fun IrFunction.receiver(): IrGetValue = IrGetValueImpl(dispatchReceiverParameter!!)
+internal fun IrBlockBodyBuilder.receiver(
+    function: IrFunction,
+): IrGetValue = IrGetValueImpl(function.dispatchReceiverParameter!!)
 
 //region Compat/reflection
 /**
@@ -59,8 +60,7 @@ internal fun IrFunction.receiver(): IrGetValue = IrGetValueImpl(dispatchReceiver
  * compatibility with 2.0.20, which changes the constructor's signature.
  */
 // TODO: Revert to standard IrGetValueImpl when support for 2.0.10 is dropped
-context(IrBlockBodyBuilder)
-internal fun IrGetValueImpl(
+internal fun IrBlockBodyBuilder.IrGetValueImpl(
     parameter: IrValueParameter,
 ) = try {
     // Available in 2.0.20+:
@@ -176,29 +176,30 @@ private val arrayContentBasedAnnotationFqName = ClassId(
  * Returns true if the classifier represents a type that may be an array at runtime (e.g. [Any] or
  * a generic type).
  */
-context(IrGeneratorContextInterface)
-internal fun IrClassifierSymbol?.mayBeRuntimeArray(): Boolean {
-    return this == irBuiltIns.anyClass ||
-        (this is IrTypeParameterSymbol && hasArrayOrPrimitiveArrayUpperBound)
+internal fun IrClassifierSymbol?.mayBeRuntimeArray(
+    context: IrGeneratorContextInterface,
+): Boolean {
+    return this == context.irBuiltIns.anyClass ||
+        (this is IrTypeParameterSymbol && hasArrayOrPrimitiveArrayUpperBound(context))
 }
 
-context(IrGeneratorContextInterface)
-private val IrTypeParameterSymbol.hasArrayOrPrimitiveArrayUpperBound: Boolean
-    get() {
-        superTypes().forEach { superType ->
-            val superTypeClassifier = superType.classifierOrNull
-            // Note: A generic type cannot have an array as an upper bound, else that would also
-            // be checked here.
-            val foundUpperBoundMatch = superTypeClassifier == irBuiltIns.anyClass ||
-                (superTypeClassifier is IrTypeParameterSymbol &&
-                    superTypeClassifier.hasArrayOrPrimitiveArrayUpperBound)
+private fun IrTypeParameterSymbol.hasArrayOrPrimitiveArrayUpperBound(
+    context: IrGeneratorContextInterface,
+): Boolean {
+    superTypes().forEach { superType ->
+        val superTypeClassifier = superType.classifierOrNull
+        // Note: A generic type cannot have an array as an upper bound, else that would also
+        // be checked here.
+        val foundUpperBoundMatch = superTypeClassifier == context.irBuiltIns.anyClass ||
+            (superTypeClassifier is IrTypeParameterSymbol &&
+                superTypeClassifier.hasArrayOrPrimitiveArrayUpperBound(context))
 
-            if (foundUpperBoundMatch) {
-                return true
-            }
+        if (foundUpperBoundMatch) {
+            return true
         }
-        return false
     }
+    return false
+}
 
 @OptIn(UnsafeDuringIrConstructionAPI::class)
 internal val IrTypeParameter.erasedUpperBound: IrClass
@@ -219,16 +220,18 @@ internal val IrTypeParameter.erasedUpperBound: IrClass
         }
     }
 
-context(IrGeneratorContextInterface)
-internal fun PrimitiveType.toPrimitiveArrayClassSymbol(): IrClassSymbol {
-    return irBuiltIns.primitiveTypesToPrimitiveArrays.getValue(this)
+internal fun PrimitiveType.toPrimitiveArrayClassSymbol(
+    context: IrGeneratorContextInterface,
+): IrClassSymbol {
+    return context.irBuiltIns.primitiveTypesToPrimitiveArrays.getValue(this)
 }
 
-context(IrGeneratorContextInterface)
-internal fun IrClassSymbol.createArrayType(): IrSimpleType {
+internal fun IrClassSymbol.createArrayType(
+    context: IrGeneratorContextInterface,
+): IrSimpleType {
     val typeArguments = when {
-        this == irBuiltIns.arrayClass -> listOf(IrStarProjectionImpl)
-        this in irBuiltIns.primitiveArraysToPrimitiveTypes -> emptyList()
+        this == context.irBuiltIns.arrayClass -> listOf(IrStarProjectionImpl)
+        this in context.irBuiltIns.primitiveArraysToPrimitiveTypes -> emptyList()
         else -> throw IllegalArgumentException("$this is not an array class symbol")
     }
     return createType(hasQuestionMark = false, arguments = typeArguments)

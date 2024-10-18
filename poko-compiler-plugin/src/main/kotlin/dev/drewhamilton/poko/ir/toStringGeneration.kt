@@ -4,7 +4,6 @@ import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
-import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irConcat
@@ -38,8 +37,8 @@ import org.jetbrains.kotlin.name.Name
  * Generate the body of the toString method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateToStringMethodBody].
  */
-context(IrPluginContext)
 internal fun IrBlockBodyBuilder.generateToStringMethodBody(
+    context: IrPluginContext,
     irClass: IrClass,
     functionDeclaration: IrFunction,
     classProperties: List<IrProperty>,
@@ -54,19 +53,20 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
 
         irConcat.addArgument(irString(property.name.asString() + "="))
 
-        val propertyValue = irGetField(functionDeclaration.receiver(), property.backingField!!)
+        val propertyValue = irGetField(receiver(functionDeclaration), property.backingField!!)
 
         val classifier = property.type.classifierOrNull
         val hasArrayContentBasedAnnotation = property.hasArrayContentBasedAnnotation()
         val propertyStringValue = when {
-            hasArrayContentBasedAnnotation && with(context) { classifier.mayBeRuntimeArray() } -> {
+            hasArrayContentBasedAnnotation && classifier.mayBeRuntimeArray(context) -> {
                 val field = property.backingField!!
-                val instance = irGetField(functionDeclaration.receiver(), field)
-                irRuntimeArrayContentDeepToString(instance)
+                val instance = irGetField(receiver(functionDeclaration), field)
+                irRuntimeArrayContentDeepToString(context, instance)
             }
 
             hasArrayContentBasedAnnotation -> {
                 val toStringFunctionSymbol = maybeFindArrayDeepToStringFunction(
+                    context = context,
                     property = property,
                     messageCollector = messageCollector
                 ) ?: context.irBuiltIns.dataClassArrayMemberToStringSymbol
@@ -97,8 +97,8 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
  * Returns `contentDeepToString` function symbol if it is an appropriate option for [property],
  * else returns null.
  */
-context(IrPluginContext)
-private fun IrBlockBodyBuilder.maybeFindArrayDeepToStringFunction(
+private fun maybeFindArrayDeepToStringFunction(
+    context: IrPluginContext,
     property: IrProperty,
     messageCollector: MessageCollector,
 ): IrSimpleFunctionSymbol? {
@@ -118,21 +118,22 @@ private fun IrBlockBodyBuilder.maybeFindArrayDeepToStringFunction(
         return null
     }
 
-    return findContentDeepToStringFunctionSymbol(propertyClassifier)
+    return findContentDeepToStringFunctionSymbol(context, propertyClassifier)
 }
 
 /**
  * Generates a `when` branch that checks the runtime type of the [value] instance and invokes
  * `contentDeepToString` or `contentToString` for typed arrays and primitive arrays, respectively.
  */
-context(IrPluginContext)
 private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
+    context: IrPluginContext,
     value: IrExpression,
 ): IrExpression {
     return irWhen(
         type = context.irBuiltIns.stringType,
         branches = listOf(
             irArrayTypeCheckAndContentDeepToStringBranch(
+                context = context,
                 value = value,
                 classSymbol = context.irBuiltIns.arrayClass,
             ),
@@ -141,8 +142,9 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
             // type:
             *PrimitiveType.entries.map { primitiveType ->
                 irArrayTypeCheckAndContentDeepToStringBranch(
+                    context = context,
                     value = value,
-                    classSymbol = with(context) { primitiveType.toPrimitiveArrayClassSymbol() },
+                    classSymbol = primitiveType.toPrimitiveArrayClassSymbol(context),
                 )
             }.toTypedArray(),
 
@@ -160,16 +162,16 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
  * Generates a runtime `when` branch computing the content deep toString of [value]. The branch is
  * only executed if [value] is an instance of [classSymbol].
  */
-context(IrPluginContext)
 private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
+    context: IrPluginContext,
     value: IrExpression,
     classSymbol: IrClassSymbol,
 ): IrBranch {
-    val type = classSymbol.createArrayType()
+    val type = classSymbol.createArrayType(context)
     return irBranch(
         condition = irIs(value, type),
         result = irCallToStringFunction(
-            toStringFunctionSymbol = findContentDeepToStringFunctionSymbol(classSymbol),
+            toStringFunctionSymbol = findContentDeepToStringFunctionSymbol(context, classSymbol),
             value = irImplicitCast(value, type),
         ),
     )
@@ -179,9 +181,9 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
  * Finds `contentDeepToString` function if [propertyClassifier] is a typed array, or
  * `contentToString` function if it is a primitive array.
  */
-context(IrPluginContext)
 @OptIn(UnsafeDuringIrConstructionAPI::class)
-private fun IrBuilderWithScope.findContentDeepToStringFunctionSymbol(
+private fun findContentDeepToStringFunctionSymbol(
+    context: IrPluginContext,
     propertyClassifier: IrClassifierSymbol,
 ): IrSimpleFunctionSymbol {
     val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
@@ -189,7 +191,7 @@ private fun IrBuilderWithScope.findContentDeepToStringFunctionSymbol(
     } else {
         "contentToString"
     }
-    return referenceFunctions(
+    return context.referenceFunctions(
         callableId = CallableId(
             packageName = FqName("kotlin.collections"),
             callableName = Name.identifier(callableName),

@@ -43,33 +43,34 @@ internal class PokoMembersTransformer(
 
         val declarationParent = declaration.parent
         if (declarationParent is IrClass && declarationParent.isPokoClass() && declaration.isFakeOverride) {
-            with(pluginContext) {
-                when {
-                    declaration.isEquals() -> declaration.convertToGenerated { properties ->
-                        generateEqualsMethodBody(
-                            irClass = declarationParent,
-                            functionDeclaration = declaration,
-                            classProperties = properties,
-                            messageCollector = messageCollector,
-                        )
-                    }
+            when {
+                declaration.isEquals() -> declaration.convertToGenerated { properties ->
+                    generateEqualsMethodBody(
+                        context = pluginContext,
+                        irClass = declarationParent,
+                        functionDeclaration = declaration,
+                        classProperties = properties,
+                        messageCollector = messageCollector,
+                    )
+                }
 
-                    declaration.isHashCode() -> declaration.convertToGenerated { properties ->
-                        generateHashCodeMethodBody(
-                            functionDeclaration = declaration,
-                            classProperties = properties,
-                            messageCollector = messageCollector,
-                        )
-                    }
+                declaration.isHashCode() -> declaration.convertToGenerated { properties ->
+                    generateHashCodeMethodBody(
+                        context = pluginContext,
+                        functionDeclaration = declaration,
+                        classProperties = properties,
+                        messageCollector = messageCollector,
+                    )
+                }
 
-                    declaration.isToString() -> declaration.convertToGenerated { properties ->
-                        generateToStringMethodBody(
-                            irClass = declarationParent,
-                            functionDeclaration = declaration,
-                            classProperties = properties,
-                            messageCollector = messageCollector,
-                        )
-                    }
+                declaration.isToString() -> declaration.convertToGenerated { properties ->
+                    generateToStringMethodBody(
+                        context = pluginContext,
+                        irClass = declarationParent,
+                        functionDeclaration = declaration,
+                        classProperties = properties,
+                        messageCollector = messageCollector,
+                    )
                 }
             }
         }
