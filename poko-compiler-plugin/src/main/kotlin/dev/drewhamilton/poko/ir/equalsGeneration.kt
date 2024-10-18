@@ -28,7 +28,6 @@ import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrExpression
-import org.jetbrains.kotlin.ir.expressions.impl.IrBranchImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrWhenImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
@@ -234,7 +233,14 @@ private fun IrBuilderWithScope.irIfThenReturnBool(
     condition: IrExpression,
 ): IrWhenImpl {
     val thenPart = if (bool) irReturnTrue() else irReturnFalse()
-    return IrWhenImpl(startOffset, endOffset, context.irBuiltIns.unitType, null).apply {
-        branches.add(IrBranchImpl(startOffset, endOffset, condition, thenPart))
+    return IrWhenImplCompat(startOffset, endOffset, context.irBuiltIns.unitType).apply {
+        branches.add(
+            IrBranchImplCompat(
+                startOffset = startOffset,
+                endOffset = endOffset,
+                condition = condition,
+                result = thenPart,
+            )
+        )
     }
 }

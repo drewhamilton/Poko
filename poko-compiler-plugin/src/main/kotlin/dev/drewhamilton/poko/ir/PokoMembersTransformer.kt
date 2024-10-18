@@ -189,6 +189,7 @@ internal class PokoMembersTransformer(
      * available. Provides forward compatibility with 2.0.20, which changes the constructor's
      * signature.
      */
+    // TODO: Revert to standard IrValueParameterSymbolImpl when support for 2.0.10 is dropped
     @Suppress("FunctionName") // Factory
     private fun IrValueParameterSymbolImplCompat(
         descriptor: ParameterDescriptor,
@@ -201,7 +202,8 @@ internal class PokoMembersTransformer(
             // Old constructor pre-2.0.20:
             val implClass = IrValueParameterSymbolImpl::class.java
             val newConstructor = implClass.constructors.single {
-                it.parameters.single().type == ParameterDescriptor::class.java
+                it.parameters.size == 1 &&
+                    it.parameters.single().type == ParameterDescriptor::class.java
             }
             return newConstructor.newInstance(
                 descriptor, // param: descriptor
