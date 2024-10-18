@@ -52,8 +52,8 @@ import org.jetbrains.kotlin.name.Name
  * Generate the body of the hashCode method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateHashCodeMethodBody].
  */
-context(IrPluginContext)
 internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
+    context: IrPluginContext,
     functionDeclaration: IrFunction,
     classProperties: List<IrProperty>,
     messageCollector: MessageCollector,
@@ -62,7 +62,14 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
         +irReturn(irInt(0))
         return
     } else if (classProperties.size == 1) {
-        +irReturn(getHashCodeOfProperty(functionDeclaration, classProperties[0], messageCollector))
+        +irReturn(
+            getHashCodeOfProperty(
+                context = context,
+                function = functionDeclaration,
+                property = classProperties[0],
+                messageCollector = messageCollector,
+            ),
+        )
         return
     }
 
@@ -81,6 +88,7 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
     ).also {
         it.parent = functionDeclaration
         it.initializer = getHashCodeOfProperty(
+            context = context,
             function = functionDeclaration,
             property = classProperties[0],
             messageCollector = messageCollector,
@@ -99,7 +107,12 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
             callee = context.irBuiltIns.intPlusSymbol,
             type = irIntType,
             dispatchReceiver = shiftedResult,
-            argument = getHashCodeOfProperty(functionDeclaration, property, messageCollector),
+            argument = getHashCodeOfProperty(
+                context = context,
+                function = functionDeclaration,
+                property = property,
+                messageCollector = messageCollector,
+            ),
         )
         +irSet(irResultVar.symbol, rhs)
     }
@@ -110,22 +123,22 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
 /**
  * Generates the hashcode-computing code for [property].
  */
-context(IrPluginContext)
 private fun IrBlockBodyBuilder.getHashCodeOfProperty(
+    context: IrPluginContext,
     function: IrFunction,
     property: IrProperty,
     messageCollector: MessageCollector,
 ): IrExpression {
     val field = property.backingField!!
-    val irGetField = { irGetField(function.receiver(), field) }
+    val irGetField = { irGetField(receiver(function), field) }
     return when {
         property.type.isNullable() -> irIfNullCompat(
             type = context.irBuiltIns.intType,
             subject = irGetField(),
             thenPart = irInt(0),
-            elsePart = getHashCodeOf(property, irGetField(), messageCollector)
+            elsePart = getHashCodeOf(context, property, irGetField(), messageCollector)
         )
-        else -> getHashCodeOf(property, irGetField(), messageCollector)
+        else -> getHashCodeOf(context, property, irGetField(), messageCollector)
     }
 }
 
@@ -146,9 +159,9 @@ private fun IrBuilderWithScope.irIfNullCompat(
  * Symbol-retrieval adapted from
  * [org.jetbrains.kotlin.fir.backend.generators.DataClassMembersGenerator].
  */
-context(IrPluginContext)
 @OptIn(UnsafeDuringIrConstructionAPI::class)
 private fun IrBlockBodyBuilder.getHashCodeOf(
+    context: IrPluginContext,
     property: IrProperty,
     value: IrExpression,
     messageCollector: MessageCollector,
@@ -158,7 +171,7 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
         return value
     }
     if (property.type.isUInt()) {
-        val uintToInt = referenceClass(StandardNames.FqNames.uInt)!!
+        val uintToInt = context.referenceClass(StandardNames.FqNames.uInt)!!
             .functions
             .single { it.owner.name.asString() == "toInt" }
         return irCall(uintToInt).apply {
@@ -169,13 +182,13 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
     val hasArrayContentBasedAnnotation = property.hasArrayContentBasedAnnotation()
     val classifier = property.type.classifierOrNull
 
-    if (hasArrayContentBasedAnnotation && with(context) { classifier.mayBeRuntimeArray() }) {
-        return irRuntimeArrayContentDeepHashCode(value)
+    if (hasArrayContentBasedAnnotation && classifier.mayBeRuntimeArray(context)) {
+        return irRuntimeArrayContentDeepHashCode(context, value)
     }
 
     // Non-null if content-based hashCode will be used, else null:
     val contentHashCodeFunctionSymbol = if (hasArrayContentBasedAnnotation) {
-        maybeFindArrayContentHashCodeFunction(property, messageCollector)
+        maybeFindArrayContentHashCodeFunction(context, property, messageCollector)
     } else {
         null
     }
@@ -189,14 +202,15 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
  * Generates a `when` branch that checks the runtime type of the [value] instance and invokes
  * `contentDeepHashCode` or `contentHashCode` for typed arrays and primitive arrays, respectively.
  */
-context(IrPluginContext)
 private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
+    context: IrPluginContext,
     value: IrExpression,
 ): IrExpression {
     return irWhen(
         type = context.irBuiltIns.intType,
         branches = listOf(
             irArrayTypeCheckAndContentDeepHashCodeBranch(
+                context = context,
                 value = value,
                 classSymbol = context.irBuiltIns.arrayClass,
             ),
@@ -205,8 +219,9 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
             // type:
             *PrimitiveType.entries.map { primitiveType ->
                 irArrayTypeCheckAndContentDeepHashCodeBranch(
+                    context = context,
                     value = value,
-                    classSymbol = with(context) { primitiveType.toPrimitiveArrayClassSymbol() },
+                    classSymbol = primitiveType.toPrimitiveArrayClassSymbol(context),
                 )
             }.toTypedArray(),
 
@@ -231,16 +246,16 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
  * Generates a runtime `when` branch computing the content deep hashCode of [value]. The branch is
  * only executed if [value] is an instance of [classSymbol].
  */
-context(IrPluginContext)
 private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
+    context: IrPluginContext,
     value: IrExpression,
     classSymbol: IrClassSymbol,
 ): IrBranch {
-    val type = with(context) { classSymbol.createArrayType() }
+    val type = classSymbol.createArrayType(context)
     return irBranch(
         condition = irIs(value, type),
         result = irCall(
-            callee = findArrayContentDeepHashCodeFunction(classSymbol),
+            callee = findArrayContentDeepHashCodeFunction(context, classSymbol),
             type = context.irBuiltIns.intType,
         ).apply {
             extensionReceiver = irImplicitCast(value, type)
@@ -252,8 +267,8 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
  * Returns contentDeepHashCode function symbol if it is an appropriate option for [property],
  * else returns null. [property] must have an array type.
  */
-context(IrPluginContext)
-private fun IrBlockBodyBuilder.maybeFindArrayContentHashCodeFunction(
+private fun maybeFindArrayContentHashCodeFunction(
+    context: IrPluginContext,
     property: IrProperty,
     messageCollector: MessageCollector,
 ): IrSimpleFunctionSymbol? {
@@ -268,12 +283,12 @@ private fun IrBlockBodyBuilder.maybeFindArrayContentHashCodeFunction(
         return null
     }
 
-    return findArrayContentDeepHashCodeFunction(propertyClassifier)
+    return findArrayContentDeepHashCodeFunction(context, propertyClassifier)
 }
 
-context(IrPluginContext)
 @OptIn(UnsafeDuringIrConstructionAPI::class)
-private fun IrBlockBodyBuilder.findArrayContentDeepHashCodeFunction(
+private fun findArrayContentDeepHashCodeFunction(
+    context: IrPluginContext,
     propertyClassifier: IrClassifierSymbol,
 ): IrSimpleFunctionSymbol {
     val callableName = if (propertyClassifier == context.irBuiltIns.arrayClass) {
@@ -281,7 +296,7 @@ private fun IrBlockBodyBuilder.findArrayContentDeepHashCodeFunction(
     } else {
         "contentHashCode"
     }
-    return referenceFunctions(
+    return context.referenceFunctions(
         callableId = CallableId(
             packageName = FqName("kotlin.collections"),
             callableName = Name.identifier(callableName),

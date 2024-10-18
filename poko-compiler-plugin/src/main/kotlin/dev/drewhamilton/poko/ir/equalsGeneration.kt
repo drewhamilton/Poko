@@ -47,8 +47,8 @@ import org.jetbrains.kotlin.name.Name
  * Generate the body of the equals method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateEqualsMethodBody].
  */
-context(IrPluginContext)
 internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
+    context: IrPluginContext,
     irClass: IrClass,
     functionDeclaration: IrFunction,
     classProperties: List<IrProperty>,
@@ -57,18 +57,19 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
     val irType = irClass.defaultType
     fun irOther(): IrExpression = IrGetValueImpl(functionDeclaration.valueParameters.single())
 
-    +irIfThenReturnBool(true, irEqeqeq(functionDeclaration.receiver(), irOther()))
+    +irIfThenReturnBool(true, irEqeqeq(receiver(functionDeclaration), irOther()))
     +irIfThenReturnBool(false, irNotIs(irOther(), irType))
 
     val otherWithCast = irTemporary(irImplicitCast(irOther(), irType), "other_with_cast")
     for (property in classProperties) {
         val field = property.backingField!!
-        val arg1 = irGetField(functionDeclaration.receiver(), field)
+        val arg1 = irGetField(receiver(functionDeclaration), field)
         val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
         val irNotEquals = when {
             property.hasArrayContentBasedAnnotation() -> {
                 irNot(
                     irArrayContentDeepEquals(
+                        context = context,
                         receiver = arg1,
                         argument = arg2,
                         property = property,
@@ -90,8 +91,8 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
  * Generates IR code that checks the equality of [receiver] and [argument] by content. If [property]
  * type is not an array type, but may be an array at runtime, generates a runtime type check.
  */
-context(IrPluginContext)
 private fun IrBuilderWithScope.irArrayContentDeepEquals(
+    context: IrPluginContext,
     receiver: IrExpression,
     argument: IrExpression,
     property: IrProperty,
@@ -102,9 +103,9 @@ private fun IrBuilderWithScope.irArrayContentDeepEquals(
 
     val isArray = propertyClassifier.isArrayOrPrimitiveArray(context.irBuiltIns)
     if (!isArray) {
-        val mayBeRuntimeArray = with(context) { propertyClassifier.mayBeRuntimeArray() }
+        val mayBeRuntimeArray = propertyClassifier.mayBeRuntimeArray(context)
         return if (mayBeRuntimeArray) {
-            irRuntimeArrayContentDeepEquals(receiver, argument)
+            irRuntimeArrayContentDeepEquals(context, receiver, argument)
         } else {
             messageCollector.reportErrorOnProperty(
                 property = property,
@@ -115,6 +116,7 @@ private fun IrBuilderWithScope.irArrayContentDeepEquals(
     }
 
     return irCallContentDeepEquals(
+        context = context,
         classifier = propertyClassifier,
         receiver = receiver,
         argument = argument,
@@ -125,8 +127,8 @@ private fun IrBuilderWithScope.irArrayContentDeepEquals(
  * Generates IR code that checks the type of [receiver] at runtime, and performs an array content
  * equality check against [argument] if the type is an array type.
  */
-context(IrPluginContext)
 private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
+    context: IrPluginContext,
     receiver: IrExpression,
     argument: IrExpression,
 ): IrExpression {
@@ -134,6 +136,7 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
         type = context.irBuiltIns.booleanType,
         branches = listOf(
             irArrayTypeCheckAndContentDeepEqualsBranch(
+                context = context,
                 receiver = receiver,
                 argument = argument,
                 classSymbol = context.irBuiltIns.arrayClass,
@@ -143,9 +146,10 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
             // type:
             *PrimitiveType.entries.map { primitiveType ->
                 irArrayTypeCheckAndContentDeepEqualsBranch(
+                    context = context,
                     receiver = receiver,
                     argument = argument,
-                    classSymbol = with(context) { primitiveType.toPrimitiveArrayClassSymbol() },
+                    classSymbol = primitiveType.toPrimitiveArrayClassSymbol(context),
                 )
             }.toTypedArray(),
 
@@ -160,19 +164,20 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
  * Generates a runtime `when` branch checking for content deep equality of [receiver] and
  * [argument]. The branch is only executed if [receiver] is an instance of [classSymbol].
  */
-context(IrPluginContext)
 private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
+    context: IrPluginContext,
     receiver: IrExpression,
     argument: IrExpression,
     classSymbol: IrClassSymbol,
 ): IrBranch {
-    val type = with(context) { classSymbol.createArrayType() }
+    val type = classSymbol.createArrayType(context)
     return irBranch(
         condition = irIs(receiver, type),
         result = irIfThenElse(
             type = context.irBuiltIns.booleanType,
             condition = irIs(argument, type),
             thenPart = irCallContentDeepEquals(
+                context = context,
                 classifier = classSymbol,
                 receiver = irImplicitCast(receiver, type),
                 argument = irImplicitCast(argument, type),
@@ -182,14 +187,14 @@ private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
     )
 }
 
-context(IrPluginContext)
 private fun IrBuilderWithScope.irCallContentDeepEquals(
+    context: IrPluginContext,
     classifier: IrClassifierSymbol,
     receiver: IrExpression,
     argument: IrExpression,
 ): IrExpression {
     return irCall(
-        callee = findContentDeepEqualsFunctionSymbol(classifier),
+        callee = findContentDeepEqualsFunctionSymbol(context, classifier),
         type = context.irBuiltIns.booleanType,
         valueArgumentsCount = 1,
         typeArgumentsCount = 1,
@@ -203,9 +208,9 @@ private fun IrBuilderWithScope.irCallContentDeepEquals(
  * Finds `contentDeepEquals` function if [classifier] represents a typed array, or `contentEquals`
  * function if it represents a primitive array.
  */
-context(IrPluginContext)
 @OptIn(UnsafeDuringIrConstructionAPI::class)
-private fun IrBuilderWithScope.findContentDeepEqualsFunctionSymbol(
+private fun findContentDeepEqualsFunctionSymbol(
+    context: IrPluginContext,
     classifier: IrClassifierSymbol,
 ): IrSimpleFunctionSymbol {
     val callableName = if (classifier == context.irBuiltIns.arrayClass) {
@@ -213,7 +218,7 @@ private fun IrBuilderWithScope.findContentDeepEqualsFunctionSymbol(
     } else {
         "contentEquals"
     }
-    return referenceFunctions(
+    return context.referenceFunctions(
         callableId = CallableId(
             packageName = FqName("kotlin.collections"),
             callableName = Name.identifier(callableName),
