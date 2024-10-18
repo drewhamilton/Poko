@@ -21,6 +21,7 @@
 .idea/misc.xml
 .idea/other.xml
 .idea/caches
+.idea/runConfigurations.xml
 
 # Generated files
 .idea/**/artifacts
