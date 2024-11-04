@@ -1,12 +1,13 @@
 package dev.drewhamilton.poko.fir
 
 import org.jetbrains.kotlin.KtFakeSourceElementKind
-import org.jetbrains.kotlin.com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.descriptors.ClassKind
+import org.jetbrains.kotlin.diagnostics.AbstractSourceElementPositioningStrategy
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory0DelegateProvider
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactoryToRendererMap
+import org.jetbrains.kotlin.diagnostics.Severity
 import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategies
-import org.jetbrains.kotlin.diagnostics.error0
 import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
 import org.jetbrains.kotlin.diagnostics.rendering.RootDiagnosticRendererFactory
 import org.jetbrains.kotlin.diagnostics.reportOn
@@ -78,27 +79,40 @@ internal class PokoFirCheckersExtension(
 
     private object Errors : BaseDiagnosticRendererFactory() {
 
-        val PokoOnNonClass by error0<PsiElement>(
+        /**
+         * The compiler and the IDE use a different version of this class, so use reflection to find the available
+         * version.
+         */
+        // Adapted from https://github.com/TadeasKriz/K2PluginBase/blob/main/kotlin-plugin/src/main/kotlin/com/tadeaskriz/example/ExamplePluginErrors.kt#L8
+        private val psiElementClass by lazy {
+            try {
+                Class.forName("org.jetbrains.kotlin.com.intellij.psi.PsiElement")
+            } catch (_: ClassNotFoundException) {
+                Class.forName("com.intellij.psi.PsiElement")
+            }.kotlin
+        }
+
+        val PokoOnNonClass by error0(
             positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
         )
 
-        val PokoOnDataClass by error0<PsiElement>(
+        val PokoOnDataClass by error0(
             positioningStrategy = SourceElementPositioningStrategies.DATA_MODIFIER,
         )
 
-        val PokoOnValueClass by error0<PsiElement>(
+        val PokoOnValueClass by error0(
             positioningStrategy = SourceElementPositioningStrategies.INLINE_OR_VALUE_MODIFIER,
         )
 
-        val PokoOnInnerClass by error0<PsiElement>(
+        val PokoOnInnerClass by error0(
             positioningStrategy = SourceElementPositioningStrategies.INNER_MODIFIER,
         )
 
-        val PrimaryConstructorRequired by error0<PsiElement>(
+        val PrimaryConstructorRequired by error0(
             positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
         )
 
-        val PrimaryConstructorPropertiesRequired by error0<PsiElement>(
+        val PrimaryConstructorPropertiesRequired by error0(
             positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
         )
 
@@ -131,6 +145,19 @@ internal class PokoFirCheckersExtension(
 
         init {
             RootDiagnosticRendererFactory.registerFactory(this)
+        }
+
+        /**
+         * Copy of [org.jetbrains.kotlin.diagnostics.error0] with hack for correct `PsiElement` class.
+         */
+        private fun error0(
+            positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
+        ): DiagnosticFactory0DelegateProvider {
+            return DiagnosticFactory0DelegateProvider(
+                severity = Severity.ERROR,
+                positioningStrategy = positioningStrategy,
+                psiType = psiElementClass,
+            )
         }
     }
 }
