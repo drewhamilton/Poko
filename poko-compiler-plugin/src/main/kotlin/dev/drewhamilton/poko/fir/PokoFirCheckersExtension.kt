@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.fir
 
+import dev.drewhamilton.poko.BuildConfig.POKO_SKIP_ANNOTATION
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.diagnostics.AbstractSourceElementPositioningStrategy
@@ -20,10 +21,13 @@ import org.jetbrains.kotlin.fir.analysis.checkers.hasModifier
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
+import org.jetbrains.kotlin.fir.declarations.hasAnnotation
+import org.jetbrains.kotlin.fir.declarations.hasAnnotationSafe
 import org.jetbrains.kotlin.fir.declarations.primaryConstructorIfAny
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.fir.declarations.utils.isInner
 import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.name.ClassId
 
 internal class PokoFirCheckersExtension(
     session: FirSession,
@@ -31,10 +35,12 @@ internal class PokoFirCheckersExtension(
     override val declarationCheckers: DeclarationCheckers =
         object : DeclarationCheckers() {
             override val regularClassCheckers: Set<FirRegularClassChecker> =
-                setOf(PokoFirRegularClassChecker)
+                setOf(PokoFirRegularClassChecker(session))
         }
 
-    internal object PokoFirRegularClassChecker : FirRegularClassChecker(
+    private class PokoFirRegularClassChecker(
+        private val session: FirSession,
+    ) : FirRegularClassChecker(
         mppKind = MppCheckerKind.Common,
     ) {
         override fun check(
@@ -66,6 +72,9 @@ internal class PokoFirCheckersExtension(
                 .filterIsInstance<FirProperty>()
                 .filter {
                     it.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
+                }
+                .filter {
+                    !it.hasAnnotation(ClassId.fromString(POKO_SKIP_ANNOTATION), session)
                 }
             if (constructorProperties.isEmpty()) {
                 reporter.reportOn(
@@ -139,7 +148,7 @@ internal class PokoFirCheckersExtension(
             )
             put(
                 factory = PrimaryConstructorPropertiesRequired,
-                message = "Poko class primary constructor must have at least one property",
+                message = "Poko class primary constructor must have at least one not-skipped property",
             )
         }
 
