@@ -22,13 +22,12 @@ if (jvmToolchainLanguageVersion != null) {
 
 android {
     namespace = "dev.drewhamilton.poko.sample.compose"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 21
     }
 
-    // TODO: Wrap in `if (jvmToolchainLanguageVersion == null)` from AGP 8.1
     compileOptions {
         sourceCompatibility(resolvedJavaVersion)
         targetCompatibility(resolvedJavaVersion)
@@ -38,7 +37,6 @@ android {
         freeCompilerArgs = listOf("-progressive")
     }
 
-    @Suppress("UnstableApiUsage")
     buildFeatures {
         compose = true
 
