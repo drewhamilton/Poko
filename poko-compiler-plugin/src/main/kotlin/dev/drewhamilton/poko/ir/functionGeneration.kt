@@ -111,7 +111,7 @@ internal val IrTypeParameter.erasedUpperBound: IrClass
         // In the second case, there is only a single supertype.
         return when (val firstSuper = superTypes.first().classifierOrNull?.owner) {
             is IrClass -> firstSuper
-            is IrTypeParameter -> firstSuper.erasedUpperBound
+            is IrTypeParameter -> @Suppress("RecursivePropertyAccessor") firstSuper.erasedUpperBound
             else -> error("unknown supertype kind $firstSuper")
         }
     }
