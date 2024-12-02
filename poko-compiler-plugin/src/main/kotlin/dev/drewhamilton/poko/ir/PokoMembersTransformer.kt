@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
-import org.jetbrains.kotlin.descriptors.ParameterDescriptor
 import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
 import org.jetbrains.kotlin.fir.backend.FirMetadataSource
 import org.jetbrains.kotlin.ir.IrStatement
@@ -20,7 +19,6 @@ import org.jetbrains.kotlin.ir.declarations.impl.IrFactoryImpl
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.types.createType
-import org.jetbrains.kotlin.ir.util.IdSignature
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isEquals
 import org.jetbrains.kotlin.ir.util.isFakeOverride
@@ -164,7 +162,7 @@ internal class PokoMembersTransformer(
             startOffset = originalReceiver.startOffset,
             endOffset = originalReceiver.endOffset,
             origin = originalReceiver.origin,
-            symbol = IrValueParameterSymbolImplCompat(
+            symbol = IrValueParameterSymbolImpl(
                 // IrValueParameterSymbolImpl requires a descriptor; same type as
                 // originalReceiver.symbol:
                 descriptor = LazyClassReceiverParameterDescriptor(
@@ -182,33 +180,6 @@ internal class PokoMembersTransformer(
             isAssignable = originalReceiver.isAssignable
         ).apply {
             parent = this@mutateWithNewDispatchReceiverParameterForParentClass
-        }
-    }
-
-    /**
-     * Instantiate an [IrValueParameterSymbolImpl] via reflection if the known constructor is not
-     * available. Provides forward compatibility with 2.0.20, which changes the constructor's
-     * signature.
-     */
-    // TODO: Revert to standard IrValueParameterSymbolImpl when support for 2.0.10 is dropped
-    @Suppress("FunctionName") // Factory
-    private fun IrValueParameterSymbolImplCompat(
-        descriptor: ParameterDescriptor,
-        signature: IdSignature?,
-    ): IrValueParameterSymbolImpl {
-        try {
-            // Constructor available in 2.0.20+:
-            return IrValueParameterSymbolImpl(descriptor, signature)
-        } catch (noSuchMethodError: NoSuchMethodError) {
-            // Old constructor pre-2.0.20:
-            val implClass = IrValueParameterSymbolImpl::class.java
-            val newConstructor = implClass.constructors.single {
-                it.parameters.size == 1 &&
-                    it.parameters.single().type == ParameterDescriptor::class.java
-            }
-            return newConstructor.newInstance(
-                descriptor, // param: descriptor
-            ) as IrValueParameterSymbolImpl
         }
     }
 }

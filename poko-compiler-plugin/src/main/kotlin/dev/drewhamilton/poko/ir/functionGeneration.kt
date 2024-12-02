@@ -8,19 +8,13 @@ import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
-import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.IrGetValue
-import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
-import org.jetbrains.kotlin.ir.expressions.impl.IrBranchImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
-import org.jetbrains.kotlin.ir.expressions.impl.IrWhenImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
-import org.jetbrains.kotlin.ir.symbols.IrValueSymbol
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.IrSimpleType
-import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
@@ -52,117 +46,22 @@ internal fun IrBlockBodyBuilder.receiver(
     function: IrFunction,
 ): IrGetValue = IrGetValueImpl(function.dispatchReceiverParameter!!)
 
-//region Compat/reflection
 /**
  * Gets the value of the given [parameter].
  *
  * Invoke [IrGetValueImpl] via reflection if the known function is not available. Provides forward
  * compatibility with 2.0.20, which changes the constructor's signature.
  */
-// TODO: Revert to standard IrGetValueImpl when support for 2.0.10 is dropped
 internal fun IrBlockBodyBuilder.IrGetValueImpl(
     parameter: IrValueParameter,
-) = try {
-    // Available in 2.0.20+:
-    IrGetValueImpl(
+): IrGetValueImpl {
+    return IrGetValueImpl(
         startOffset = startOffset,
         endOffset = endOffset,
         type = parameter.type,
         symbol = parameter.symbol,
     )
-} catch (noClassDefFoundError: NoClassDefFoundError) {
-    // Old parent class pre-2.0.20:
-    javaClass.classLoader.loadClass("org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImplKt")
-        .methods
-        .single { function ->
-            function.name == "IrGetValueImpl" &&
-                function.parameters.map { it.type } == listOf(
-                    Int::class.java,
-                    Int::class.java,
-                    IrType::class.java,
-                    IrValueSymbol::class.java,
-                    IrStatementOrigin::class.java,
-                )
-        }
-        .invoke(
-            null, // static invocation
-            startOffset, // param: startOffset
-            endOffset, // param: endOffset
-            parameter.type, // param: type
-            parameter.symbol, // param: symbol
-            null, // param: origin (default value is null)
-        ) as IrGetValueImpl
 }
-
-// TODO: Remove when support for 2.0.10 is dropped
-@Suppress("FunctionName") // Factory
-internal fun Any.IrWhenImplCompat(
-    startOffset: Int,
-    endOffset: Int,
-    type: IrType,
-    origin: IrStatementOrigin? = null,
-): IrWhenImpl {
-    return try {
-        IrWhenImpl(
-            startOffset = startOffset,
-            endOffset = endOffset,
-            type = type,
-            origin = origin
-        )
-    } catch (noClassDefFoundError: NoClassDefFoundError) {
-        javaClass.classLoader.loadClass("org.jetbrains.kotlin.ir.expressions.impl.IrWhenImplKt")
-            .methods
-            .single { function ->
-                function.name == "IrWhenImpl" &&
-                    function.parameters.map { it.type } == listOf(
-                    Int::class.java,
-                    Int::class.java,
-                    IrType::class.java,
-                    IrStatementOrigin::class.java,
-                )
-            }
-            .invoke(
-                null, // static invocation
-                startOffset, // param: startOffset
-                endOffset, // param: endOffset
-                type, // param: type
-                origin, // param: origin
-            ) as IrWhenImpl
-    }
-}
-
-// TODO: Remove when support for 2.0.10 is dropped
-@Suppress("FunctionName") // Factory
-internal fun Any.IrBranchImplCompat(
-    startOffset: Int,
-    endOffset: Int,
-    condition: IrExpression,
-    result: IrExpression,
-): IrBranchImpl {
-    return try {
-        IrBranchImpl(startOffset, endOffset, condition, result)
-    } catch (noClassDefFoundError: NoClassDefFoundError) {
-        javaClass.classLoader.loadClass("org.jetbrains.kotlin.ir.expressions.impl.IrBranchImplKt")
-            .methods
-            .single { function ->
-                function.name == "IrBranchImpl" &&
-                    function.parameters.map { it.type } == listOf(
-                    Int::class.java,
-                    Int::class.java,
-                    IrExpression::class.java,
-                    IrExpression::class.java,
-                )
-            }
-            .invoke(
-                null, // static invocation
-                startOffset, // param: startOffset
-                endOffset, // param: endOffset
-                condition, // param: condition
-                result, // param: result
-            ) as IrBranchImpl
-    }
-}
-//endregion
 
 internal fun IrProperty.hasArrayContentBasedAnnotation(): Boolean =
     hasAnnotation(arrayContentBasedAnnotationFqName)
