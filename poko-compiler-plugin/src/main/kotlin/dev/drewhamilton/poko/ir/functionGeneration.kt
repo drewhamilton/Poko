@@ -48,9 +48,6 @@ internal fun IrBlockBodyBuilder.receiver(
 
 /**
  * Gets the value of the given [parameter].
- *
- * Invoke [IrGetValueImpl] via reflection if the known function is not available. Provides forward
- * compatibility with 2.0.20, which changes the constructor's signature.
  */
 internal fun IrBlockBodyBuilder.IrGetValueImpl(
     parameter: IrValueParameter,
