@@ -5,12 +5,10 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
-import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irCallOp
 import org.jetbrains.kotlin.ir.builders.irElseBranch
-import org.jetbrains.kotlin.ir.builders.irEqualsNull
 import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irIfNull
@@ -27,15 +25,12 @@ import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrExpression
-import org.jetbrains.kotlin.ir.expressions.impl.IrWhenImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
-import org.jetbrains.kotlin.ir.symbols.IrVariableSymbol
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
-import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isInt
@@ -75,7 +70,7 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
 
     val irIntType = context.irBuiltIns.intType
 
-    val irResultVar = IrVariableImplCompat(
+    val irResultVar = IrVariableImpl(
         startOffset = startOffset,
         endOffset = endOffset,
         origin = IrDeclarationOrigin.DEFINED,
@@ -132,26 +127,13 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
     val field = property.backingField!!
     val irGetField = { irGetField(receiver(function), field) }
     return when {
-        property.type.isNullable() -> irIfNullCompat(
+        property.type.isNullable() -> irIfNull(
             type = context.irBuiltIns.intType,
             subject = irGetField(),
             thenPart = irInt(0),
             elsePart = getHashCodeOf(context, property, irGetField(), messageCollector)
         )
         else -> getHashCodeOf(context, property, irGetField(), messageCollector)
-    }
-}
-
-// TODO: Revert to standard irIfNull when 2.0.x support is dropped
-private fun IrBuilderWithScope.irIfNullCompat(
-    type: IrType,
-    subject: IrExpression,
-    thenPart: IrExpression,
-    elsePart: IrExpression,
-): IrWhenImpl {
-    return IrWhenImplCompat(startOffset, endOffset, type).apply {
-        branches.add(IrBranchImplCompat(startOffset, endOffset, irEqualsNull(subject), thenPart))
-        branches.add(irElseBranch(elsePart))
     }
 }
 
@@ -359,52 +341,4 @@ private fun IrBlockBodyBuilder.irCallHashCodeFunction(
             else -> putValueArgument(0, value)
         }
     }
-}
-
-/**
- * Instantiate an [IrVariableImpl]. Backward-compatible with Kotlin 2.0.0—which used a
- * constructor instead of a factory function—via reflection.
- */
-// TODO: Revert to standard IrVariableImpl when 2.0.10 support is dropped
-@Suppress("FunctionName", "SameParameterValue") // Factory
-private fun IrVariableImplCompat(
-    startOffset: Int,
-    endOffset: Int,
-    origin: IrDeclarationOrigin,
-    symbol: IrVariableSymbol,
-    name: Name,
-    type: IrType,
-    isVar: Boolean,
-    isConst: Boolean,
-    isLateinit: Boolean,
-): IrVariableImpl = try {
-    // Factory function available in 2.0.20+:
-    IrVariableImpl(
-        startOffset = startOffset,
-        endOffset = endOffset,
-        origin = origin,
-        symbol = symbol,
-        name = name,
-        type = type,
-        isVar = isVar,
-        isConst = isConst,
-        isLateinit = isLateinit,
-    )
-} catch (noClassDefFoundError: NoClassDefFoundError) {
-    // Constructor pre-2.0.20:
-    origin.javaClass.classLoader
-        .loadClass("org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl")
-        .constructors
-        .single()
-        .newInstance(
-            startOffset, // param: startOffset
-            endOffset, // param: endOffset
-            origin, // param: origin
-            symbol, // param: symbol
-            name, // param: name
-            type, // param: type
-            isVar, // param: isVar
-            isConst, // param: isConst
-            isLateinit, // param: isLateinit
-        ) as IrVariableImpl
 }
