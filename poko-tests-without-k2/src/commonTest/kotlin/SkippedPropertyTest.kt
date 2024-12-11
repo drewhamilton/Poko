@@ -8,8 +8,8 @@ import poko.SkippedProperty
 class SkippedPropertyTest {
 
     @Test fun skipped_property_omitted_from_all_generated_functions() {
-        val a = poko.SkippedProperty(
-            poko.SkippedProperty.id = "id",
+        val a = SkippedProperty(
+            id = "id",
             callback = { println("Callback <a> invoked") },
         )
         val b = SkippedProperty(
