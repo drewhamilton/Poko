@@ -1,6 +1,6 @@
 package dev.drewhamilton.poko.fir
 
-import dev.drewhamilton.poko.BuildConfig.POKO_SKIP_ANNOTATION
+import dev.drewhamilton.poko.BuildConfig.SKIPPED_ANNOTATION
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.diagnostics.AbstractSourceElementPositioningStrategy
@@ -22,7 +22,6 @@ import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtensi
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.hasAnnotation
-import org.jetbrains.kotlin.fir.declarations.hasAnnotationSafe
 import org.jetbrains.kotlin.fir.declarations.primaryConstructorIfAny
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.fir.declarations.utils.isInner
@@ -74,7 +73,7 @@ internal class PokoFirCheckersExtension(
                     it.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
                 }
                 .filter {
-                    !it.hasAnnotation(ClassId.fromString(POKO_SKIP_ANNOTATION), session)
+                    !it.hasAnnotation(ClassId.fromString(SKIPPED_ANNOTATION), session)
                 }
             if (constructorProperties.isEmpty()) {
                 reporter.reportOn(

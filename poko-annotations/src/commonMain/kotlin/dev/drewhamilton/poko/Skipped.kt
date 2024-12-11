@@ -8,4 +8,4 @@ package dev.drewhamilton.poko
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.PROPERTY)
-public annotation class PokoSkip
+public annotation class Skipped

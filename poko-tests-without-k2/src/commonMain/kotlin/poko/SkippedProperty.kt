@@ -1,10 +1,10 @@
 package poko
 
 import dev.drewhamilton.poko.Poko
-import dev.drewhamilton.poko.PokoSkip
+import dev.drewhamilton.poko.Skipped
 
 @Suppress("Unused")
 @Poko class SkippedProperty(
     val id: String,
-    @PokoSkip val callback: () -> Unit,
+    @Skipped val callback: () -> Unit,
 )
