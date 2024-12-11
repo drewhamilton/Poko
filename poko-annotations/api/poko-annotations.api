@@ -7,3 +7,9 @@ public abstract interface annotation class dev/drewhamilton/poko/ArrayContentSup
 public abstract interface annotation class dev/drewhamilton/poko/Poko : java/lang/annotation/Annotation {
 }
 
+public abstract interface annotation class dev/drewhamilton/poko/Skipped : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class dev/drewhamilton/poko/SkippedSupport : java/lang/annotation/Annotation {
+}
+
