@@ -119,7 +119,7 @@ class PokoCompilerPluginTest(
             }
             assertThat(result.messages).all {
                 contains(expectedLocation)
-                contains("Poko class primary constructor must have at least one property")
+                contains("Poko class primary constructor must have at least one not-skipped property")
             }
         }
     }

@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.ir
 
+import dev.drewhamilton.poko.BuildConfig.SKIP_ANNOTATION_SHORT_NAME
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
@@ -128,11 +129,18 @@ internal class PokoMembersTransformer(
                     it.symbol.descriptor.source.getPsi() is KtParameter
                 }
             }
+            .filter {
+                !it.hasAnnotation(
+                    classId = ClassId.fromString(
+                        string = "${pokoAnnotationName}.$SKIP_ANNOTATION_SHORT_NAME"
+                    ),
+                )
+            }
         if (properties.isEmpty()) {
             messageCollector.log("No primary constructor properties")
             messageCollector.reportErrorOnClass(
                 irClass = parent,
-                message = "Poko class primary constructor must have at least one property",
+                message = "Poko class primary constructor must have at least one not-skipped property",
             )
             return
         }

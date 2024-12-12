@@ -22,4 +22,16 @@ package dev.drewhamilton.poko
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
-public annotation class Poko
+public annotation class Poko {
+
+    /**
+     * Primary constructor properties marked with this annotation will be omitted from generated
+     * `equals`, `hashCode`, and `toString` functions, as if they were not properties.
+     *
+     * This annotation has no effect on properties declared outside the primary constructor.
+     */
+    @SkipSupport
+    @Retention(AnnotationRetention.SOURCE)
+    @Target(AnnotationTarget.PROPERTY)
+    public annotation class Skip
+}

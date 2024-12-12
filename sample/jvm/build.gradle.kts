@@ -4,6 +4,10 @@ plugins {
     `java-test-fixtures`
 }
 
+poko {
+    pokoAnnotation = "dev/drewhamilton/poko/sample/jvm/MyData"
+}
+
 dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.assertk)
