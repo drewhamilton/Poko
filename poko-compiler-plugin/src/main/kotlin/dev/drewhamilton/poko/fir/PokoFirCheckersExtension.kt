@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.fir
 
+import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ANNOTATION
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.diagnostics.AbstractSourceElementPositioningStrategy
@@ -23,6 +24,9 @@ import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.primaryConstructorIfAny
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.fir.declarations.utils.isInner
+import org.jetbrains.kotlin.fir.expressions.FirAnnotation
+import org.jetbrains.kotlin.fir.types.classId
+import org.jetbrains.kotlin.fir.types.coneTypeOrNull
 import org.jetbrains.kotlin.lexer.KtTokens
 
 internal class PokoFirCheckersExtension(
@@ -46,12 +50,12 @@ internal class PokoFirCheckersExtension(
             if (matcher.pokoAnnotation(declaration) == null) return
 
             val errorFactory = when {
-                declaration.classKind != ClassKind.CLASS -> Errors.PokoOnNonClass
-                declaration.isData -> Errors.PokoOnDataClass
-                declaration.hasModifier(KtTokens.VALUE_KEYWORD) -> Errors.PokoOnValueClass
-                declaration.isInner -> Errors.PokoOnInnerClass
+                declaration.classKind != ClassKind.CLASS -> Diagnostics.PokoOnNonClass
+                declaration.isData -> Diagnostics.PokoOnDataClass
+                declaration.hasModifier(KtTokens.VALUE_KEYWORD) -> Diagnostics.PokoOnValueClass
+                declaration.isInner -> Diagnostics.PokoOnInnerClass
                 declaration.primaryConstructorIfAny(context.session) == null ->
-                    Errors.PrimaryConstructorRequired
+                    Diagnostics.PrimaryConstructorRequired
                 else -> null
             }
             if (errorFactory != null) {
@@ -68,19 +72,36 @@ internal class PokoFirCheckersExtension(
                     it.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
                 }
                 .filter {
-                    matcher.pokoSkipAnnotation(it) == null
+                    val skipAnnotation = matcher.pokoSkipAnnotation(it)
+                    if (
+                        skipAnnotation != null &&
+                        !skipAnnotation.isNestedInDefaultPokoAnnotation()
+                    ) {
+                        // Pseudo-opt-in warning for custom annotation consumers:
+                        reporter.reportOn(
+                            source = it.source,
+                            factory = Diagnostics.SkippedPropertyWithCustomAnnotation,
+                            context = context,
+                        )
+                    }
+                    skipAnnotation == null
                 }
             if (constructorProperties.isEmpty()) {
                 reporter.reportOn(
                     source = declaration.source,
-                    factory = Errors.PrimaryConstructorPropertiesRequired,
+                    factory = Diagnostics.PrimaryConstructorPropertiesRequired,
                     context = context,
                 )
             }
         }
+
+        private fun FirAnnotation.isNestedInDefaultPokoAnnotation(): Boolean {
+            return annotationTypeRef.coneTypeOrNull?.classId?.outerClassId?.asFqNameString() ==
+                DEFAULT_POKO_ANNOTATION
+        }
     }
 
-    private object Errors : BaseDiagnosticRendererFactory() {
+    private object Diagnostics : BaseDiagnosticRendererFactory() {
 
         /**
          * The compiler and the IDE use a different version of this class, so use reflection to find the available
@@ -119,6 +140,10 @@ internal class PokoFirCheckersExtension(
             positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
         )
 
+        val SkippedPropertyWithCustomAnnotation by warning0(
+            positioningStrategy = SourceElementPositioningStrategies.ANNOTATION_USE_SITE,
+        )
+
         override val MAP = KtDiagnosticFactoryToRendererMap("Poko").apply {
             put(
                 factory = PokoOnNonClass,
@@ -144,6 +169,10 @@ internal class PokoFirCheckersExtension(
                 factory = PrimaryConstructorPropertiesRequired,
                 message = "Poko class primary constructor must have at least one not-skipped property",
             )
+            put(
+                factory = SkippedPropertyWithCustomAnnotation,
+                message = "The @Skip annotation is experimental and its behavior may change; use with caution",
+            )
         }
 
         init {
@@ -151,13 +180,28 @@ internal class PokoFirCheckersExtension(
         }
 
         /**
-         * Copy of [org.jetbrains.kotlin.diagnostics.error0] with hack for correct `PsiElement` class.
+         * Copy of [org.jetbrains.kotlin.diagnostics.error0] with hack for correct `PsiElement`
+         * class.
          */
         private fun error0(
             positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
         ): DiagnosticFactory0DelegateProvider {
             return DiagnosticFactory0DelegateProvider(
                 severity = Severity.ERROR,
+                positioningStrategy = positioningStrategy,
+                psiType = psiElementClass,
+            )
+        }
+
+        /**
+         * Copy of [org.jetbrains.kotlin.diagnostics.warning0] with hack for correct `PsiElement`
+         * class.
+         */
+        private fun warning0(
+            positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
+        ): DiagnosticFactory0DelegateProvider {
+            return DiagnosticFactory0DelegateProvider(
+                severity = Severity.WARNING,
                 positioningStrategy = positioningStrategy,
                 psiType = psiElementClass,
             )
