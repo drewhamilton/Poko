@@ -25,7 +25,6 @@ import org.jetbrains.kotlin.ir.util.isAnnotationClass
 import org.jetbrains.kotlin.ir.util.isInterface
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.ClassId
-import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
 /**
@@ -60,13 +59,11 @@ internal fun IrBlockBodyBuilder.IrGetValueImpl(
     )
 }
 
-internal fun IrProperty.hasArrayContentBasedAnnotation(): Boolean =
-    hasAnnotation(arrayContentBasedAnnotationFqName)
-
-private val arrayContentBasedAnnotationFqName = ClassId(
-    FqName("dev.drewhamilton.poko"),
-    Name.identifier("ArrayContentBased"),
-).asSingleFqName()
+internal fun IrProperty.hasReadArrayContentAnnotation(
+    pokoAnnotation: ClassId,
+): Boolean = hasAnnotation(
+    classId = pokoAnnotation.createNestedClassId(Name.identifier("ReadArrayContent")),
+)
 
 /**
  * Returns true if the classifier represents a type that may be an array at runtime (e.g. [Any] or
