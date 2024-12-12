@@ -1,6 +1,5 @@
 package dev.drewhamilton.poko.fir
 
-import dev.drewhamilton.poko.BuildConfig.SKIPPED_ANNOTATION
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.diagnostics.AbstractSourceElementPositioningStrategy
@@ -21,12 +20,10 @@ import org.jetbrains.kotlin.fir.analysis.checkers.hasModifier
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
-import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.primaryConstructorIfAny
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.fir.declarations.utils.isInner
 import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.name.ClassId
 
 internal class PokoFirCheckersExtension(
     session: FirSession,
@@ -34,12 +31,10 @@ internal class PokoFirCheckersExtension(
     override val declarationCheckers: DeclarationCheckers =
         object : DeclarationCheckers() {
             override val regularClassCheckers: Set<FirRegularClassChecker> =
-                setOf(PokoFirRegularClassChecker(session))
+                setOf(PokoFirRegularClassChecker)
         }
 
-    private class PokoFirRegularClassChecker(
-        private val session: FirSession,
-    ) : FirRegularClassChecker(
+    private object PokoFirRegularClassChecker : FirRegularClassChecker(
         mppKind = MppCheckerKind.Common,
     ) {
         override fun check(
@@ -73,7 +68,7 @@ internal class PokoFirCheckersExtension(
                     it.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
                 }
                 .filter {
-                    !it.hasAnnotation(ClassId.fromString(SKIPPED_ANNOTATION), session)
+                    matcher.pokoSkipAnnotation(it) == null
                 }
             if (constructorProperties.isEmpty()) {
                 reporter.reportOn(

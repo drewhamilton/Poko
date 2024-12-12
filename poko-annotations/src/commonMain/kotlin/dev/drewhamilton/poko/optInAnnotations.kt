@@ -1,11 +1,11 @@
 package dev.drewhamilton.poko
 
 /**
- * Denotes an experimental API that enables the ability to skip a Poko class primary constructor property when
- * generating Poko functions.
+ * Denotes an experimental API that enables the ability to skip a Poko class primary constructor
+ * property when generating Poko functions.
  */
 @RequiresOptIn
-public annotation class SkippedSupport
+public annotation class SkipSupport
 
 /**
  * Denotes an API that enables support for array content reading, which is experimental and may
