@@ -96,8 +96,12 @@ internal class PokoFirCheckersExtension(
         }
 
         private fun FirAnnotation.isNestedInDefaultPokoAnnotation(): Boolean {
-            return annotationTypeRef.coneTypeOrNull?.classId?.outerClassId?.asFqNameString() ==
-                DEFAULT_POKO_ANNOTATION
+            val outerFqName = annotationTypeRef.coneTypeOrNull!!.classId!!
+                .outerClassId!!
+                .asFqNameString()
+            return outerFqName == DEFAULT_POKO_ANNOTATION ||
+                // Multiplatform FqName has "." instead of "/" for package:
+                outerFqName.replace(".", "/") == DEFAULT_POKO_ANNOTATION
         }
     }
 
