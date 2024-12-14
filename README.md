@@ -27,23 +27,6 @@ generate that function but will still generate the non-overridden functions. Usi
 is not recommended, and if they are used, it is recommended to override `equals` and `hashCode`
 manually.
 
-### Arrays
-By default, Poko does nothing to inspect the contents of array properties. [This aligns with the
-behavior of data classes](https://blog.jetbrains.com/kotlin/2015/09/feedback-request-limitations-on-data-classes/#Appendix.Comparingarrays).
-
-Poko consumers can change this behavior on a per-property basis with the `@ArrayContentBased`
-annotation. On properties of a typed array type, this annotation will generate a `contentDeepEquals`
-check. On properties of a primitive array type, this annotation will generate a `contentEquals`
-check. And on properties of type `Any` or of a generic type, this annotation will generate a `when`
-statement that disambiguates the many array types at runtime and uses the appropriate
-`contentDeepEquals` or `contentEquals` check. In all cases, the corresponding content-based
-`hashCode` and `toString` are generated for the property as well.
-
-Using arrays as properties in data types is still not generally recommended: arrays are mutable, and
-mutating data can affect the results of `equals` and `hashCode` over time, which is generally
-unexpected. For this reason, `@ArrayContentBased` should only be used in very performance-sensitive
-APIs.
-
 ### Annotation
 By default, the `dev.drewhamilton.poko.Poko` annotation is used to mark classes for Poko generation.
 If you prefer, you can create a different annotation and supply it to the Gradle  plugin.
@@ -51,12 +34,45 @@ If you prefer, you can create a different annotation and supply it to the Gradle
 ```groovy
 apply plugin: "dev.drewhamilton.poko"
 poko {
-  pokoAnnotation.set "com/example/MyDataAnnotation"
+  pokoAnnotation.set "com/example/MyData"
 }
 ```
 
-Note that this only affects the primary marker annotation. Supplemental annotations such as
-`@ArrayContentBased` do not support customization.
+Nested annotations mentioned below can optionally be added with the same name to the base annotation
+and used for their respective features. For example, `@MyData.ReadArrayContent` will cause the
+annotated property's contents to be used in the Poko-generated functions.
+
+### Arrays
+By default, Poko does nothing to inspect the contents of array properties. [This aligns with the
+behavior of data classes](https://blog.jetbrains.com/kotlin/2015/09/feedback-request-limitations-on-data-classes/#Appendix.Comparingarrays).
+
+Poko consumers can change this behavior on a per-property basis with the `@Poko.ReadArrayContent`
+annotation. On properties of a typed array type, this annotation will generate a `contentDeepEquals`
+check. On properties of a primitive array type, this annotation will generate a `contentEquals`
+check. And on properties of type `Any` or of a generic type, this annotation will generate a `when`
+statement that disambiguates the many array types at runtime and uses the appropriate
+`contentDeepEquals` or `contentEquals` check. In all cases, the corresponding content-based
+`hashCode` and `toString` are generated for the property as well.
+
+Using arrays as properties in data types is not generally recommended: arrays are mutable, and
+mutating data can affect the results of `equals` and `hashCode` over time, which is generally
+unexpected. For this reason, `@Poko.ReadArrayContent` should only be used in very
+performance-sensitive APIs.
+
+### Skipping properties
+
+It is sometimes useful to omit some properties from consideration when generating the Poko
+functions. This can be done with the experimental `@Poko.Skip` annotation. Properties with this
+annotation will be excluded from all three generated functions. For example:
+
+```kotlin
+@Poko class Data(
+    val id: String,
+    @Poko.Skip val callback: () -> Unit,
+) : CircuitUiState
+
+Data("a", { println("a") }) == Data("a", { println("not a") }) // yields `true`
+```
 
 ### Download
 
@@ -71,7 +87,7 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version |
 |-----------------|--------------|
-| 2.1.0           | 0.18.0       |
+| 2.1.0           | 0.18.1       |
 | 2.0.0 – 2.0.21  | 0.17.2       |
 | 1.9.0 – 1.9.24  | 0.15.3       |
 | 1.8.20 – 1.8.22 | 0.13.1       |

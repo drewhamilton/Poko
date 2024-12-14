@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.18.1
+_2024-12-13
+
+Add ability to skip individual properties with `@Poko.Skip`. These properties will be omitted from
+all generated functions. This feature is experimental and requires opt-in via `@SkipSupport`.
+
+Replace `@ArrayContentBased` with `@Poko.ReadArrayContent`. Add a deprecated `typealias` for the
+former to aid migration.
+
+Add support for use optional property-level features with custom Poko annotation. Nested annotations
+with the same name as the optional feature, such as `@MyData.ReadArrayContent` and
+`@MyData.Skip`, will be respected.
+
+Fix issue with FIR checkers. K2-enabled IDEs should now highlight Poko errors and warnings in
+consumer source code.
+
 ## 0.18.0
 _2024-12-2_
 
