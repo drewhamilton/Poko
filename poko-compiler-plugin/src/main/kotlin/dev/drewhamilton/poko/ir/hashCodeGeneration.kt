@@ -40,6 +40,7 @@ import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
@@ -48,6 +49,7 @@ import org.jetbrains.kotlin.name.Name
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateHashCodeMethodBody].
  */
 internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
+    pokoAnnotation: ClassId,
     context: IrPluginContext,
     functionDeclaration: IrFunction,
     classProperties: List<IrProperty>,
@@ -59,6 +61,7 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
     } else if (classProperties.size == 1) {
         +irReturn(
             getHashCodeOfProperty(
+                pokoAnnotation = pokoAnnotation,
                 context = context,
                 function = functionDeclaration,
                 property = classProperties[0],
@@ -83,6 +86,7 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
     ).also {
         it.parent = functionDeclaration
         it.initializer = getHashCodeOfProperty(
+            pokoAnnotation = pokoAnnotation,
             context = context,
             function = functionDeclaration,
             property = classProperties[0],
@@ -103,6 +107,7 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
             type = irIntType,
             dispatchReceiver = shiftedResult,
             argument = getHashCodeOfProperty(
+                pokoAnnotation = pokoAnnotation,
                 context = context,
                 function = functionDeclaration,
                 property = property,
@@ -119,6 +124,7 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
  * Generates the hashcode-computing code for [property].
  */
 private fun IrBlockBodyBuilder.getHashCodeOfProperty(
+    pokoAnnotation: ClassId,
     context: IrPluginContext,
     function: IrFunction,
     property: IrProperty,
@@ -131,9 +137,9 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
             type = context.irBuiltIns.intType,
             subject = irGetField(),
             thenPart = irInt(0),
-            elsePart = getHashCodeOf(context, property, irGetField(), messageCollector)
+            elsePart = getHashCodeOf(pokoAnnotation, context, property, irGetField(), messageCollector)
         )
-        else -> getHashCodeOf(context, property, irGetField(), messageCollector)
+        else -> getHashCodeOf(pokoAnnotation, context, property, irGetField(), messageCollector)
     }
 }
 
@@ -143,6 +149,7 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
  */
 @OptIn(UnsafeDuringIrConstructionAPI::class)
 private fun IrBlockBodyBuilder.getHashCodeOf(
+    pokoAnnotation: ClassId,
     context: IrPluginContext,
     property: IrProperty,
     value: IrExpression,
@@ -161,7 +168,7 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
         }
     }
 
-    val hasArrayContentBasedAnnotation = property.hasArrayContentBasedAnnotation()
+    val hasArrayContentBasedAnnotation = property.hasReadArrayContentAnnotation(pokoAnnotation)
     val classifier = property.type.classifierOrNull
 
     if (hasArrayContentBasedAnnotation && classifier.mayBeRuntimeArray(context)) {

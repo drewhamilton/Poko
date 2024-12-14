@@ -40,6 +40,7 @@ import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
@@ -48,6 +49,7 @@ import org.jetbrains.kotlin.name.Name
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateEqualsMethodBody].
  */
 internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
+    pokoAnnotation: ClassId,
     context: IrPluginContext,
     irClass: IrClass,
     functionDeclaration: IrFunction,
@@ -66,7 +68,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
         val arg1 = irGetField(receiver(functionDeclaration), field)
         val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
         val irNotEquals = when {
-            property.hasArrayContentBasedAnnotation() -> {
+            property.hasReadArrayContentAnnotation(pokoAnnotation) -> {
                 irNot(
                     irArrayContentDeepEquals(
                         context = context,

@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
@@ -38,6 +39,7 @@ import org.jetbrains.kotlin.name.Name
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateToStringMethodBody].
  */
 internal fun IrBlockBodyBuilder.generateToStringMethodBody(
+    pokoAnnotation: ClassId,
     context: IrPluginContext,
     irClass: IrClass,
     functionDeclaration: IrFunction,
@@ -56,7 +58,7 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
         val propertyValue = irGetField(receiver(functionDeclaration), property.backingField!!)
 
         val classifier = property.type.classifierOrNull
-        val hasArrayContentBasedAnnotation = property.hasArrayContentBasedAnnotation()
+        val hasArrayContentBasedAnnotation = property.hasReadArrayContentAnnotation(pokoAnnotation)
         val propertyStringValue = when {
             hasArrayContentBasedAnnotation && classifier.mayBeRuntimeArray(context) -> {
                 val field = property.backingField!!

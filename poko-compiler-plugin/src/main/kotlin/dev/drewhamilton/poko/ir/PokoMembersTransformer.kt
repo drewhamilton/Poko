@@ -45,6 +45,7 @@ internal class PokoMembersTransformer(
             when {
                 declaration.isEquals() -> declaration.convertToGenerated { properties ->
                     generateEqualsMethodBody(
+                        pokoAnnotation = pokoAnnotationName,
                         context = pluginContext,
                         irClass = declarationParent,
                         functionDeclaration = declaration,
@@ -55,6 +56,7 @@ internal class PokoMembersTransformer(
 
                 declaration.isHashCode() -> declaration.convertToGenerated { properties ->
                     generateHashCodeMethodBody(
+                        pokoAnnotation = pokoAnnotationName,
                         context = pluginContext,
                         functionDeclaration = declaration,
                         classProperties = properties,
@@ -64,6 +66,7 @@ internal class PokoMembersTransformer(
 
                 declaration.isToString() -> declaration.convertToGenerated { properties ->
                     generateToStringMethodBody(
+                        pokoAnnotation = pokoAnnotationName,
                         context = pluginContext,
                         irClass = declarationParent,
                         functionDeclaration = declaration,
