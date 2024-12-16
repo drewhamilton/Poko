@@ -8,7 +8,8 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.AppliedPlugin
 import org.gradle.kotlin.dsl.buildConfigField
-import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtensionConfig
+import org.gradle.kotlin.dsl.getByType
+import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 private val Project.pokoGroupId get() = property("PUBLISH_GROUP") as String
@@ -88,9 +89,7 @@ class PokoBuildPlugin : Plugin<Project> {
 
             // Published modules should be explicit about their API visibility.
             val kotlinPluginHandler = Action<AppliedPlugin> {
-                val kotlin = project.extensions.getByType(
-                    KotlinTopLevelExtensionConfig::class.java
-                )
+                val kotlin = project.extensions.getByType<KotlinBaseExtension>()
                 kotlin.explicitApi()
             }
             project.pluginManager.withPlugin("org.jetbrains.kotlin.jvm", kotlinPluginHandler)
