@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.kotlin.gradleApi)
+    implementation(libs.kotlin.gradle)
     implementation(libs.plugin.buildconfig)
     implementation(libs.plugin.mavenPublish)
     implementation(libs.plugin.dokka)

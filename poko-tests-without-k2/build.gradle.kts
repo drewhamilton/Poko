@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.plugin.PLUGIN_CLASSPATH_CONFIGURATION_NAME
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  alias(libs.plugins.kotlin.multiplatform)
+  id("org.jetbrains.kotlin.multiplatform")
 }
 
 tasks.withType<KotlinCompile>().configureEach {

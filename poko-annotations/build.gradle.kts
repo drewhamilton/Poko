@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
-  alias(libs.plugins.kotlin.multiplatform)
+  id("org.jetbrains.kotlin.multiplatform")
 }
 
 pokoBuild {

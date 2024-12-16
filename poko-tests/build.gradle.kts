@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.plugin.NATIVE_COMPILER_PLUGIN_CLASSPATH_CONFI
 import org.jetbrains.kotlin.gradle.plugin.PLUGIN_CLASSPATH_CONFIGURATION_NAME
 
 plugins {
-  alias(libs.plugins.kotlin.multiplatform)
+  id("org.jetbrains.kotlin.multiplatform")
 }
 
 val jvmToolchainVersion: Int? = System.getenv()["poko_tests_jvm_toolchain_version"]?.toInt()
