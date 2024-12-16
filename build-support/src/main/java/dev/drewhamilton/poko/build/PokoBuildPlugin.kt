@@ -44,7 +44,6 @@ class PokoBuildPlugin : Plugin<Project> {
             project.pluginManager.apply("com.vanniktech.maven.publish")
 
             val mavenPublishing = project.extensions.getByName("mavenPublishing") as MavenPublishBaseExtension
-            @Suppress("UnstableApiUsage")
             mavenPublishing.apply {
                 coordinates(project.pokoGroupId, project.name, project.pokoVersion)
 

@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.multiplatform) apply false
+    // Note: kotlin-jvm and kotlin-multiplatform plugins are added implicitly via build-support
+
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator) apply false
     alias(libs.plugins.ksp) apply false
 }

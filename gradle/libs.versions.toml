@@ -24,6 +24,7 @@ kotlinCompileTestingFork = { module = "dev.zacsweers.kctfork:core", version.ref 
 kotlin-embeddableCompiler = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-gradleApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
 
 assertk = "com.willowtreeapps.assertk:assertk:0.28.1"
@@ -31,7 +32,7 @@ asm-util = "org.ow2.asm:asm-util:9.7.1"
 testParameterInjector = "com.google.testparameterinjector:test-parameter-injector:1.18"
 
 plugin-buildconfig = "com.github.gmazzo.buildconfig:plugin:5.5.1"
-plugin-mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.25.3"
+plugin-mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.30.0"
 plugin-dokka = "org.jetbrains.dokka:dokka-gradle-plugin:1.9.20"
 
 [plugins]
