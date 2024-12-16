@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.18.1
-_2024-12-13
+_2024-12-13_
 
 Add ability to skip individual properties with `@Poko.Skip`. These properties will be omitted from
 all generated functions. This feature is experimental and requires opt-in via `@SkipSupport`.
