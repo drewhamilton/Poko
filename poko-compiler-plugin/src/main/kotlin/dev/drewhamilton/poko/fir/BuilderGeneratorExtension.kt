@@ -4,13 +4,18 @@ import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationPredicateRegistrar
+import org.jetbrains.kotlin.fir.extensions.MemberGenerationContext
 import org.jetbrains.kotlin.fir.extensions.NestedClassGenerationContext
 import org.jetbrains.kotlin.fir.extensions.predicate.LookupPredicate
 import org.jetbrains.kotlin.fir.extensions.predicateBasedProvider
+import org.jetbrains.kotlin.fir.plugin.createConstructor
 import org.jetbrains.kotlin.fir.plugin.createNestedClass
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.SpecialNames
 
 internal class BuilderGeneratorExtension(
     session: FirSession,
@@ -26,6 +31,8 @@ internal class BuilderGeneratorExtension(
         }
     }
 
+    private val generatedBuilders = mutableListOf<ClassId>()
+
     override fun FirDeclarationPredicateRegistrar.registerPredicates() {
         register(pokoAnnotationPredicate)
     }
@@ -34,7 +41,10 @@ internal class BuilderGeneratorExtension(
         classSymbol: FirClassSymbol<*>,
         context: NestedClassGenerationContext,
     ): Set<Name> = when {
-        classSymbol.matchesPokoAnnotationPredicate() -> setOf(GeneratedBuilderName)
+        classSymbol.classId in generatedBuilders -> setOf(SpecialNames.INIT)
+        classSymbol.matchesPokoAnnotationPredicate() -> setOf(GeneratedBuilderName).also {
+            generatedBuilders.add(classSymbol.classId.createNestedClassId(it.single()))
+        }
         else -> emptySet()
     }
 
@@ -58,6 +68,19 @@ internal class BuilderGeneratorExtension(
             }
             else -> null
         }
+    }
+
+    // FIXME: This isn't getting called
+    override fun generateConstructors(
+        context: MemberGenerationContext,
+    ): List<FirConstructorSymbol> {
+        return listOf(
+            createConstructor(
+                owner = context.owner,
+                key = Key,
+                isPrimary = true,
+            ).symbol,
+        )
     }
 
     private companion object {
