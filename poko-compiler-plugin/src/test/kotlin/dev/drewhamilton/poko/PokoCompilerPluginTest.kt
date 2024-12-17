@@ -3,6 +3,7 @@ package dev.drewhamilton.poko
 import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -186,6 +187,7 @@ class PokoCompilerPluginTest(
         testCompilation("api/Primitives") {
             val builderClass = it.classLoader.tryLoadClass("api.Primitives\$Builder")
             assertThat(builderClass).isNotNull()
+            assertThat(builderClass!!.declaredConstructors).hasSize(1)
         }
     }
 
