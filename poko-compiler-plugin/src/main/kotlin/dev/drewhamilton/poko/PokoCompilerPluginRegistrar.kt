@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ANNOTATION
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ENABLED
 import dev.drewhamilton.poko.fir.PokoFirExtensionRegistrar
+import dev.drewhamilton.poko.ir.GeneratedDeclarationsIrBodyFiller
 import dev.drewhamilton.poko.ir.PokoIrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -34,6 +35,8 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
         IrGenerationExtension.registerExtension(
             PokoIrGenerationExtension(pokoAnnotationClassId, messageCollector)
         )
+        // TODO: Uncomment when ready
+//        IrGenerationExtension.registerExtension(GeneratedDeclarationsIrBodyFiller())
 
         FirExtensionRegistrarAdapter.registerExtension(
             PokoFirExtensionRegistrar(pokoAnnotationClassId)
