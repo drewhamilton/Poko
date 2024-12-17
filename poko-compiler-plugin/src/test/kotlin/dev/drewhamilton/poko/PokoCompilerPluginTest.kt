@@ -4,6 +4,7 @@ import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
+import assertk.assertions.isNotNull
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.tschuchort.compiletesting.JvmCompilationResult
@@ -15,7 +16,9 @@ import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JvmTarget
+import org.jetbrains.kotlin.descriptors.runtime.components.tryLoadClass
 import org.junit.Assert.fail
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -174,6 +177,15 @@ class PokoCompilerPluginTest(
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR,
         ) {
             assertThat(it.messages).contains("e: Could not find class <nonexistent/ClassName>${System.lineSeparator()}")
+        }
+    }
+
+    @Test fun `builder annotation generates Builder class`() {
+        assumeTrue(k2) // FIR only works in K2
+
+        testCompilation("api/Primitives") {
+            val builderClass = it.classLoader.tryLoadClass("api.Primitives\$Builder")
+            assertThat(builderClass).isNotNull()
         }
     }
 
