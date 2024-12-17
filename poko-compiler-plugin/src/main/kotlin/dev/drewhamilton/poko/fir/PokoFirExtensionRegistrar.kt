@@ -9,5 +9,7 @@ internal class PokoFirExtensionRegistrar(
     override fun ExtensionRegistrarContext.configurePlugin() {
         +PokoFirExtensionSessionComponent.getFactory(pokoAnnotation)
         +::PokoFirCheckersExtension
+        // TODO: Uncomment when ready
+//        +::BuilderGeneratorExtension
     }
 }
