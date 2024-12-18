@@ -21,13 +21,14 @@ internal class BuilderGeneratorExtension(
     session: FirSession,
 ) : FirDeclarationGenerationExtension(session) {
 
-    private val pokoAnnotation by lazy {
+    private val pokoBuilderAnnotation by lazy {
         session.pokoFirExtensionSessionComponent.pokoAnnotation
+            .createNestedClassId(Name.identifier("Builder"))
     }
 
     private val pokoAnnotationPredicate by lazy {
         LookupPredicate.create {
-            annotated(pokoAnnotation.asSingleFqName())
+            annotated(pokoBuilderAnnotation.asSingleFqName())
         }
     }
 
