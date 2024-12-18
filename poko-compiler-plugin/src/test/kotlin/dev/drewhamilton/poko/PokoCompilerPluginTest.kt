@@ -220,16 +220,21 @@ class PokoCompilerPluginTest(
                 assertThat(methods.filter { it.name == "getId" }).all {
                     single().returnType().isEqualTo(String::class.java)
                 }
-                assertThat(methods.filter { it.name == "setId" }).all {
-                    hasSize(2)
-                    index(0).all {
+                assertThat(
+                    methods.filter { it.name == "setId" && !it.isSynthetic }
+                ).all {
+                    single().all {
                         returnType().isEqualTo(builderClass)
                         parameters().all {
                             hasSize(1)
                             index(0).type().isEqualTo(String::class.java)
                         }
                     }
-                    index(1).all {
+                }
+                assertThat(
+                    methods.filter { it.name == "setId" && it.isSynthetic }
+                ).all {
+                    single().all {
                         returnType().isEqualTo(Void::class.javaPrimitiveType)
                         parameters().all {
                             hasSize(1)

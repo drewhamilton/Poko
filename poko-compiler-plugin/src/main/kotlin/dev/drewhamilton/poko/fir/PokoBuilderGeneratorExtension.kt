@@ -2,9 +2,12 @@ package dev.drewhamilton.poko.fir
 
 import dev.drewhamilton.poko.PokoAnnotationNames
 import org.jetbrains.kotlin.GeneratedDeclarationKey
+import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirProperty
+import org.jetbrains.kotlin.fir.expressions.builder.FirAnnotationArgumentMappingBuilder
+import org.jetbrains.kotlin.fir.expressions.builder.FirAnnotationBuilder
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationPredicateRegistrar
 import org.jetbrains.kotlin.fir.extensions.MemberGenerationContext
@@ -18,17 +21,21 @@ import org.jetbrains.kotlin.fir.plugin.createNestedClass
 import org.jetbrains.kotlin.fir.resolve.defaultType
 import org.jetbrains.kotlin.fir.resolve.getContainingDeclaration
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
+import org.jetbrains.kotlin.fir.symbols.impl.ConeClassLikeLookupTagImpl
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
+import org.jetbrains.kotlin.fir.types.builder.FirResolvedTypeRefBuilder
 import org.jetbrains.kotlin.fir.types.coneType
+import org.jetbrains.kotlin.fir.types.impl.ConeClassLikeTypeImpl
 import org.jetbrains.kotlin.fir.types.typeContext
 import org.jetbrains.kotlin.fir.types.withNullability
 import org.jetbrains.kotlin.load.java.JvmAbi
 import org.jetbrains.kotlin.name.CallableId
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 
@@ -126,8 +133,30 @@ internal class PokoBuilderGeneratorExtension(
                 ),
                 isVal = false,
             ).apply {
-                // TODO: Apply @set:JvmSynthetic annotation
+                applyJvmSyntheticSetterAnnotation()
             }.symbol,
+        )
+    }
+
+    private fun FirProperty.applyJvmSyntheticSetterAnnotation() {
+        setter!!.replaceAnnotations(
+            listOf(
+                FirAnnotationBuilder().apply {
+                    useSiteTarget = AnnotationUseSiteTarget.PROPERTY_SETTER
+
+                    annotationTypeRef = FirResolvedTypeRefBuilder().apply {
+                        coneType = ConeClassLikeTypeImpl(
+                            lookupTag = ConeClassLikeLookupTagImpl(
+                                classId = ClassId.fromString("kotlin/jvm/JvmSynthetic"),
+                            ),
+                            typeArguments = emptyArray(),
+                            isMarkedNullable = false,
+                        )
+                    }.build()
+
+                    argumentMapping = FirAnnotationArgumentMappingBuilder().build()
+                }.build(),
+            )
         )
     }
 
