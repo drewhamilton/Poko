@@ -1,6 +1,6 @@
 package dev.drewhamilton.poko.ir
 
-import dev.drewhamilton.poko.BuildConfig.SKIP_ANNOTATION_SHORT_NAME
+import dev.drewhamilton.poko.PokoAnnotationNames
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
@@ -134,9 +134,7 @@ internal class PokoMembersTransformer(
             }
             .filter {
                 !it.hasAnnotation(
-                    classId = ClassId.fromString(
-                        string = "${pokoAnnotationName}.$SKIP_ANNOTATION_SHORT_NAME"
-                    ),
+                    classId = pokoAnnotationName.createNestedClassId(PokoAnnotationNames.Skip),
                 )
             }
         if (properties.isEmpty()) {
