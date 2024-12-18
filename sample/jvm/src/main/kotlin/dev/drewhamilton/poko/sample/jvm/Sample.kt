@@ -1,6 +1,7 @@
 package dev.drewhamilton.poko.sample.jvm
 
 @Suppress("unused")
+@MyData.Builder
 @MyData class Sample(
     val int: Int,
     val requiredString: String,
