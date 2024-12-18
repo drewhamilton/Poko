@@ -5,4 +5,8 @@ package dev.drewhamilton.poko.sample.jvm
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
-annotation class MyData
+annotation class MyData {
+    @Retention(AnnotationRetention.SOURCE)
+    @Target(AnnotationTarget.CLASS)
+    annotation class Builder
+}
