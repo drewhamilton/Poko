@@ -4,9 +4,11 @@ import assertk.all
 import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.doesNotContain
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.tschuchort.compiletesting.JvmCompilationResult
@@ -179,6 +181,16 @@ class PokoCompilerPluginTest(
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR,
         ) {
             assertThat(it.messages).contains("e: Could not find class <nonexistent/ClassName>${System.lineSeparator()}")
+        }
+    }
+
+    @Test fun `no builder annotation generates no builder class`() {
+        testCompilation("api/Primitives") { result ->
+            assertThat(result.messages)
+                .doesNotContain("The Poko Builder feature")
+
+            val builderClass = result.classLoader.tryLoadClass("api.Primitives\$Builder")
+            assertThat(builderClass).isNull()
         }
     }
 
