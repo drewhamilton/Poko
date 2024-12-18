@@ -12,18 +12,22 @@ import org.jetbrains.kotlin.fir.extensions.NestedClassGenerationContext
 import org.jetbrains.kotlin.fir.extensions.predicate.LookupPredicate
 import org.jetbrains.kotlin.fir.extensions.predicateBasedProvider
 import org.jetbrains.kotlin.fir.plugin.createConstructor
+import org.jetbrains.kotlin.fir.plugin.createMemberFunction
 import org.jetbrains.kotlin.fir.plugin.createMemberProperty
 import org.jetbrains.kotlin.fir.plugin.createNestedClass
+import org.jetbrains.kotlin.fir.resolve.defaultType
 import org.jetbrains.kotlin.fir.resolve.getContainingDeclaration
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.typeContext
 import org.jetbrains.kotlin.fir.types.withNullability
+import org.jetbrains.kotlin.load.java.JvmAbi
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
@@ -121,8 +125,33 @@ internal class PokoBuilderGeneratorExtension(
                     typeContext = session.typeContext,
                 ),
                 isVal = false,
-                hasBackingField = false,
-            ).symbol,
+            ).apply {
+                // TODO: Apply @set:JvmSynthetic annotation
+            }.symbol,
+        )
+    }
+
+    override fun generateFunctions(
+        callableId: CallableId,
+        context: MemberGenerationContext?
+    ): List<FirNamedFunctionSymbol> {
+        val owner = context?.owner ?: return emptyList()
+        return listOf(
+            createMemberFunction(
+                owner = owner,
+                key = Key,
+                // TODO: Copy out this JvmAbi implementation for safety?
+                name = Name.identifier(JvmAbi.setterName(callableId.callableName.identifier)),
+                returnType = owner.defaultType(),
+                config = {
+                    valueParameter(
+                        name = callableId.callableName,
+                        type = owner.outerClassConstructorProperties().single {
+                            it.name == callableId.callableName
+                        }.returnTypeRef.coneType,
+                    )
+                }
+            ).symbol
         )
     }
 
