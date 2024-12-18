@@ -182,11 +182,14 @@ class PokoCompilerPluginTest(
         }
     }
 
-    @Test fun `builder annotation generates Builder class`() {
+    @Test fun `builder annotation generates builder class`() {
         assumeTrue(k2) // FIR only works in K2
 
-        testCompilation("api/Primitives") {
-            val builderClass = it.classLoader.tryLoadClass("api.Primitives\$Builder")!!
+        testCompilation(
+            "api/Buildable", "api/MyData",
+            pokoAnnotationName = "api/MyData",
+        ) {
+            val builderClass = it.classLoader.tryLoadClass("api.Buildable\$Builder")!!
             assertAll {
                 assertThat(builderClass.declaredConstructors).hasSize(1)
                 assertThat(builderClass.getConstructor()).isNotNull()
