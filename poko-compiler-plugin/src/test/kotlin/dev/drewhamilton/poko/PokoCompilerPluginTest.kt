@@ -188,11 +188,17 @@ class PokoCompilerPluginTest(
         testCompilation(
             "api/Buildable", "api/MyData",
             pokoAnnotationName = "api/MyData",
-        ) {
-            val builderClass = it.classLoader.tryLoadClass("api.Buildable\$Builder")!!
+        ) { result ->
+            assertThat(result.messages).all {
+                contains("Buildable.kt:3:1")
+                contains("The Poko Builder feature is incomplete, experimental, and private; your generated builder will not work")
+            }
+
+            val builderClass = result.classLoader.tryLoadClass("api.Buildable\$Builder")!!
             assertAll {
                 assertThat(builderClass.declaredConstructors).hasSize(1)
                 assertThat(builderClass.getConstructor()).isNotNull()
+
             }
         }
     }
