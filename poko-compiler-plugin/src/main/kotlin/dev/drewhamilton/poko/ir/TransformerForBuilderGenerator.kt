@@ -5,7 +5,7 @@
 
 package dev.drewhamilton.poko.ir
 
-import dev.drewhamilton.poko.fir.BuilderGeneratorExtension
+import dev.drewhamilton.poko.fir.PokoBuilderGeneratorExtension
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrClass
@@ -26,7 +26,7 @@ internal class TransformerForBuilderGenerator(
     override fun interestedIn(
         key: GeneratedDeclarationKey?,
     ): Boolean {
-        return key == BuilderGeneratorExtension.Key
+        return key == PokoBuilderGeneratorExtension.Key
     }
 
     override fun generateBodyForFunction(
