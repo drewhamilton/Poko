@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.fir
 
+import dev.drewhamilton.poko.PokoAnnotationNames
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
@@ -22,8 +23,7 @@ internal class PokoBuilderGeneratorExtension(
 ) : FirDeclarationGenerationExtension(session) {
 
     private val pokoBuilderAnnotation by lazy {
-        session.pokoFirExtensionSessionComponent.pokoAnnotation
-            .createNestedClassId(Name.identifier("Builder"))
+        session.pokoFirExtensionSessionComponent.pokoBuilderAnnotation
     }
 
     private val pokoAnnotationPredicate by lazy {
@@ -38,7 +38,7 @@ internal class PokoBuilderGeneratorExtension(
     }
 
     private val builderClassIds by lazy {
-        pokoClassIds.map { it.classId.createNestedClassId(GeneratedBuilderName) }
+        pokoClassIds.map { it.classId.createNestedClassId(PokoAnnotationNames.Builder) }
     }
 
     override fun FirDeclarationPredicateRegistrar.registerPredicates() {
@@ -57,7 +57,7 @@ internal class PokoBuilderGeneratorExtension(
         classSymbol: FirClassSymbol<*>,
         context: NestedClassGenerationContext,
     ): Set<Name> = when {
-        classSymbol in pokoClassIds -> setOf(GeneratedBuilderName)
+        classSymbol in pokoClassIds -> setOf(PokoAnnotationNames.Builder)
         else -> emptySet()
     }
 
@@ -67,7 +67,7 @@ internal class PokoBuilderGeneratorExtension(
         context: NestedClassGenerationContext,
     ): FirClassLikeSymbol<*>? {
         return when (name) {
-            GeneratedBuilderName -> {
+            PokoAnnotationNames.Builder -> {
                 if (owner !in pokoClassIds) return null
                 createNestedClass(
                     owner = owner,
@@ -89,10 +89,6 @@ internal class PokoBuilderGeneratorExtension(
                 isPrimary = true,
             ).symbol,
         )
-    }
-
-    private companion object {
-        private val GeneratedBuilderName = Name.identifier("Builder")
     }
 
     internal object Key : GeneratedDeclarationKey() {
