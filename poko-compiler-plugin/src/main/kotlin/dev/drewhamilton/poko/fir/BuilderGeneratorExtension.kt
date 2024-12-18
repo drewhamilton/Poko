@@ -13,7 +13,7 @@ import org.jetbrains.kotlin.fir.plugin.createNestedClass
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
-import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 
@@ -31,25 +31,33 @@ internal class BuilderGeneratorExtension(
         }
     }
 
-    private val generatedBuilders = mutableListOf<ClassId>()
+    private val pokoClassIds by lazy {
+        session.predicateBasedProvider.getSymbolsByPredicate(pokoAnnotationPredicate)
+            .filterIsInstance<FirRegularClassSymbol>()
+    }
+
+    private val builderClassIds by lazy {
+        pokoClassIds.map { it.classId.createNestedClassId(GeneratedBuilderName) }
+    }
 
     override fun FirDeclarationPredicateRegistrar.registerPredicates() {
         register(pokoAnnotationPredicate)
+    }
+
+    override fun getCallableNamesForClass(
+        classSymbol: FirClassSymbol<*>,
+        context: MemberGenerationContext,
+    ): Set<Name> = when {
+        classSymbol.classId in builderClassIds -> setOf(SpecialNames.INIT)
+        else -> emptySet()
     }
 
     override fun getNestedClassifiersNames(
         classSymbol: FirClassSymbol<*>,
         context: NestedClassGenerationContext,
     ): Set<Name> = when {
-        classSymbol.classId in generatedBuilders -> setOf(SpecialNames.INIT)
-        classSymbol.matchesPokoAnnotationPredicate() -> setOf(GeneratedBuilderName).also {
-            generatedBuilders.add(classSymbol.classId.createNestedClassId(it.single()))
-        }
+        classSymbol in pokoClassIds -> setOf(GeneratedBuilderName)
         else -> emptySet()
-    }
-
-    private fun FirClassSymbol<*>.matchesPokoAnnotationPredicate(): Boolean {
-        return session.predicateBasedProvider.matches(pokoAnnotationPredicate, this)
     }
 
     override fun generateNestedClassLikeDeclaration(
@@ -59,7 +67,7 @@ internal class BuilderGeneratorExtension(
     ): FirClassLikeSymbol<*>? {
         return when (name) {
             GeneratedBuilderName -> {
-                if (!owner.matchesPokoAnnotationPredicate()) return null
+                if (owner !in pokoClassIds) return null
                 createNestedClass(
                     owner = owner,
                     name = name,
@@ -70,7 +78,6 @@ internal class BuilderGeneratorExtension(
         }
     }
 
-    // FIXME: This isn't getting called
     override fun generateConstructors(
         context: MemberGenerationContext,
     ): List<FirConstructorSymbol> {
