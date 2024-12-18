@@ -6,15 +6,20 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.hasSize
+import assertk.assertions.index
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
+import assertk.assertions.single
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.tschuchort.compiletesting.JvmCompilationResult
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.PluginOption
 import com.tschuchort.compiletesting.SourceFile
+import dev.drewhamilton.poko.test.parameters
+import dev.drewhamilton.poko.test.returnType
+import dev.drewhamilton.poko.test.type
 import java.io.File
 import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
@@ -211,6 +216,27 @@ class PokoCompilerPluginTest(
                 assertThat(builderClass.declaredConstructors).hasSize(1)
                 assertThat(builderClass.getConstructor()).isNotNull()
 
+                val methods = builderClass.methods
+                assertThat(methods.filter { it.name == "getId" }).all {
+                    single().returnType().isEqualTo(String::class.java)
+                }
+                assertThat(methods.filter { it.name == "setId" }).all {
+                    hasSize(2)
+                    index(0).all {
+                        returnType().isEqualTo(builderClass)
+                        parameters().all {
+                            hasSize(1)
+                            index(0).type().isEqualTo(String::class.java)
+                        }
+                    }
+                    index(1).all {
+                        returnType().isEqualTo(Void::class.javaPrimitiveType)
+                        parameters().all {
+                            hasSize(1)
+                            index(0).type().isEqualTo(String::class.java)
+                        }
+                    }
+                }
             }
         }
     }
