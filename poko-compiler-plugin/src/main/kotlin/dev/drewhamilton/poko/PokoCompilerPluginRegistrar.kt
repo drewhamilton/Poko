@@ -35,8 +35,7 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
         IrGenerationExtension.registerExtension(
             PokoIrGenerationExtension(pokoAnnotationClassId, messageCollector)
         )
-        // TODO: Uncomment when ready
-//        IrGenerationExtension.registerExtension(GeneratedDeclarationsIrBodyFiller())
+        IrGenerationExtension.registerExtension(GeneratedDeclarationsIrBodyFiller())
 
         FirExtensionRegistrarAdapter.registerExtension(
             PokoFirExtensionRegistrar(pokoAnnotationClassId)
