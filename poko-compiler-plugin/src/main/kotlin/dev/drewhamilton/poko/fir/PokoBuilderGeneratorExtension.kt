@@ -17,7 +17,7 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 
-internal class BuilderGeneratorExtension(
+internal class PokoBuilderGeneratorExtension(
     session: FirSession,
 ) : FirDeclarationGenerationExtension(session) {
 
@@ -96,6 +96,6 @@ internal class BuilderGeneratorExtension(
     }
 
     internal object Key : GeneratedDeclarationKey() {
-        override fun toString() = "Poko BuilderGeneratorExtension.Key"
+        override fun toString() = "PokoBuilderGeneratorExtension.Key"
     }
 }
