@@ -49,8 +49,22 @@ internal class PokoFirCheckersExtension(
             reporter: DiagnosticReporter,
         ) {
             val sessionComponent = context.session.pokoFirExtensionSessionComponent
-            if (!declaration.hasAnnotation(sessionComponent.pokoAnnotation)) return
+            if (declaration.hasAnnotation(sessionComponent.pokoAnnotation)) {
+                checkPokoClass(declaration, context, reporter)
+            }
+            if (declaration.hasAnnotation(sessionComponent.pokoBuilderAnnotation)) {
+                checkPokoBuilderClass(declaration, context, reporter)
+            }
+        }
 
+        /**
+         * Called on classes known to have the Poko annotation.
+         */
+        private fun checkPokoClass(
+            declaration: FirRegularClass,
+            context: CheckerContext,
+            reporter: DiagnosticReporter,
+        ) {
             val errorFactory = when {
                 declaration.classKind != ClassKind.CLASS -> Diagnostics.PokoOnNonClass
                 declaration.isData -> Diagnostics.PokoOnDataClass
@@ -68,6 +82,7 @@ internal class PokoFirCheckersExtension(
                 )
             }
 
+            val sessionComponent = context.session.pokoFirExtensionSessionComponent
             val constructorProperties = declaration.declarations
                 .filterIsInstance<FirProperty>()
                 .filter {
@@ -93,6 +108,22 @@ internal class PokoFirCheckersExtension(
                     context = context,
                 )
             }
+        }
+
+        /**
+         * Called on classes known to have the Poko.Builder annotation.
+         */
+        private fun checkPokoBuilderClass(
+            declaration: FirRegularClass,
+            context: CheckerContext,
+            reporter: DiagnosticReporter,
+        ) {
+            // This feature is incomplete and private
+            reporter.reportOn(
+                source = declaration.source,
+                factory = Diagnostics.PokoBuilderIncomplete,
+                context = context,
+            )
         }
 
         private fun FirDeclaration.hasAnnotation(
@@ -158,6 +189,10 @@ internal class PokoFirCheckersExtension(
             positioningStrategy = SourceElementPositioningStrategies.ANNOTATION_USE_SITE,
         )
 
+        val PokoBuilderIncomplete by warning0(
+            positioningStrategy = SourceElementPositioningStrategies.ANNOTATION_USE_SITE,
+        )
+
         override val MAP = KtDiagnosticFactoryToRendererMap("Poko").apply {
             put(
                 factory = PokoOnNonClass,
@@ -186,6 +221,10 @@ internal class PokoFirCheckersExtension(
             put(
                 factory = SkippedPropertyWithCustomAnnotation,
                 message = "The @Skip annotation is experimental and its behavior may change; use with caution",
+            )
+            put(
+                factory = PokoBuilderIncomplete,
+                message = "The Poko Builder feature is incomplete, experimental, and private; your generated builder will not work",
             )
         }
 
