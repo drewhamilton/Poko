@@ -11,6 +11,9 @@ internal class PokoFirExtensionSessionComponent(
     internal val pokoAnnotation: ClassId,
 ) : FirExtensionSessionComponent(session) {
 
+    internal val pokoBuilderAnnotation: ClassId =
+        pokoAnnotation.createNestedClassId(PokoAnnotationNames.Builder)
+
     internal val pokoSkipAnnotation: ClassId =
         pokoAnnotation.createNestedClassId(PokoAnnotationNames.Skip)
 
