@@ -1,7 +1,6 @@
 package dev.drewhamilton.poko.fir
 
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ANNOTATION
-import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.diagnostics.AbstractSourceElementPositioningStrategy
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory0DelegateProvider
@@ -20,7 +19,6 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirRegularClassChe
 import org.jetbrains.kotlin.fir.analysis.checkers.hasModifier
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.primaryConstructorIfAny
 import org.jetbrains.kotlin.fir.declarations.utils.isData
@@ -84,10 +82,7 @@ internal class PokoFirCheckersExtension(
 
             val sessionComponent = context.session.pokoFirExtensionSessionComponent
             val constructorProperties = declaration.declarations
-                .filterIsInstance<FirProperty>()
-                .filter {
-                    it.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
-                }
+                .constructorProperties()
                 .filter {
                     val skipAnnotation = sessionComponent.pokoSkipAnnotation
                     val hasSkipAnnotation = it.hasAnnotation(skipAnnotation)
