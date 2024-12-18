@@ -1,6 +1,7 @@
 package dev.drewhamilton.poko
 
 import assertk.all
+import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.hasSize
@@ -185,9 +186,11 @@ class PokoCompilerPluginTest(
         assumeTrue(k2) // FIR only works in K2
 
         testCompilation("api/Primitives") {
-            val builderClass = it.classLoader.tryLoadClass("api.Primitives\$Builder")
-            assertThat(builderClass).isNotNull()
-            assertThat(builderClass!!.declaredConstructors).hasSize(1)
+            val builderClass = it.classLoader.tryLoadClass("api.Primitives\$Builder")!!
+            assertAll {
+                assertThat(builderClass.declaredConstructors).hasSize(1)
+                assertThat(builderClass.getConstructor()).isNotNull()
+            }
         }
     }
 
