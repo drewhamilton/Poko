@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.ir
 
+import dev.drewhamilton.poko.PokoAnnotationNames
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrGeneratorContextInterface
@@ -25,7 +26,6 @@ import org.jetbrains.kotlin.ir.util.isAnnotationClass
 import org.jetbrains.kotlin.ir.util.isInterface
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.ClassId
-import org.jetbrains.kotlin.name.Name
 
 /**
  * The type of an [IrProperty].
@@ -62,7 +62,7 @@ internal fun IrBlockBodyBuilder.IrGetValueImpl(
 internal fun IrProperty.hasReadArrayContentAnnotation(
     pokoAnnotation: ClassId,
 ): Boolean = hasAnnotation(
-    classId = pokoAnnotation.createNestedClassId(Name.identifier("ReadArrayContent")),
+    classId = pokoAnnotation.createNestedClassId(PokoAnnotationNames.ReadArrayContent),
 )
 
 /**

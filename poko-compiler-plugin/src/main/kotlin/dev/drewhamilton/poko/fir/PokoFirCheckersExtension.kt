@@ -19,6 +19,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.DeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirRegularClassChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.hasModifier
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
+import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.declarations.primaryConstructorIfAny
@@ -28,6 +29,7 @@ import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.coneTypeOrNull
 import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.name.ClassId
 
 internal class PokoFirCheckersExtension(
     session: FirSession,
@@ -46,8 +48,8 @@ internal class PokoFirCheckersExtension(
             context: CheckerContext,
             reporter: DiagnosticReporter,
         ) {
-            val matcher = context.session.pokoFirExtensionSessionComponent
-            if (matcher.pokoAnnotation(declaration) == null) return
+            val sessionComponent = context.session.pokoFirExtensionSessionComponent
+            if (!declaration.hasAnnotation(sessionComponent.pokoAnnotation)) return
 
             val errorFactory = when {
                 declaration.classKind != ClassKind.CLASS -> Diagnostics.PokoOnNonClass
@@ -72,11 +74,9 @@ internal class PokoFirCheckersExtension(
                     it.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
                 }
                 .filter {
-                    val skipAnnotation = matcher.pokoSkipAnnotation(it)
-                    if (
-                        skipAnnotation != null &&
-                        !skipAnnotation.isNestedInDefaultPokoAnnotation()
-                    ) {
+                    val skipAnnotation = sessionComponent.pokoSkipAnnotation
+                    val hasSkipAnnotation = it.hasAnnotation(skipAnnotation)
+                    if (hasSkipAnnotation && !skipAnnotation.isNestedInDefaultPokoAnnotation()) {
                         // Pseudo-opt-in warning for custom annotation consumers:
                         reporter.reportOn(
                             source = it.source,
@@ -84,7 +84,7 @@ internal class PokoFirCheckersExtension(
                             context = context,
                         )
                     }
-                    skipAnnotation == null
+                    !hasSkipAnnotation
                 }
             if (constructorProperties.isEmpty()) {
                 reporter.reportOn(
@@ -95,13 +95,23 @@ internal class PokoFirCheckersExtension(
             }
         }
 
-        private fun FirAnnotation.isNestedInDefaultPokoAnnotation(): Boolean {
-            val outerFqName = annotationTypeRef.coneTypeOrNull!!.classId!!
-                .outerClassId!!
-                .asFqNameString()
+        private fun FirDeclaration.hasAnnotation(
+            annotation: ClassId,
+        ): Boolean {
+            return annotations.any { firAnnotation ->
+                firAnnotation.classId() == annotation
+            }
+        }
+
+        private fun FirAnnotation.classId(): ClassId? {
+            return annotationTypeRef.coneTypeOrNull?.classId
+        }
+
+        private fun ClassId.isNestedInDefaultPokoAnnotation(): Boolean {
+            val outerFqName = outerClassId?.asFqNameString()
             return outerFqName == DEFAULT_POKO_ANNOTATION ||
                 // Multiplatform FqName has "." instead of "/" for package:
-                outerFqName.replace(".", "/") == DEFAULT_POKO_ANNOTATION
+                outerFqName?.replace(".", "/") == DEFAULT_POKO_ANNOTATION
         }
     }
 

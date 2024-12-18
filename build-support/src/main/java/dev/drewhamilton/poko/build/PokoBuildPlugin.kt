@@ -107,7 +107,6 @@ class PokoBuildPlugin : Plugin<Project> {
                 buildConfigField("COMPILER_PLUGIN_ARTIFACT", "poko-compiler-plugin")
                 buildConfigField("DEFAULT_POKO_ENABLED", true)
                 buildConfigField("DEFAULT_POKO_ANNOTATION", "dev/drewhamilton/poko/Poko")
-                buildConfigField("SKIP_ANNOTATION_SHORT_NAME", "Skip")
             }
         }
     }
