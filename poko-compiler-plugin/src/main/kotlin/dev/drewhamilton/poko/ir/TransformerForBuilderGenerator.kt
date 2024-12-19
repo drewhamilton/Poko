@@ -5,6 +5,7 @@
 
 package dev.drewhamilton.poko.ir
 
+import dev.drewhamilton.poko.builder.BuildFunctionIdentifierName
 import dev.drewhamilton.poko.fir.PokoBuilderGeneratorExtension
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
@@ -14,7 +15,9 @@ import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.createBlockBody
 import org.jetbrains.kotlin.ir.expressions.IrBody
+import org.jetbrains.kotlin.ir.expressions.impl.IrConstructorCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrDelegatingConstructorCallImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrGetFieldImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrInstanceInitializerCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrReturnImpl
@@ -22,6 +25,7 @@ import org.jetbrains.kotlin.ir.expressions.impl.IrSetFieldImpl
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.IrSimpleType
 import org.jetbrains.kotlin.ir.types.classOrNull
+import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.parentAsClass
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
@@ -41,29 +45,25 @@ internal class TransformerForBuilderGenerator(
         function: IrSimpleFunction,
         key: GeneratedDeclarationKey?,
     ): IrBody? {
-        return if (
-            function.extensionReceiverParameter == null &&
-            function.typeParameters.isEmpty() &&
-            function.valueParameters.size == 1 &&
-            function.returnType.classOrNull?.owner == function.parent
-        ) {
-            generateBuilderSetterFunctionBody(function)
-        } else {
-            // TODO
-            null
+        return when {
+            function.isBuilderSetter() -> generateSetterFunctionBody(function)
+            function.isBuildFunction() -> generateBuildFunctionBody(function)
+            else -> null
         }
     }
 
-    private fun generateBuilderSetterFunctionBody(
+    private fun IrFunction.isBuilderSetter(): Boolean {
+        return extensionReceiverParameter == null &&
+            typeParameters.isEmpty() &&
+            valueParameters.size == 1 &&
+            returnType.classOrNull?.owner == parent
+    }
+
+    private fun generateSetterFunctionBody(
         function: IrFunction,
     ): IrBody {
         val param = function.valueParameters.single()
-        val parentClassInstance = IrGetValueImpl(
-            startOffset = -1,
-            endOffset = -1,
-            type = function.dispatchReceiverParameter!!.type,
-            symbol = function.dispatchReceiverParameter!!.symbol,
-        )
+        val parentClassInstance = function.parentClassInstance()
         val setFieldStatement = IrSetFieldImpl(
             startOffset = -1,
             endOffset = -1,
@@ -95,6 +95,76 @@ internal class TransformerForBuilderGenerator(
                 setFieldStatement,
                 returnStatement,
             ),
+        )
+    }
+
+    private fun IrFunction.isBuildFunction(): Boolean {
+        return name == BuildFunctionIdentifierName &&
+            extensionReceiverParameter == null &&
+            typeParameters.isEmpty() &&
+            valueParameters.isEmpty()
+    }
+
+    private fun generateBuildFunctionBody(
+        function: IrFunction,
+    ): IrBody {
+        val builderClass = function.parentAsClass
+        val builderFields = builderClass.properties.map { it.backingField!! }
+        val pokoClass = builderClass.parentAsClass
+        val pokoClassConstructor = pokoClass.primaryConstructor!!
+
+        val constructorInvocation = IrConstructorCallImpl(
+            startOffset = -1,
+            endOffset = -1,
+            type = pokoClass.defaultType,
+            symbol = pokoClassConstructor.symbol,
+            typeArgumentsCount = 0,
+            constructorTypeArgumentsCount = 0,
+        ).apply {
+            // Builder property backing fields should match Poko class constructor parameter names:
+            pokoClassConstructor.valueParameters.forEachIndexed { index, parameter ->
+                val builderField = try {
+                    builderFields.single { it.name == parameter.name }
+                } catch (noSuchElementException: NoSuchElementException) {
+                    throw IllegalStateException(
+                        "Could not find field named <${parameter.name}> in ${builderFields.toList()}",
+                        noSuchElementException,
+                    )
+                }
+                putValueArgument(
+                    index = index,
+                    valueArgument = IrGetFieldImpl(
+                        startOffset = -1,
+                        endOffset = -1,
+                        symbol = builderField.symbol,
+                        type = builderField.type,
+                        receiver = function.parentClassInstance(),
+                    ),
+                )
+            }
+        }
+
+        return irFactory.createBlockBody(
+            startOffset = -1,
+            endOffset = -1,
+            statements = listOf(
+                IrReturnImpl(
+                    startOffset = -1,
+                    endOffset = -1,
+                    type = function.returnType,
+                    returnTargetSymbol = function.symbol,
+                    value = constructorInvocation,
+                ),
+            ),
+        )
+    }
+
+    private fun IrFunction.parentClassInstance(): IrGetValueImpl {
+        return IrGetValueImpl(
+            startOffset = -1,
+            endOffset = -1,
+            type = dispatchReceiverParameter!!.type,
+            symbol = dispatchReceiverParameter!!.symbol,
         )
     }
 
