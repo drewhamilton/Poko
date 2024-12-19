@@ -3,10 +3,8 @@
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
-package dev.drewhamilton.poko.ir
+package dev.drewhamilton.poko.builder
 
-import dev.drewhamilton.poko.builder.BuildFunctionIdentifierName
-import dev.drewhamilton.poko.fir.PokoBuilderGeneratorExtension
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrClass
@@ -38,7 +36,7 @@ internal class TransformerForBuilderGenerator(
     override fun interestedIn(
         key: GeneratedDeclarationKey?,
     ): Boolean {
-        return key == PokoBuilderGeneratorExtension.Key
+        return key == BuilderFirDeclarationGenerationExtension.Key
     }
 
     override fun generateBodyForFunction(

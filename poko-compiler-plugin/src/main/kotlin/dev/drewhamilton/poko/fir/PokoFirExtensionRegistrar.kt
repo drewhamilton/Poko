@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.fir
 
+import dev.drewhamilton.poko.builder.BuilderFirDeclarationGenerationExtension
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.name.ClassId
 
@@ -9,6 +10,6 @@ internal class PokoFirExtensionRegistrar(
     override fun ExtensionRegistrarContext.configurePlugin() {
         +PokoFirExtensionSessionComponent.getFactory(pokoAnnotation)
         +::PokoFirCheckersExtension
-        +::PokoBuilderGeneratorExtension
+        +::BuilderFirDeclarationGenerationExtension
     }
 }
