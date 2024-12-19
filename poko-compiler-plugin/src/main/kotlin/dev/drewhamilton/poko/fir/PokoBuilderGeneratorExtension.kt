@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirProperty
+import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.expressions.builder.FirAnnotationArgumentMappingBuilder
 import org.jetbrains.kotlin.fir.expressions.builder.FirAnnotationBuilder
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
@@ -140,25 +141,29 @@ internal class PokoBuilderGeneratorExtension(
 
     private fun FirProperty.applyJvmSyntheticSetterAnnotation() {
         setter!!.replaceAnnotations(
-            listOf(
-                FirAnnotationBuilder().apply {
-                    useSiteTarget = AnnotationUseSiteTarget.PROPERTY_SETTER
-
-                    annotationTypeRef = FirResolvedTypeRefBuilder().apply {
-                        coneType = ConeClassLikeTypeImpl(
-                            lookupTag = ConeClassLikeLookupTagImpl(
-                                classId = ClassId.fromString("kotlin/jvm/JvmSynthetic"),
-                            ),
-                            typeArguments = emptyArray(),
-                            isMarkedNullable = false,
-                        )
-                    }.build()
-
-                    argumentMapping = FirAnnotationArgumentMappingBuilder().build()
-                }.build(),
-            )
+            listOf(jvmSyntheticAnnotation(AnnotationUseSiteTarget.PROPERTY_SETTER)),
         )
     }
+
+    // Copied from debugging session with real `@set:JvmSynthetic` annotation:
+    @Suppress("SameParameterValue")
+    private fun jvmSyntheticAnnotation(
+        useSiteTarget: AnnotationUseSiteTarget,
+    ): FirAnnotation = FirAnnotationBuilder().apply {
+        this.useSiteTarget = useSiteTarget
+
+        annotationTypeRef = FirResolvedTypeRefBuilder().apply {
+            coneType = ConeClassLikeTypeImpl(
+                lookupTag = ConeClassLikeLookupTagImpl(
+                    classId = ClassId.fromString("kotlin/jvm/JvmSynthetic"),
+                ),
+                typeArguments = emptyArray(),
+                isMarkedNullable = false,
+            )
+        }.build()
+
+        argumentMapping = FirAnnotationArgumentMappingBuilder().build()
+    }.build()
 
     override fun generateFunctions(
         callableId: CallableId,
