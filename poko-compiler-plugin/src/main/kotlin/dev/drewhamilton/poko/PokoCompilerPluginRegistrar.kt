@@ -3,8 +3,8 @@ package dev.drewhamilton.poko
 import com.google.auto.service.AutoService
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ANNOTATION
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ENABLED
+import dev.drewhamilton.poko.builder.GeneratedDeclarationsIrBodyFiller
 import dev.drewhamilton.poko.fir.PokoFirExtensionRegistrar
-import dev.drewhamilton.poko.ir.GeneratedDeclarationsIrBodyFiller
 import dev.drewhamilton.poko.ir.PokoIrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector

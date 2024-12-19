@@ -1,7 +1,8 @@
-package dev.drewhamilton.poko.fir
+package dev.drewhamilton.poko.builder
 
 import dev.drewhamilton.poko.PokoAnnotationNames
-import dev.drewhamilton.poko.builder.BuildFunctionSpecialName
+import dev.drewhamilton.poko.fir.constructorProperties
+import dev.drewhamilton.poko.fir.pokoFirExtensionSessionComponent
 import dev.drewhamilton.poko.unSpecial
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
@@ -42,7 +43,7 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 
-internal class PokoBuilderGeneratorExtension(
+internal class BuilderFirDeclarationGenerationExtension(
     session: FirSession,
 ) : FirDeclarationGenerationExtension(session) {
 
@@ -227,6 +228,6 @@ internal class PokoBuilderGeneratorExtension(
     }
 
     internal object Key : GeneratedDeclarationKey() {
-        override fun toString() = "PokoBuilderGeneratorExtension.Key"
+        override fun toString() = "Poko BuilderFirDeclarationGenerationExtension.Key"
     }
 }
