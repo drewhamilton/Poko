@@ -10,6 +10,8 @@ import org.jetbrains.kotlin.ir.types.IrType
 
 /**
  * Alias for [irCall] from 2.1.0 – 2.1.20.
+ *
+ * Remove when support for 2.1.0 & 2.1.1x is dropped.
  */
 @OptIn(UnsafeDuringIrConstructionAPI::class)
 internal fun IrBuilderWithScope.irCallCompat(
@@ -20,17 +22,15 @@ internal fun IrBuilderWithScope.irCallCompat(
     origin: IrStatementOrigin? = null,
 ): IrCall {
     return try {
-        // 2.1.0:
+        // 2.1.20+:
         irCall(
             callee = callee,
             type = type,
-            valueArgumentsCount = valueArgumentsCount,
             typeArgumentsCount = typeArgumentsCount,
             origin = origin,
         )
     } catch (noSuchMethodError: NoSuchMethodError) {
-        // TODO: Flip order when 2.1.20 is the compile version
-        // https://github.com/JetBrains/kotlin/blob/v2.1.20-Beta1/compiler/ir/ir.tree/src/org/jetbrains/kotlin/ir/builders/ExpressionHelpers.kt#L240
+        // https://github.com/JetBrains/kotlin/blob/v2.1.0/compiler/ir/ir.tree/src/org/jetbrains/kotlin/ir/builders/ExpressionHelpers.kt#L240
         javaClass.classLoader.loadClass("org.jetbrains.kotlin.ir.builders.ExpressionHelpersKt")
             .methods
             .single { function ->
@@ -39,6 +39,7 @@ internal fun IrBuilderWithScope.irCallCompat(
                         IrBuilderWithScope::class.java, // extension receiver
                         IrSimpleFunctionSymbol::class.java, // callee
                         IrType::class.java, // type
+                        Int::class.java, // valueArgumentsCount
                         Int::class.java, // typeArgumentsCount
                         IrStatementOrigin::class.java, // origin
                     )
@@ -48,7 +49,8 @@ internal fun IrBuilderWithScope.irCallCompat(
                 this, // extension receiver
                 callee, // param: callee
                 type, // param: type
-                typeArgumentsCount, // param: type
+                valueArgumentsCount, // param: valueArgumentsCount
+                typeArgumentsCount, // param: typeArgumentsCount
                 origin, // param: origin
             ) as IrCall
     }
