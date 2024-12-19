@@ -7,7 +7,6 @@ import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irBranch
-import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irElseBranch
 import org.jetbrains.kotlin.ir.builders.irEqeqeq
 import org.jetbrains.kotlin.ir.builders.irEquals
@@ -195,7 +194,7 @@ private fun IrBuilderWithScope.irCallContentDeepEquals(
     receiver: IrExpression,
     argument: IrExpression,
 ): IrExpression {
-    return irCall(
+    return irCallCompat(
         callee = findContentDeepEqualsFunctionSymbol(context, classifier),
         type = context.irBuiltIns.booleanType,
         valueArgumentsCount = 1,

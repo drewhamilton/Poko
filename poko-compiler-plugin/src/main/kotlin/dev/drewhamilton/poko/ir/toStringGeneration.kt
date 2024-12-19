@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.irBranch
-import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irConcat
 import org.jetbrains.kotlin.ir.builders.irElseBranch
 import org.jetbrains.kotlin.ir.builders.irGetField
@@ -212,7 +211,7 @@ private fun IrBlockBodyBuilder.irCallToStringFunction(
     toStringFunctionSymbol: IrSimpleFunctionSymbol,
     value: IrExpression,
 ): IrExpression {
-    return irCall(
+    return irCallCompat(
         callee = toStringFunctionSymbol,
         type = context.irBuiltIns.stringType,
     ).apply {

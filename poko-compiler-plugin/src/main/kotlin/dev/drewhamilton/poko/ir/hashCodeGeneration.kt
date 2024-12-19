@@ -243,7 +243,7 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
     val type = classSymbol.createArrayType(context)
     return irBranch(
         condition = irIs(value, type),
-        result = irCall(
+        result = irCallCompat(
             callee = findArrayContentDeepHashCodeFunction(context, classSymbol),
             type = context.irBuiltIns.intType,
         ).apply {
@@ -336,7 +336,7 @@ private fun IrBlockBodyBuilder.irCallHashCodeFunction(
     val (hasDispatchReceiver, hasExtensionReceiver) = with(hashCodeFunctionSymbol.owner) {
         (dispatchReceiverParameter != null) to (extensionReceiverParameter != null)
     }
-    return irCall(
+    return irCallCompat(
         callee = hashCodeFunctionSymbol,
         type = context.irBuiltIns.intType,
         valueArgumentsCount = if (hasDispatchReceiver || hasExtensionReceiver) 0 else 1,
