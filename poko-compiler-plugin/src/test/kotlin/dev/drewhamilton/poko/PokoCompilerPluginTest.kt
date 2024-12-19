@@ -7,6 +7,7 @@ import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.hasSize
 import assertk.assertions.index
+import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
@@ -218,7 +219,10 @@ class PokoCompilerPluginTest(
 
                 val methods = builderClass.methods
                 assertThat(methods.filter { it.name == "getId" }).all {
-                    single().returnType().isEqualTo(String::class.java)
+                    single().all {
+                        parameters().isEmpty()
+                        returnType().isEqualTo(String::class.java)
+                    }
                 }
                 assertThat(
                     methods.filter { it.name == "setId" && !it.isSynthetic }
@@ -240,6 +244,14 @@ class PokoCompilerPluginTest(
                             hasSize(1)
                             index(0).type().isEqualTo(String::class.java)
                         }
+                    }
+                }
+                assertThat(
+                    methods.filter { it.name == "build" }
+                ).all {
+                    single().all {
+                        returnType().isEqualTo(result.classLoader.tryLoadClass("api.Buildable")!!)
+                        parameters().isEmpty()
                     }
                 }
             }
