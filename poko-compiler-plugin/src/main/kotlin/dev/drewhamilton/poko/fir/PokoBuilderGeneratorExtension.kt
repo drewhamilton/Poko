@@ -4,7 +4,6 @@ import dev.drewhamilton.poko.PokoAnnotationNames
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
@@ -22,7 +21,6 @@ import org.jetbrains.kotlin.fir.plugin.createMemberFunction
 import org.jetbrains.kotlin.fir.plugin.createMemberProperty
 import org.jetbrains.kotlin.fir.plugin.createNestedClass
 import org.jetbrains.kotlin.fir.resolve.defaultType
-import org.jetbrains.kotlin.fir.resolve.getContainingDeclaration
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.ConeClassLikeLookupTagImpl
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
@@ -75,7 +73,9 @@ internal class PokoBuilderGeneratorExtension(
     ): Set<Name> = when {
         classSymbol.classId in pokoBuilderClasses.keys -> {
             setOf(SpecialNames.INIT, BUILD_FUNCTION_NAME) +
-                classSymbol.outerClassConstructorProperties().map { it.name }
+                pokoBuilderClasses.getValue(classSymbol.classId).constructorProperties().map {
+                    it.name
+                }
         }
         else -> emptySet()
     }
@@ -126,7 +126,7 @@ internal class PokoBuilderGeneratorExtension(
         if (callableId.callableName.isSpecial) return emptyList()
 
         val owner = context?.owner ?: return emptyList()
-        val returnType = owner.outerClassConstructorProperties().single {
+        val returnType = pokoBuilderClasses.getValue(owner.classId).constructorProperties().single {
             it.name == callableId.callableName
         }
         return listOf(
@@ -216,19 +216,17 @@ internal class PokoBuilderGeneratorExtension(
         config = {
             valueParameter(
                 name = callableName,
-                type = owner.outerClassConstructorProperties().single {
+                type = pokoBuilderClasses.getValue(owner.classId).constructorProperties().single {
                     it.name == callableName
                 }.returnTypeRef.coneType,
             )
         }
     )
 
-    // TODO: Try to use map instead
-    private fun FirClassSymbol<*>.outerClassConstructorProperties(): List<FirProperty> {
-        // TODO: Is this opt-in dangerous?
-        @OptIn(SymbolInternals::class)
-        val containingClass = getContainingDeclaration(session)!!.fir as FirClass
-        return containingClass.declarations.constructorProperties()
+    // TODO: Is this opt-in dangerous?
+    @OptIn(SymbolInternals::class)
+    private fun FirClassSymbol<*>.constructorProperties(): List<FirProperty> {
+        return fir.declarations.constructorProperties()
     }
 
     internal object Key : GeneratedDeclarationKey() {
