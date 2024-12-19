@@ -6,11 +6,13 @@ import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirProperty
+import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.expressions.builder.FirAnnotationArgumentMappingBuilder
 import org.jetbrains.kotlin.fir.expressions.builder.FirAnnotationBuilder
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationPredicateRegistrar
+import org.jetbrains.kotlin.fir.extensions.FirExtension
 import org.jetbrains.kotlin.fir.extensions.MemberGenerationContext
 import org.jetbrains.kotlin.fir.extensions.NestedClassGenerationContext
 import org.jetbrains.kotlin.fir.extensions.predicate.LookupPredicate
@@ -48,31 +50,32 @@ internal class PokoBuilderGeneratorExtension(
         session.pokoFirExtensionSessionComponent.pokoBuilderAnnotation
     }
 
-    private val pokoAnnotationPredicate by lazy {
+    private val pokoBuilderAnnotationPredicate by lazy {
         LookupPredicate.create {
             annotated(pokoBuilderAnnotation.asSingleFqName())
         }
     }
 
-    private val pokoClassIds by lazy {
-        session.predicateBasedProvider.getSymbolsByPredicate(pokoAnnotationPredicate)
+    /**
+     * Pairs of <Poko.Builder ClassId, outer Poko class Symbol>.
+     */
+    private val pokoBuilderClasses by lazy {
+        session.predicateBasedProvider.getSymbolsByPredicate(pokoBuilderAnnotationPredicate)
             .filterIsInstance<FirRegularClassSymbol>()
-    }
-
-    private val builderClassIds by lazy {
-        pokoClassIds.map { it.classId.createNestedClassId(PokoAnnotationNames.Builder) }
+            .associateBy { it.classId.createNestedClassId(PokoAnnotationNames.Builder) }
     }
 
     override fun FirDeclarationPredicateRegistrar.registerPredicates() {
-        register(pokoAnnotationPredicate)
+        register(pokoBuilderAnnotationPredicate)
     }
 
     override fun getCallableNamesForClass(
         classSymbol: FirClassSymbol<*>,
         context: MemberGenerationContext,
     ): Set<Name> = when {
-        classSymbol.classId in builderClassIds -> {
-            setOf(SpecialNames.INIT) + classSymbol.outerClassConstructorProperties().map { it.name }
+        classSymbol.classId in pokoBuilderClasses.keys -> {
+            setOf(SpecialNames.INIT, BUILD_FUNCTION_NAME) +
+                classSymbol.outerClassConstructorProperties().map { it.name }
         }
         else -> emptySet()
     }
@@ -81,7 +84,7 @@ internal class PokoBuilderGeneratorExtension(
         classSymbol: FirClassSymbol<*>,
         context: NestedClassGenerationContext,
     ): Set<Name> = when {
-        classSymbol in pokoClassIds -> setOf(PokoAnnotationNames.Builder)
+        classSymbol in pokoBuilderClasses.values -> setOf(PokoAnnotationNames.Builder)
         else -> emptySet()
     }
 
@@ -92,7 +95,7 @@ internal class PokoBuilderGeneratorExtension(
     ): FirClassLikeSymbol<*>? {
         return when (name) {
             PokoAnnotationNames.Builder -> {
-                if (owner !in pokoClassIds) return null
+                if (owner !in pokoBuilderClasses.values) return null
                 createNestedClass(
                     owner = owner,
                     name = name,
@@ -119,6 +122,9 @@ internal class PokoBuilderGeneratorExtension(
         callableId: CallableId,
         context: MemberGenerationContext?
     ): List<FirPropertySymbol> {
+        // No special properties:
+        if (callableId.callableName.isSpecial) return emptyList()
+
         val owner = context?.owner ?: return emptyList()
         val returnType = owner.outerClassConstructorProperties().single {
             it.name == callableId.callableName
@@ -170,25 +176,54 @@ internal class PokoBuilderGeneratorExtension(
         context: MemberGenerationContext?
     ): List<FirNamedFunctionSymbol> {
         val owner = context?.owner ?: return emptyList()
-        return listOf(
-            createMemberFunction(
-                owner = owner,
-                key = Key,
-                // TODO: Copy out this JvmAbi implementation for safety?
-                name = Name.identifier(JvmAbi.setterName(callableId.callableName.identifier)),
-                returnType = owner.defaultType(),
-                config = {
-                    valueParameter(
-                        name = callableId.callableName,
-                        type = owner.outerClassConstructorProperties().single {
-                            it.name == callableId.callableName
-                        }.returnTypeRef.coneType,
-                    )
-                }
-            ).symbol
-        )
+
+        val callableName = callableId.callableName
+        val function = if (callableName.isSpecial) {
+            when (callableName) {
+                BUILD_FUNCTION_NAME -> createBuildFunction(owner, callableName)
+                else -> throw IllegalArgumentException("Unknown function name: $callableName")
+            }
+        } else {
+            createSetterFunction(owner, callableName)
+        }
+        return listOf(function.symbol)
     }
 
+    private fun FirExtension.createBuildFunction(
+        owner: FirClassSymbol<*>,
+        callableName: Name,
+    ): FirSimpleFunction = createMemberFunction(
+        owner = owner,
+        key = Key,
+        name = callableName.unSpecial(),
+        returnType = pokoBuilderClasses.getValue(owner.classId).defaultType(),
+    )
+
+    private fun Name.unSpecial(): Name {
+        require(isSpecial) { "Can't unspecial a name that is already not special" }
+        return Name.identifier(asStringStripSpecialMarkers())
+    }
+
+    private fun FirExtension.createSetterFunction(
+        owner: FirClassSymbol<*>,
+        callableName: Name,
+    ): FirSimpleFunction = createMemberFunction(
+        owner = owner,
+        key = Key,
+        // TODO: Copy out this JvmAbi implementation for safety?
+        name = Name.identifier(JvmAbi.setterName(callableName.identifier)),
+        returnType = owner.defaultType(),
+        config = {
+            valueParameter(
+                name = callableName,
+                type = owner.outerClassConstructorProperties().single {
+                    it.name == callableName
+                }.returnTypeRef.coneType,
+            )
+        }
+    )
+
+    // TODO: Try to use map instead
     private fun FirClassSymbol<*>.outerClassConstructorProperties(): List<FirProperty> {
         // TODO: Is this opt-in dangerous?
         @OptIn(SymbolInternals::class)
@@ -198,5 +233,10 @@ internal class PokoBuilderGeneratorExtension(
 
     internal object Key : GeneratedDeclarationKey() {
         override fun toString() = "PokoBuilderGeneratorExtension.Key"
+    }
+
+    private companion object {
+        // TODO: Is it dangerous to abuse `special` like this?
+        private val BUILD_FUNCTION_NAME = Name.special("<build>")
     }
 }
