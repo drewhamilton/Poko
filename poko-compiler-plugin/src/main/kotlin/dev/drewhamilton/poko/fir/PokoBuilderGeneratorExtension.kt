@@ -1,6 +1,8 @@
 package dev.drewhamilton.poko.fir
 
 import dev.drewhamilton.poko.PokoAnnotationNames
+import dev.drewhamilton.poko.builder.BuildFunctionSpecialName
+import dev.drewhamilton.poko.unSpecial
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.FirSession
@@ -72,7 +74,7 @@ internal class PokoBuilderGeneratorExtension(
         context: MemberGenerationContext,
     ): Set<Name> = when {
         classSymbol.classId in pokoBuilderClasses.keys -> {
-            setOf(SpecialNames.INIT, BUILD_FUNCTION_NAME) +
+            setOf(SpecialNames.INIT, BuildFunctionSpecialName) +
                 pokoBuilderClasses.getValue(classSymbol.classId).constructorProperties().map {
                     it.name
                 }
@@ -180,7 +182,7 @@ internal class PokoBuilderGeneratorExtension(
         val callableName = callableId.callableName
         val function = if (callableName.isSpecial) {
             when (callableName) {
-                BUILD_FUNCTION_NAME -> createBuildFunction(owner, callableName)
+                BuildFunctionSpecialName -> createBuildFunction(owner, callableName)
                 else -> throw IllegalArgumentException("Unknown function name: $callableName")
             }
         } else {
@@ -198,11 +200,6 @@ internal class PokoBuilderGeneratorExtension(
         name = callableName.unSpecial(),
         returnType = pokoBuilderClasses.getValue(owner.classId).defaultType(),
     )
-
-    private fun Name.unSpecial(): Name {
-        require(isSpecial) { "Can't unspecial a name that is already not special" }
-        return Name.identifier(asStringStripSpecialMarkers())
-    }
 
     private fun FirExtension.createSetterFunction(
         owner: FirClassSymbol<*>,
@@ -231,10 +228,5 @@ internal class PokoBuilderGeneratorExtension(
 
     internal object Key : GeneratedDeclarationKey() {
         override fun toString() = "PokoBuilderGeneratorExtension.Key"
-    }
-
-    private companion object {
-        // TODO: Is it dangerous to abuse `special` like this?
-        private val BUILD_FUNCTION_NAME = Name.special("<build>")
     }
 }

@@ -6,7 +6,7 @@ import assertk.assertions.isNull
 import org.junit.Test
 
 class SampleBuilderTest {
-    @Test fun `builder setters`() {
+    @Test fun `setters behave as expected`() {
         val builder = Sample.Builder()
         assertThat<Int?>(builder.int).isNull()
         assertThat<String?>(builder.requiredString).isNull()
@@ -31,5 +31,20 @@ class SampleBuilderTest {
         assertThat<Int?>(builder.int).isEqualTo(4)
         assertThat<String?>(builder.requiredString).isEqualTo("five")
         assertThat<String?>(builder.optionalString).isNull()
+    }
+
+    @Test fun `valid build succeeds`() {
+        val sample: Sample = Sample.Builder()
+            .setInt(1)
+            .setRequiredString("required string")
+            .build()
+
+        assertThat(sample).isEqualTo(
+            expected = Sample(
+                int = 1,
+                requiredString = "required string",
+                optionalString = null,
+            )
+        )
     }
 }
