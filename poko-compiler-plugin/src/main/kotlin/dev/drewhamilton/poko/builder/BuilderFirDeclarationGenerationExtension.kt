@@ -1,6 +1,5 @@
 package dev.drewhamilton.poko.builder
 
-import dev.drewhamilton.poko.PokoAnnotationNames
 import dev.drewhamilton.poko.fir.constructorProperties
 import dev.drewhamilton.poko.fir.pokoFirExtensionSessionComponent
 import dev.drewhamilton.poko.unSpecial
@@ -63,7 +62,7 @@ internal class BuilderFirDeclarationGenerationExtension(
     private val pokoBuilderClasses by lazy {
         session.predicateBasedProvider.getSymbolsByPredicate(pokoBuilderAnnotationPredicate)
             .filterIsInstance<FirRegularClassSymbol>()
-            .associateBy { it.classId.createNestedClassId(PokoAnnotationNames.Builder) }
+            .associateBy { it.classId.createNestedClassId(BuilderClassName) }
     }
 
     override fun FirDeclarationPredicateRegistrar.registerPredicates() {
@@ -87,7 +86,7 @@ internal class BuilderFirDeclarationGenerationExtension(
         classSymbol: FirClassSymbol<*>,
         context: NestedClassGenerationContext,
     ): Set<Name> = when {
-        classSymbol in pokoBuilderClasses.values -> setOf(PokoAnnotationNames.Builder)
+        classSymbol in pokoBuilderClasses.values -> setOf(BuilderClassName)
         else -> emptySet()
     }
 
@@ -97,7 +96,7 @@ internal class BuilderFirDeclarationGenerationExtension(
         context: NestedClassGenerationContext,
     ): FirClassLikeSymbol<*>? {
         return when (name) {
-            PokoAnnotationNames.Builder -> {
+            BuilderClassName -> {
                 if (owner !in pokoBuilderClasses.values) return null
                 createNestedClass(
                     owner = owner,
@@ -225,6 +224,10 @@ internal class BuilderFirDeclarationGenerationExtension(
     @OptIn(SymbolInternals::class)
     private fun FirClassSymbol<*>.constructorProperties(): List<FirProperty> {
         return fir.declarations.constructorProperties()
+    }
+
+    private companion object {
+        private val BuilderClassName = Name.identifier("Builder")
     }
 
     internal object Key : GeneratedDeclarationKey() {

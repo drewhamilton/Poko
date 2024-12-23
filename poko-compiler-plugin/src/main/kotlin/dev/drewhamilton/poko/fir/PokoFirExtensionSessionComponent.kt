@@ -9,18 +9,19 @@ import org.jetbrains.kotlin.name.ClassId
 internal class PokoFirExtensionSessionComponent(
     session: FirSession,
     internal val pokoAnnotation: ClassId,
+    internal val pokoBuilderAnnotation: ClassId,
 ) : FirExtensionSessionComponent(session) {
-
-    internal val pokoBuilderAnnotation: ClassId =
-        pokoAnnotation.createNestedClassId(PokoAnnotationNames.Builder)
 
     internal val pokoSkipAnnotation: ClassId =
         pokoAnnotation.createNestedClassId(PokoAnnotationNames.Skip)
 
     internal companion object {
-        internal fun getFactory(pokoAnnotation: ClassId): Factory {
+        internal fun getFactory(
+            pokoAnnotation: ClassId,
+            pokoBuilderAnnotation: ClassId,
+        ): Factory {
             return Factory { session ->
-                PokoFirExtensionSessionComponent(session, pokoAnnotation)
+                PokoFirExtensionSessionComponent(session, pokoAnnotation, pokoBuilderAnnotation)
             }
         }
     }

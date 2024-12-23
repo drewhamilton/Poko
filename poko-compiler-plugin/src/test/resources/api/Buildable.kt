@@ -1,6 +1,8 @@
 package api
 
-@MyData.Builder
-@MyData class Buildable(
+import dev.drewhamilton.poko.PokoBuilder
+
+@PokoBuilder
+class Buildable(
     val id: String,
 )

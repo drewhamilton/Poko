@@ -204,11 +204,11 @@ class PokoCompilerPluginTest(
         assumeTrue(k2) // FIR only works in K2
 
         testCompilation(
-            "api/Buildable", "api/MyData",
-            pokoAnnotationName = "api/MyData",
+            "api/Buildable",
+            "dev/drewhamilton/poko/PokoBuilder",
         ) { result ->
             assertThat(result.messages).all {
-                contains("Buildable.kt:3:1")
+                contains("Buildable.kt:5:1")
                 contains("The Poko Builder feature is incomplete, experimental, and private; your generated builder will not work")
             }
 

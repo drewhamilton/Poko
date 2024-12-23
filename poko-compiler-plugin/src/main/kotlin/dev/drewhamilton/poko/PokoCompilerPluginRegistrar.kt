@@ -38,7 +38,11 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
         IrGenerationExtension.registerExtension(GeneratedDeclarationsIrBodyFiller())
 
         FirExtensionRegistrarAdapter.registerExtension(
-            PokoFirExtensionRegistrar(pokoAnnotationClassId)
+            PokoFirExtensionRegistrar(
+                pokoAnnotation = pokoAnnotationClassId,
+                // TODO: Make this configurable
+                pokoBuilderAnnotation = ClassId.fromString("dev/drewhamilton/poko/PokoBuilder"),
+            )
         )
     }
 }

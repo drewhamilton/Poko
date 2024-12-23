@@ -6,9 +6,10 @@ import org.jetbrains.kotlin.name.ClassId
 
 internal class PokoFirExtensionRegistrar(
     private val pokoAnnotation: ClassId,
+    private val pokoBuilderAnnotation: ClassId,
 ) : FirExtensionRegistrar() {
     override fun ExtensionRegistrarContext.configurePlugin() {
-        +PokoFirExtensionSessionComponent.getFactory(pokoAnnotation)
+        +PokoFirExtensionSessionComponent.getFactory(pokoAnnotation, pokoBuilderAnnotation)
         +::PokoFirCheckersExtension
         +::BuilderFirDeclarationGenerationExtension
     }
