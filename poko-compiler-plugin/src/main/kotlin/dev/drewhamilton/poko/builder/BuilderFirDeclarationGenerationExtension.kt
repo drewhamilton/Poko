@@ -8,7 +8,9 @@ import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFromPrimaryConstructor
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
+import org.jetbrains.kotlin.fir.expressions.FirLiteralExpression
 import org.jetbrains.kotlin.fir.expressions.builder.FirAnnotationArgumentMappingBuilder
 import org.jetbrains.kotlin.fir.expressions.builder.FirAnnotationBuilder
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
@@ -128,21 +130,22 @@ internal class BuilderFirDeclarationGenerationExtension(
         if (callableId.callableName.isSpecial) return emptyList()
 
         val owner = context?.owner ?: return emptyList()
-        val returnType = pokoBuilderClasses.getValue(owner.classId).constructorProperties().single {
-            it.name == callableId.callableName
-        }
+        val originalProperty = pokoBuilderClasses.getValue(owner.classId)
+            .constructorProperties()
+            .single { it.name == callableId.callableName }
         return listOf(
             createMemberProperty(
                 owner = owner,
                 key = Key,
                 name = callableId.callableName,
-                returnType = returnType.returnTypeRef.coneType.withNullability(
+                returnType = originalProperty.returnTypeRef.coneType.withNullability(
                     nullable = true,
                     typeContext = session.typeContext,
                 ),
                 isVal = false,
             ).apply {
                 applyJvmSyntheticSetterAnnotation()
+                applyOriginalDefaultExpression(originalProperty)
             }.symbol,
         )
     }
@@ -151,6 +154,22 @@ internal class BuilderFirDeclarationGenerationExtension(
         setter!!.replaceAnnotations(
             listOf(jvmSyntheticAnnotation(AnnotationUseSiteTarget.PROPERTY_SETTER)),
         )
+    }
+
+    private fun FirProperty.applyOriginalDefaultExpression(
+        originalProperty: FirProperty,
+    ) {
+        val originalDefaultExpression = originalProperty
+            .correspondingValueParameterFromPrimaryConstructor!!
+            .resolvedDefaultValue
+
+        val initializer = when (originalDefaultExpression) {
+            null -> return
+            is FirLiteralExpression -> originalDefaultExpression
+            // TODO: Handle other types of default expression and/or log this
+            else -> return
+        }
+        replaceInitializer(initializer)
     }
 
     // Copied from debugging session with real `@set:JvmSynthetic` annotation:
