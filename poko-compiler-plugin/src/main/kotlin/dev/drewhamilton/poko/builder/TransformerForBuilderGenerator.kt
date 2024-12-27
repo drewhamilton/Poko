@@ -9,10 +9,13 @@ import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrConstructor
+import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.createBlockBody
+import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.expressions.IrBody
+import org.jetbrains.kotlin.ir.expressions.impl.IrCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrConstructorCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrDelegatingConstructorCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetFieldImpl
@@ -21,12 +24,24 @@ import org.jetbrains.kotlin.ir.expressions.impl.IrInstanceInitializerCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrReturnImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrSetFieldImpl
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
+import org.jetbrains.kotlin.ir.symbols.impl.IrSimpleFunctionSymbolImpl
+import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
 import org.jetbrains.kotlin.ir.types.IrSimpleType
+import org.jetbrains.kotlin.ir.types.classFqName
 import org.jetbrains.kotlin.ir.types.classOrNull
+import org.jetbrains.kotlin.ir.types.getClass
+import org.jetbrains.kotlin.ir.types.impl.IrSimpleTypeImpl
+import org.jetbrains.kotlin.ir.types.typeOrFail
+import org.jetbrains.kotlin.ir.types.typeWith
+import org.jetbrains.kotlin.ir.util.IdSignature
 import org.jetbrains.kotlin.ir.util.defaultType
+import org.jetbrains.kotlin.ir.util.functions
+import org.jetbrains.kotlin.ir.util.isTopLevel
+import org.jetbrains.kotlin.ir.util.nestedClasses
 import org.jetbrains.kotlin.ir.util.parentAsClass
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
+import org.jetbrains.kotlin.name.Name
 
 @OptIn(UnsafeDuringIrConstructionAPI::class)
 internal class TransformerForBuilderGenerator(
@@ -46,6 +61,7 @@ internal class TransformerForBuilderGenerator(
         return when {
             function.isBuilderSetter() -> generateSetterFunctionBody(function)
             function.isBuildFunction() -> generateBuildFunctionBody(function)
+            function.isFactoryFunction() -> generateFactoryFunctionBody(function)
             else -> null
         }
     }
@@ -153,6 +169,119 @@ internal class TransformerForBuilderGenerator(
                     returnTargetSymbol = function.symbol,
                     value = constructorInvocation,
                 ),
+            ),
+        )
+    }
+
+    private fun IrFunction.isFactoryFunction(): Boolean {
+        return isTopLevel &&
+            extensionReceiverParameter == null &&
+            typeParameters.isEmpty() &&
+            valueParameters.size == 1 &&
+            name == returnType.classFqName?.shortName() &&
+            valueParameters.single().let { param ->
+                val type = (param.type as IrSimpleTypeImpl)
+                type == irBuiltIns.functionN(1).typeWith(type.arguments.map { it.typeOrFail })
+            }
+    }
+
+    private fun generateFactoryFunctionBody(
+        function: IrFunction,
+    ): IrBody {
+        val builderClass = function.returnType
+            .getClass()!!
+            .nestedClasses
+            .single { it.name == BuilderClassName }
+        val builderClassConstructor =  builderClass.primaryConstructor!!
+
+        val builderConstructorInvocation = IrConstructorCallImpl(
+            startOffset = -1,
+            endOffset = -1,
+            type = builderClass.defaultType,
+            symbol = builderClassConstructor.symbol,
+            typeArgumentsCount = 0,
+            constructorTypeArgumentsCount = 0,
+        )
+        val builderVariableInstantiation = IrVariableImpl(
+            startOffset = -1,
+            endOffset = -1,
+            origin = IrDeclarationOrigin.IR_TEMPORARY_VARIABLE,
+            symbol = IrVariableSymbolImpl(),
+            name = Name.identifier("builder"),
+            type = builderClass.defaultType,
+            isVar = false,
+            isConst = false,
+            isLateinit = false,
+        ).apply {
+            parent = function
+            initializer = builderConstructorInvocation
+        }
+
+        val invokeCall = irBuiltIns.functionN(1)
+            .functions
+            .single { it.name.identifier == "invoke" }
+        val initializerInvocation = IrCallImpl(
+            startOffset = -1,
+            endOffset = -1,
+            type = irBuiltIns.unitType,
+            symbol = invokeCall.symbol,
+            typeArgumentsCount = 0,
+        ).apply {
+        }
+
+        val buildCall = builderClass.functions.single { it.name == BuildFunctionIdentifierName }
+
+        return irFactory.createBlockBody(
+            startOffset = -1,
+            endOffset = -1,
+            statements = listOf(
+                IrReturnImpl(
+                    startOffset = -1,
+                    endOffset = -1,
+                    type = function.returnType,
+                    returnTargetSymbol = function.symbol,
+                    value = IrCallImpl(
+                        startOffset = -1,
+                        endOffset = -1,
+                        type = function.returnType,
+                        symbol = buildCall.symbol,
+                    ).apply {
+                        dispatchReceiver = IrCallImpl(
+                            startOffset = -1,
+                            endOffset = -1,
+                            type = builderClass.defaultType,
+                            symbol = IrSimpleFunctionSymbolImpl(
+                                descriptor = null,
+                                // FIXME: Doesn't work
+                                signature = IdSignature.CommonSignature(
+                                    packageFqName = "kotlin",
+                                    declarationFqName = "apply",
+                                    id = null,
+                                    mask = 0L,
+                                    description = null,
+                                ),
+                            ),
+                        ).apply {
+                            extensionReceiver = IrConstructorCallImpl(
+                                startOffset = -1,
+                                endOffset = -1,
+                                type = builderClass.defaultType,
+                                symbol = builderClassConstructor.symbol,
+                                typeArgumentsCount = 0,
+                                constructorTypeArgumentsCount = 0,
+                            )
+                            putValueArgument(
+                                index = 0,
+                                valueArgument = IrGetValueImpl(
+                                    startOffset = -1,
+                                    endOffset = -1,
+                                    type = irBuiltIns.functionN(1).defaultType,
+                                    symbol = function.valueParameters.single().symbol,
+                                ),
+                            )
+                        }
+                    },
+                )
             ),
         )
     }

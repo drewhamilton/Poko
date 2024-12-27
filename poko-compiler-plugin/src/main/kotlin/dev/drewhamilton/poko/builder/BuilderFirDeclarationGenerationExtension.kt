@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.expressions.FirLiteralExpression
 import org.jetbrains.kotlin.fir.expressions.builder.FirAnnotationArgumentMappingBuilder
 import org.jetbrains.kotlin.fir.expressions.builder.FirAnnotationBuilder
+import org.jetbrains.kotlin.fir.extensions.ExperimentalTopLevelDeclarationsGenerationApi
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationPredicateRegistrar
 import org.jetbrains.kotlin.fir.extensions.FirExtension
@@ -20,10 +21,13 @@ import org.jetbrains.kotlin.fir.extensions.MemberGenerationContext
 import org.jetbrains.kotlin.fir.extensions.NestedClassGenerationContext
 import org.jetbrains.kotlin.fir.extensions.predicate.LookupPredicate
 import org.jetbrains.kotlin.fir.extensions.predicateBasedProvider
+import org.jetbrains.kotlin.fir.packageFqName
+import org.jetbrains.kotlin.fir.plugin.createConeType
 import org.jetbrains.kotlin.fir.plugin.createConstructor
 import org.jetbrains.kotlin.fir.plugin.createMemberFunction
 import org.jetbrains.kotlin.fir.plugin.createMemberProperty
 import org.jetbrains.kotlin.fir.plugin.createNestedClass
+import org.jetbrains.kotlin.fir.plugin.createTopLevelFunction
 import org.jetbrains.kotlin.fir.resolve.defaultType
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.ConeClassLikeLookupTagImpl
@@ -59,7 +63,7 @@ internal class BuilderFirDeclarationGenerationExtension(
     }
 
     /**
-     * Pairs of <Poko.Builder ClassId, outer Poko class Symbol>.
+     * Pairs of <Poko.Builder ClassId, outer class Symbol>.
      */
     private val pokoBuilderClasses by lazy {
         session.predicateBasedProvider.getSymbolsByPredicate(pokoBuilderAnnotationPredicate)
@@ -67,8 +71,24 @@ internal class BuilderFirDeclarationGenerationExtension(
             .associateBy { it.classId.createNestedClassId(BuilderClassName) }
     }
 
+    private val factoryFunctionIds by lazy {
+        pokoBuilderClasses.values
+            .map {
+                CallableId(
+                    packageName = it.packageFqName(),
+                    callableName = it.name,
+                )
+            }
+            .toSet()
+    }
+
     override fun FirDeclarationPredicateRegistrar.registerPredicates() {
         register(pokoBuilderAnnotationPredicate)
+    }
+
+    @ExperimentalTopLevelDeclarationsGenerationApi
+    override fun getTopLevelCallableIds(): Set<CallableId> {
+        return factoryFunctionIds
     }
 
     override fun getCallableNamesForClass(
@@ -126,6 +146,8 @@ internal class BuilderFirDeclarationGenerationExtension(
         callableId: CallableId,
         context: MemberGenerationContext?
     ): List<FirPropertySymbol> {
+        // No top-level properties:
+        if (callableId.className == null) return emptyList()
         // No special properties:
         if (callableId.callableName.isSpecial) return emptyList()
 
@@ -144,15 +166,11 @@ internal class BuilderFirDeclarationGenerationExtension(
                 ),
                 isVal = false,
             ).apply {
-                applyJvmSyntheticSetterAnnotation()
+                setter!!.replaceAnnotations(
+                    listOf(jvmSyntheticAnnotation(AnnotationUseSiteTarget.PROPERTY_SETTER)),
+                )
                 applyOriginalDefaultExpression(originalProperty)
             }.symbol,
-        )
-    }
-
-    private fun FirProperty.applyJvmSyntheticSetterAnnotation() {
-        setter!!.replaceAnnotations(
-            listOf(jvmSyntheticAnnotation(AnnotationUseSiteTarget.PROPERTY_SETTER)),
         )
     }
 
@@ -196,18 +214,68 @@ internal class BuilderFirDeclarationGenerationExtension(
         callableId: CallableId,
         context: MemberGenerationContext?
     ): List<FirNamedFunctionSymbol> {
-        val owner = context?.owner ?: return emptyList()
+        val owner = context?.owner
 
         val callableName = callableId.callableName
-        val function = if (callableName.isSpecial) {
-            when (callableName) {
+        val function = when {
+            context == null && callableId in factoryFunctionIds -> {
+                createFactoryFunction(callableId)
+            }
+
+            owner == null -> return emptyList()
+
+            callableName.isSpecial -> when (callableName) {
                 BuildFunctionSpecialName -> createBuildFunction(owner, callableName)
                 else -> throw IllegalArgumentException("Unknown function name: $callableName")
             }
-        } else {
-            createSetterFunction(owner, callableName)
+
+            else -> createSetterFunction(owner, callableName)
         }
         return listOf(function.symbol)
+    }
+
+    @OptIn(ExperimentalTopLevelDeclarationsGenerationApi::class)
+    private fun createFactoryFunction(
+        callableId: CallableId,
+    ): FirSimpleFunction = createTopLevelFunction(
+        key = Key,
+        callableId = callableId,
+        returnType = pokoBuilderClasses.values
+            .single { it.name == callableId.callableName }
+            .defaultType(),
+        config = {
+            valueParameter(
+                name = Name.identifier("initializer"),
+                type = ConeClassLikeTypeImpl(
+                    lookupTag = ConeClassLikeLookupTagImpl(
+                        classId = ClassId.fromString("kotlin/Function1"),
+                    ),
+                    typeArguments = arrayOf(
+                        ConeClassLikeTypeImpl(
+                            lookupTag = pokoBuilderClasses.entries
+                                .single { it.value.name == callableId.callableName }
+                                .key
+                                .createConeType(session)
+                                .lookupTag,
+                            typeArguments = emptyArray(),
+                            isMarkedNullable = false,
+                        ),
+                        ConeClassLikeTypeImpl(
+                            lookupTag = ConeClassLikeLookupTagImpl(
+                                classId = ClassId.fromString("kotlin/Unit"),
+                            ),
+                            typeArguments = emptyArray(),
+                            isMarkedNullable = false,
+                        ),
+                    ),
+                    isMarkedNullable = false,
+                ),
+            )
+        },
+    ).apply {
+        replaceAnnotations(
+            listOf(jvmSyntheticAnnotation(AnnotationUseSiteTarget.RECEIVER)),
+        )
     }
 
     private fun FirExtension.createBuildFunction(
@@ -243,10 +311,6 @@ internal class BuilderFirDeclarationGenerationExtension(
     @OptIn(SymbolInternals::class)
     private fun FirClassSymbol<*>.constructorProperties(): List<FirProperty> {
         return fir.declarations.constructorProperties()
-    }
-
-    private companion object {
-        private val BuilderClassName = Name.identifier("Builder")
     }
 
     internal object Key : GeneratedDeclarationKey() {

@@ -4,6 +4,11 @@ import dev.drewhamilton.poko.unSpecial
 import org.jetbrains.kotlin.name.Name
 
 /**
+ * Name of the generated, nested Builder class.
+ */
+internal val BuilderClassName = Name.identifier("Builder")
+
+/**
  * Special marker [Name] for generated Builder `build` function. Used in FIR to disambiguate from a
  * possible consumer-written property named `build`.
  */
