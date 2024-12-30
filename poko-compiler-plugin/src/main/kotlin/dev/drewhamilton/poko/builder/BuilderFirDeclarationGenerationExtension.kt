@@ -37,6 +37,7 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
+import org.jetbrains.kotlin.fir.types.ConeAttributes
 import org.jetbrains.kotlin.fir.types.builder.FirResolvedTypeRefBuilder
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.impl.ConeClassLikeTypeImpl
@@ -269,6 +270,7 @@ internal class BuilderFirDeclarationGenerationExtension(
                         ),
                     ),
                     isMarkedNullable = false,
+                    attributes = ConeAttributes.WithExtensionFunctionType,
                 ),
             )
         },
