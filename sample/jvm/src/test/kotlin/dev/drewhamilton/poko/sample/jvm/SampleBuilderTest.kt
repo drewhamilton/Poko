@@ -73,4 +73,20 @@ class SampleBuilderTest {
             .isNotNull()
             .contains("is null")
     }
+
+    @Test fun `factory function succeeds`() {
+        val sample = Sample {
+            int = 100
+            requiredString = "required"
+            optionalString = null
+        }
+
+        assertThat(sample).isEqualTo(
+            expected = Sample(
+                int = 100,
+                requiredString = "required",
+                optionalString = null,
+            )
+        )
+    }
 }

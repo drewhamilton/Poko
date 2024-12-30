@@ -11,6 +11,7 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
+import assertk.assertions.isTrue
 import assertk.assertions.single
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
@@ -18,6 +19,8 @@ import com.tschuchort.compiletesting.JvmCompilationResult
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.PluginOption
 import com.tschuchort.compiletesting.SourceFile
+import dev.drewhamilton.poko.test.isSynthetic
+import dev.drewhamilton.poko.test.name
 import dev.drewhamilton.poko.test.parameters
 import dev.drewhamilton.poko.test.returnType
 import dev.drewhamilton.poko.test.type
@@ -190,6 +193,7 @@ class PokoCompilerPluginTest(
         }
     }
 
+    //region builder
     @Test fun `no builder annotation generates no builder class`() {
         testCompilation("api/Primitives") { result ->
             assertThat(result.messages)
@@ -257,6 +261,36 @@ class PokoCompilerPluginTest(
             }
         }
     }
+
+    @Test fun `builder annotation generates factory function`() {
+        assumeTrue(k2) // FIR only works in K2
+
+        testCompilation(
+            "api/Buildable",
+            "dev/drewhamilton/poko/PokoBuilder",
+        ) { result ->
+            assertThat(result.messages).all {
+                contains("Buildable.kt:5:1")
+                contains("The Poko Builder feature is incomplete, experimental, and private; your generated builder will not work")
+            }
+
+            val factoryParentClass = result.classLoader.tryLoadClass("api.__GENERATED_DECLARATIONS__Kt")!!
+            assertAll {
+                val methods = factoryParentClass.methods
+                assertThat(methods.filter { it.name == "Buildable" }).all {
+                    single().all {
+                        isSynthetic().isTrue()
+                        parameters().all {
+                            hasSize(1)
+                            index(0).type().isEqualTo(Function1::class.java)
+                        }
+                        returnType().name().isEqualTo("api.Buildable")
+                    }
+                }
+            }
+        }
+    }
+    //endregion
 
     private inline fun testCompilation(
         vararg sourceFileNames: String,
