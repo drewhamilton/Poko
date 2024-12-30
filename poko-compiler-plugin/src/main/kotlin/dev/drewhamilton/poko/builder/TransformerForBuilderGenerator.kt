@@ -7,10 +7,15 @@ package dev.drewhamilton.poko.builder
 
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrConstructor
+import org.jetbrains.kotlin.ir.declarations.IrDeclaration
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
+import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.GeneratedByPlugin
+import org.jetbrains.kotlin.ir.declarations.IrFile
 import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.createBlockBody
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
@@ -41,31 +46,35 @@ import org.jetbrains.kotlin.ir.util.nestedClasses
 import org.jetbrains.kotlin.ir.util.parentAsClass
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.properties
+import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
+import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.name.Name
 
 @OptIn(UnsafeDuringIrConstructionAPI::class)
 internal class TransformerForBuilderGenerator(
     context: IrPluginContext,
-) : AbstractTransformerForGenerator(context, visitBodies = false) {
+) : IrElementVisitorVoid {
 
-    override fun interestedIn(
-        key: GeneratedDeclarationKey?,
-    ): Boolean {
-        return key == BuilderFirDeclarationGenerationExtension.Key
-    }
+    private val irFactory = context.irFactory
+    private val irBuiltIns = context.irBuiltIns
 
-    override fun generateBodyForFunction(
-        function: IrSimpleFunction,
-        key: GeneratedDeclarationKey?,
-    ): IrBody? {
-        return when {
-            function.isBuilderSetter() -> generateSetterFunctionBody(function)
-            function.isBuildFunction() -> generateBuildFunctionBody(function)
-            function.isFactoryFunction() -> generateFactoryFunctionBody(function)
+    //region Functions
+    override fun visitSimpleFunction(declaration: IrSimpleFunction) {
+        val origin = declaration.origin
+        if (origin !is GeneratedByPlugin || !interestedIn(origin.pluginKey)) {
+            return
+        }
+
+        require(declaration.body == null)
+        declaration.body = when {
+            declaration.isBuilderSetter() -> generateSetterFunctionBody(declaration)
+            declaration.isBuildFunction() -> generateBuildFunctionBody(declaration)
+            declaration.isFactoryFunction() -> generateFactoryFunctionBody(declaration)
             else -> null
         }
     }
 
+    //region Builder setter
     private fun IrFunction.isBuilderSetter(): Boolean {
         return extensionReceiverParameter == null &&
             typeParameters.isEmpty() &&
@@ -111,7 +120,9 @@ internal class TransformerForBuilderGenerator(
             ),
         )
     }
+    //endregion
 
+    //region Builder build
     private fun IrFunction.isBuildFunction(): Boolean {
         return name == BuildFunctionIdentifierName &&
             extensionReceiverParameter == null &&
@@ -172,7 +183,9 @@ internal class TransformerForBuilderGenerator(
             ),
         )
     }
+    //endregion
 
+    //region Top-level factory
     private fun IrFunction.isFactoryFunction(): Boolean {
         return isTopLevel &&
             extensionReceiverParameter == null &&
@@ -285,6 +298,7 @@ internal class TransformerForBuilderGenerator(
             ),
         )
     }
+    //endregion
 
     private fun IrFunction.parentClassInstance(): IrGetValueImpl {
         return IrGetValueImpl(
@@ -294,11 +308,21 @@ internal class TransformerForBuilderGenerator(
             symbol = dispatchReceiverParameter!!.symbol,
         )
     }
+    //endregion
+
+    //region Constructor
+    override fun visitConstructor(declaration: IrConstructor) {
+        val origin = declaration.origin
+        if (origin !is GeneratedByPlugin || !interestedIn(origin.pluginKey) || declaration.body != null) {
+            return
+        }
+
+        declaration.body = generateBodyForConstructor(declaration)
+    }
 
     // Adapted from https://github.com/JetBrains/kotlin/blob/52a3ec9184fa44b2c8ce981f279cd66686dbe73b/plugins/plugin-sandbox/src/org/jetbrains/kotlin/plugin/sandbox/ir/AbstractTransformerForGenerator.kt#L89-L108
-    override fun generateBodyForConstructor(
+    private fun generateBodyForConstructor(
         constructor: IrConstructor,
-        key: GeneratedDeclarationKey?,
     ): IrBody? {
         val type = constructor.returnType as? IrSimpleType ?: return null
 
@@ -322,5 +346,19 @@ internal class TransformerForBuilderGenerator(
             endOffset = -1,
             statements = listOf(delegatingAnyCall, initializerCall),
         )
+    }
+    //endregion
+
+    private fun interestedIn(
+        key: GeneratedDeclarationKey?,
+    ): Boolean {
+        return key == BuilderFirDeclarationGenerationExtension.Key
+    }
+
+    override fun visitElement(element: IrElement) {
+        when (element) {
+            is IrDeclaration, is IrFile, is IrModuleFragment -> element.acceptChildrenVoid(this)
+            else -> Unit
+        }
     }
 }
