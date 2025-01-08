@@ -1,34 +1,32 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
   ],
-  "packageRules": [
+  packageRules: [
     {
-      // Compiler tools are tightly coupled to Kotlin version:
-      "groupName": "Kotlin",
-      "matchPackagePrefixes": [
-        "androidx.compose.compiler",
-        "com.google.devtools.ksp",
-        "com.github.tschuchortdev:kotlin-compile-testing",
-        "dev.zacsweers.kctfork",
-        "org.jetbrains.kotlin",
-        "org.jetbrains.kotlinx:binary-compatibility-validator",
+      groupName: 'Kotlin',
+      matchPackageNames: [
+        'androidx.compose.compiler{/,}**',
+        'com.google.devtools.ksp{/,}**',
+        'com.github.tschuchortdev:kotlin-compile-testing{/,}**',
+        'dev.zacsweers.kctfork{/,}**',
+        'org.jetbrains.kotlin{/,}**',
+        'org.jetbrains.kotlinx:binary-compatibility-validator{/,}**',
       ],
     },
     {
-      "groupName": "Upload/download artifact",
-      "matchPackageNames": [
-        "actions/download-artifact",
-        "actions/upload-artifact",
+      groupName: 'Upload/download artifact',
+      matchPackageNames: [
+        'actions/download-artifact',
+        'actions/upload-artifact',
       ],
     },
   ],
-  "ignoreDeps": [
-    // These should just match the main Kotlin version:
-    "org.jetbrains.kotlin:kotlin-compiler-embeddable",
-    "org.jetbrains.kotlin:kotlin-gradle-plugin-api",
-    "org.jetbrains.kotlin:kotlin-stdlib",
-    "org.jetbrains.kotlin:kotlin-test",
+  ignoreDeps: [
+    'org.jetbrains.kotlin:kotlin-compiler-embeddable',
+    'org.jetbrains.kotlin:kotlin-gradle-plugin-api',
+    'org.jetbrains.kotlin:kotlin-stdlib',
+    'org.jetbrains.kotlin:kotlin-test',
   ],
 }
