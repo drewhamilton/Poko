@@ -3,8 +3,10 @@
   extends: [
     'config:recommended',
   ],
+  configMigration: true,
   packageRules: [
     {
+      // Compiler tools are tightly coupled to Kotlin version:
       groupName: 'Kotlin',
       matchPackageNames: [
         'androidx.compose.compiler{/,}**',
@@ -24,6 +26,7 @@
     },
   ],
   ignoreDeps: [
+    // These should just match the main Kotlin version:
     'org.jetbrains.kotlin:kotlin-compiler-embeddable',
     'org.jetbrains.kotlin:kotlin-gradle-plugin-api',
     'org.jetbrains.kotlin:kotlin-stdlib',
