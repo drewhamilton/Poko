@@ -48,7 +48,7 @@ internal class PokoMembersTransformer(
                     )
                 }
 
-                declaration.isHashCode() -> declaration.convertToGenerated { properties ->
+                !pluginContext.afterK2 && declaration.isHashCode() -> declaration.convertToGenerated { properties ->
                     generateHashCodeMethodBody(
                         pokoAnnotation = pokoAnnotationName,
                         context = pluginContext,

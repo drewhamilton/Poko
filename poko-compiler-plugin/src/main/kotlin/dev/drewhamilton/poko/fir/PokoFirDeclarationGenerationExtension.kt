@@ -62,6 +62,10 @@ internal class PokoFirDeclarationGenerationExtension(
                 createEqualsFunction(owner)
             }
 
+            HashCodeName -> runIf(!owner.hasDeclaredHashCodeFunction()) {
+                createHashCodeFunction(owner)
+            }
+
             ToStringName -> runIf(!owner.hasDeclaredToStringFunction()) {
                 createToStringFunction(owner)
             }
@@ -99,6 +103,27 @@ internal class PokoFirDeclarationGenerationExtension(
             key = PokoKey,
         )
     }
+    //endregion
+
+    //region hashCode
+    private fun FirClassSymbol<*>.hasDeclaredHashCodeFunction(): Boolean {
+        return declarationSymbols
+            .filterIsInstance<FirNamedFunctionSymbol>()
+            .any {
+                !it.isExtension &&
+                    it.name == HashCodeName &&
+                    it.valueParameterSymbols.isEmpty()
+            }
+    }
+
+    private fun createHashCodeFunction(
+        owner: FirClassSymbol<*>,
+    ): FirSimpleFunction = createMemberFunction(
+        owner = owner,
+        key = PokoKey,
+        name = HashCodeName,
+        returnType = session.builtinTypes.intType.coneType,
+    )
     //endregion
 
     //region toString

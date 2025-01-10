@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.util.isEquals
+import org.jetbrains.kotlin.ir.util.isHashCode
 import org.jetbrains.kotlin.ir.util.isToString
 import org.jetbrains.kotlin.ir.util.parentAsClass
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
@@ -35,7 +36,7 @@ internal class PokoFunctionBodyFiller(
 
         require(declaration.body == null)
 
-        if (!(declaration.isEquals() || declaration.isToString())) {
+        if (!(declaration.isEquals() || declaration.isHashCode() || declaration.isToString())) {
             return
         }
 
@@ -59,6 +60,14 @@ internal class PokoFunctionBodyFiller(
                     pokoAnnotation = pokoAnnotation,
                     context = this@PokoFunctionBodyFiller.context,
                     irClass = pokoClass,
+                    functionDeclaration = declaration,
+                    classProperties = pokoProperties,
+                    messageCollector = messageCollector,
+                )
+
+                declaration.isHashCode() -> generateHashCodeMethodBody(
+                    pokoAnnotation = pokoAnnotation,
+                    context = this@PokoFunctionBodyFiller.context,
                     functionDeclaration = declaration,
                     classProperties = pokoProperties,
                     messageCollector = messageCollector,
