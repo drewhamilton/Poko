@@ -58,7 +58,8 @@ internal class PokoMembersTransformer(
                     )
                 }
 
-                declaration.isToString() -> declaration.convertToGenerated { properties ->
+                // TODO: Outline K2 check to PokoIrGenerationExtension once this class is only used for K1
+                !pluginContext.afterK2 && declaration.isToString() -> declaration.convertToGenerated { properties ->
                     generateToStringMethodBody(
                         pokoAnnotation = pokoAnnotationName,
                         context = pluginContext,
