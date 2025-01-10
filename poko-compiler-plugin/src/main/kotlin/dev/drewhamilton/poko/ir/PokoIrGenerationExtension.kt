@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.cli.common.messages.MessageUtil
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
+import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.js.resolve.diagnostics.findPsi
 import org.jetbrains.kotlin.name.ClassId
 
@@ -26,6 +27,13 @@ internal class PokoIrGenerationExtension(
             messageCollector = messageCollector,
         )
         moduleFragment.transform(pokoMembersTransformer, null)
+
+        val bodyFiller = PokoFunctionBodyFiller(
+            pokoAnnotation = pokoAnnotationName,
+            context = pluginContext,
+            messageCollector = messageCollector,
+        )
+        moduleFragment.acceptChildrenVoid(bodyFiller)
     }
 
     private fun IrModuleFragment.reportError(message: String) {
