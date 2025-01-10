@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.fir.plugin.createMemberFunction
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.isExtension
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.util.OperatorNameConventions
@@ -45,7 +46,7 @@ internal class PokoFirDeclarationGenerationExtension(
         classSymbol: FirClassSymbol<*>,
         context: MemberGenerationContext,
     ): Set<Name> = when {
-        classSymbol in pokoClasses -> setOf(/*EqualsName, HashCodeName,*/ ToStringName)
+        classSymbol in pokoClasses -> setOf(EqualsName, HashCodeName, ToStringName)
         else -> emptySet()
     }
 
@@ -57,6 +58,10 @@ internal class PokoFirDeclarationGenerationExtension(
 
         val callableName = callableId.callableName
         val function = when (callableName) {
+            EqualsName -> runIf(!owner.hasDeclaredEqualsFunction()) {
+                createEqualsFunction(owner)
+            }
+
             ToStringName -> runIf(!owner.hasDeclaredToStringFunction()) {
                 createToStringFunction(owner)
             }
@@ -66,13 +71,47 @@ internal class PokoFirDeclarationGenerationExtension(
         return function?.let { listOf(it.symbol) } ?: emptyList()
     }
 
+    //region equals
+    private fun FirClassSymbol<*>.hasDeclaredEqualsFunction(): Boolean {
+        return declarationSymbols
+            .filterIsInstance<FirNamedFunctionSymbol>()
+            .any {
+                !it.isExtension &&
+                    it.name == EqualsName &&
+                    it.valueParameterSymbols.size == 1 &&
+                    it.valueParameterSymbols
+                        .single()
+                        .resolvedReturnType == session.builtinTypes.nullableAnyType.coneType
+            }
+    }
+
+    private fun createEqualsFunction(
+        owner: FirClassSymbol<*>,
+    ): FirSimpleFunction = createMemberFunction(
+        owner = owner,
+        key = PokoKey,
+        name = EqualsName,
+        returnType = session.builtinTypes.booleanType.coneType,
+    ) {
+        valueParameter(
+            name = Name.identifier("other"),
+            type = session.builtinTypes.nullableAnyType.coneType,
+            key = PokoKey,
+        )
+    }
+    //endregion
+
+    //region toString
     private fun FirClassSymbol<*>.hasDeclaredToStringFunction(): Boolean {
         return declarationSymbols
             .filterIsInstance<FirNamedFunctionSymbol>()
-            .any { it.name == ToStringName && it.valueParameterSymbols.isEmpty() }
+            .any {
+                !it.isExtension &&
+                    it.name == ToStringName &&
+                    it.valueParameterSymbols.isEmpty()
+            }
     }
 
-    // TODO: Needs override marker?
     private fun createToStringFunction(
         owner: FirClassSymbol<*>,
     ): FirSimpleFunction = createMemberFunction(
@@ -81,6 +120,7 @@ internal class PokoFirDeclarationGenerationExtension(
         name = ToStringName,
         returnType = session.builtinTypes.stringType.coneType,
     )
+    //endregion
 
     private companion object {
         private val EqualsName = OperatorNameConventions.EQUALS

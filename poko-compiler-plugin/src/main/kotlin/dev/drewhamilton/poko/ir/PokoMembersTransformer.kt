@@ -37,7 +37,7 @@ internal class PokoMembersTransformer(
         val declarationParent = declaration.parent
         if (declarationParent is IrClass && declarationParent.isPokoClass() && declaration.isFakeOverride) {
             when {
-                declaration.isEquals() -> declaration.convertToGenerated { properties ->
+                !pluginContext.afterK2 && declaration.isEquals() -> declaration.convertToGenerated { properties ->
                     generateEqualsMethodBody(
                         pokoAnnotation = pokoAnnotationName,
                         context = pluginContext,
