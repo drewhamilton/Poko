@@ -25,6 +25,9 @@ import org.jetbrains.kotlin.ir.util.isToString
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.name.ClassId
 
+/**
+ * For use only with the K1 compiler. K2 uses [PokoFunctionBodyFiller].
+ */
 internal class PokoMembersTransformer(
     private val pokoAnnotationName: ClassId,
     private val pluginContext: IrPluginContext,
@@ -37,7 +40,7 @@ internal class PokoMembersTransformer(
         val declarationParent = declaration.parent
         if (declarationParent is IrClass && declarationParent.isPokoClass() && declaration.isFakeOverride) {
             when {
-                !pluginContext.afterK2 && declaration.isEquals() -> declaration.convertToGenerated { properties ->
+                declaration.isEquals() -> declaration.convertToGenerated { properties ->
                     generateEqualsMethodBody(
                         pokoAnnotation = pokoAnnotationName,
                         context = pluginContext,
@@ -48,7 +51,7 @@ internal class PokoMembersTransformer(
                     )
                 }
 
-                !pluginContext.afterK2 && declaration.isHashCode() -> declaration.convertToGenerated { properties ->
+                declaration.isHashCode() -> declaration.convertToGenerated { properties ->
                     generateHashCodeMethodBody(
                         pokoAnnotation = pokoAnnotationName,
                         context = pluginContext,
@@ -58,8 +61,7 @@ internal class PokoMembersTransformer(
                     )
                 }
 
-                // TODO: Outline K2 check to PokoIrGenerationExtension once this class is only used for K1
-                !pluginContext.afterK2 && declaration.isToString() -> declaration.convertToGenerated { properties ->
+                declaration.isToString() -> declaration.convertToGenerated { properties ->
                     generateToStringMethodBody(
                         pokoAnnotation = pokoAnnotationName,
                         context = pluginContext,
