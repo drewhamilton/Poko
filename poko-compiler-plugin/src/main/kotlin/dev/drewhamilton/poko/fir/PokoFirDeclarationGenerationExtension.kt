@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.fir
 
+import dev.drewhamilton.poko.PokoFunction
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
@@ -14,7 +15,6 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.isExtension
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.util.OperatorNameConventions
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 
 internal class PokoFirDeclarationGenerationExtension(
@@ -46,7 +46,7 @@ internal class PokoFirDeclarationGenerationExtension(
         classSymbol: FirClassSymbol<*>,
         context: MemberGenerationContext,
     ): Set<Name> = when {
-        classSymbol in pokoClasses -> setOf(EqualsName, HashCodeName, ToStringName)
+        classSymbol in pokoClasses -> PokoFunction.entries.map { it.functionName }.toSet()
         else -> emptySet()
     }
 
@@ -58,15 +58,15 @@ internal class PokoFirDeclarationGenerationExtension(
 
         val callableName = callableId.callableName
         val function = when (callableName) {
-            EqualsName -> runIf(!owner.hasDeclaredEqualsFunction()) {
+            PokoFunction.Equals.functionName -> runIf(!owner.hasDeclaredEqualsFunction()) {
                 createEqualsFunction(owner)
             }
 
-            HashCodeName -> runIf(!owner.hasDeclaredHashCodeFunction()) {
+            PokoFunction.HashCode.functionName -> runIf(!owner.hasDeclaredHashCodeFunction()) {
                 createHashCodeFunction(owner)
             }
 
-            ToStringName -> runIf(!owner.hasDeclaredToStringFunction()) {
+            PokoFunction.ToString.functionName -> runIf(!owner.hasDeclaredToStringFunction()) {
                 createToStringFunction(owner)
             }
 
@@ -81,7 +81,7 @@ internal class PokoFirDeclarationGenerationExtension(
             .filterIsInstance<FirNamedFunctionSymbol>()
             .any {
                 !it.isExtension &&
-                    it.name == EqualsName &&
+                    it.name == PokoFunction.Equals.functionName &&
                     it.valueParameterSymbols.size == 1 &&
                     it.valueParameterSymbols
                         .single()
@@ -94,7 +94,7 @@ internal class PokoFirDeclarationGenerationExtension(
     ): FirSimpleFunction = createMemberFunction(
         owner = owner,
         key = PokoKey,
-        name = EqualsName,
+        name = PokoFunction.Equals.functionName,
         returnType = session.builtinTypes.booleanType.coneType,
     ) {
         valueParameter(
@@ -111,7 +111,7 @@ internal class PokoFirDeclarationGenerationExtension(
             .filterIsInstance<FirNamedFunctionSymbol>()
             .any {
                 !it.isExtension &&
-                    it.name == HashCodeName &&
+                    it.name == PokoFunction.HashCode.functionName &&
                     it.valueParameterSymbols.isEmpty()
             }
     }
@@ -121,7 +121,7 @@ internal class PokoFirDeclarationGenerationExtension(
     ): FirSimpleFunction = createMemberFunction(
         owner = owner,
         key = PokoKey,
-        name = HashCodeName,
+        name = PokoFunction.HashCode.functionName,
         returnType = session.builtinTypes.intType.coneType,
     )
     //endregion
@@ -132,7 +132,7 @@ internal class PokoFirDeclarationGenerationExtension(
             .filterIsInstance<FirNamedFunctionSymbol>()
             .any {
                 !it.isExtension &&
-                    it.name == ToStringName &&
+                    it.name == PokoFunction.ToString.functionName &&
                     it.valueParameterSymbols.isEmpty()
             }
     }
@@ -142,14 +142,8 @@ internal class PokoFirDeclarationGenerationExtension(
     ): FirSimpleFunction = createMemberFunction(
         owner = owner,
         key = PokoKey,
-        name = ToStringName,
+        name = PokoFunction.ToString.functionName,
         returnType = session.builtinTypes.stringType.coneType,
     )
     //endregion
-
-    private companion object {
-        private val EqualsName = OperatorNameConventions.EQUALS
-        private val HashCodeName = OperatorNameConventions.HASH_CODE
-        private val ToStringName = OperatorNameConventions.TO_STRING
-    }
 }

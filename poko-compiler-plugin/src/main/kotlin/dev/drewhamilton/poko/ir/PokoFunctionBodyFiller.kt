@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.ir
 
+import dev.drewhamilton.poko.PokoFunction
 import dev.drewhamilton.poko.fir.PokoKey
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
@@ -36,8 +37,11 @@ internal class PokoFunctionBodyFiller(
 
         require(declaration.body == null)
 
-        if (!(declaration.isEquals() || declaration.isHashCode() || declaration.isToString())) {
-            return
+        val pokoFunction = when {
+            declaration.isEquals() -> PokoFunction.Equals
+            declaration.isHashCode() -> PokoFunction.HashCode
+            declaration.isToString() -> PokoFunction.ToString
+            else -> return
         }
 
         val pokoClass = declaration.parentAsClass
@@ -55,8 +59,8 @@ internal class PokoFunctionBodyFiller(
             generatorContext = context,
             symbol = declaration.symbol,
         ).irBlockBody {
-            when {
-                declaration.isEquals() -> generateEqualsMethodBody(
+            when (pokoFunction) {
+                PokoFunction.Equals -> generateEqualsMethodBody(
                     pokoAnnotation = pokoAnnotation,
                     context = this@PokoFunctionBodyFiller.context,
                     irClass = pokoClass,
@@ -65,7 +69,7 @@ internal class PokoFunctionBodyFiller(
                     messageCollector = messageCollector,
                 )
 
-                declaration.isHashCode() -> generateHashCodeMethodBody(
+                PokoFunction.HashCode -> generateHashCodeMethodBody(
                     pokoAnnotation = pokoAnnotation,
                     context = this@PokoFunctionBodyFiller.context,
                     functionDeclaration = declaration,
@@ -73,7 +77,7 @@ internal class PokoFunctionBodyFiller(
                     messageCollector = messageCollector,
                 )
 
-                declaration.isToString() -> generateToStringMethodBody(
+                PokoFunction.ToString -> generateToStringMethodBody(
                     pokoAnnotation = pokoAnnotation,
                     context = this@PokoFunctionBodyFiller.context,
                     irClass = pokoClass,
@@ -81,8 +85,6 @@ internal class PokoFunctionBodyFiller(
                     classProperties = pokoProperties,
                     messageCollector = messageCollector,
                 )
-
-                else -> throw AssertionError("Already checked declaration validity")
             }
         }
     }
