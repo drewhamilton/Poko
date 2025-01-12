@@ -50,7 +50,7 @@ public class PokoCommandLineProcessor : CommandLineProcessor {
                     .associate { arg ->
                         arg.split(BuildConfig.POKO_PLUGIN_ARGS_ITEM_DELIMITER).let {
                             require(it.size == 2) {
-                                "Invalid syntax for ${it.first()}: " +
+                                "Invalid syntax for <${it.firstOrNull()}>: " +
                                     "must be in `key=value` property format"
                             }
                             it.first() to it.last()
