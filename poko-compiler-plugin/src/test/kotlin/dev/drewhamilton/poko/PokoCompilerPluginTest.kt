@@ -24,7 +24,7 @@ import org.junit.runner.RunWith
 @OptIn(ExperimentalCompilerApi::class)
 @RunWith(TestParameterInjector::class)
 class PokoCompilerPluginTest(
-    @TestParameter private val k2: Boolean,
+    @TestParameter private val compilationMode: CompilationMode,
 ) {
 
     @JvmField
@@ -39,12 +39,12 @@ class PokoCompilerPluginTest(
             "illegal/Interface",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            val expectedLocation = if (k2) {
+            val expectedLocation = if (compilationMode.k2) {
                 "Interface.kt:6:17"
             } else {
                 "Interface.kt"
             }
-            val expectedMessage = if (k2) {
+            val expectedMessage = if (compilationMode.k2) {
                 "Poko can only be applied to a class"
             } else {
                 "Poko class must have a primary constructor"
@@ -61,7 +61,7 @@ class PokoCompilerPluginTest(
             "illegal/Data",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            val expectedLocation = if (k2) {
+            val expectedLocation = if (compilationMode.k2) {
                 "Data.kt:6:7"
             } else {
                 "Data.kt"
@@ -78,7 +78,7 @@ class PokoCompilerPluginTest(
             "illegal/Value",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            val expectedLocation = if (k2) {
+            val expectedLocation = if (compilationMode.k2) {
                 "Value.kt:6:18"
             } else {
                 "Value.kt"
@@ -95,7 +95,7 @@ class PokoCompilerPluginTest(
             "illegal/NoPrimaryConstructor",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            val expectedLocation = if (k2) {
+            val expectedLocation = if (compilationMode.k2) {
                 "NoPrimaryConstructor.kt:6:13"
             } else {
                 "NoPrimaryConstructor.kt"
@@ -112,7 +112,7 @@ class PokoCompilerPluginTest(
             "illegal/NoConstructorProperties",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            val expectedLocation = if (k2) {
+            val expectedLocation = if (compilationMode.k2) {
                 "NoConstructorProperties.kt:6:13"
             } else {
                 "NoConstructorProperties.kt"
@@ -129,7 +129,7 @@ class PokoCompilerPluginTest(
             "illegal/OuterClass",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            val expectedLocation = if (k2) {
+            val expectedLocation = if (compilationMode.k2) {
                 "OuterClass.kt:8:11"
             } else {
                 "OuterClass.kt"
@@ -257,7 +257,7 @@ class PokoCompilerPluginTest(
         sources = sourceFiles.asList()
         verbose = false
         jvmTarget = JvmTarget.JVM_1_8.description
-        if (k2) {
+        if (compilationMode.k2) {
             supportsK2 = true
         } else {
             supportsK2 = false
@@ -266,6 +266,18 @@ class PokoCompilerPluginTest(
 
         val commandLineProcessor = PokoCommandLineProcessor()
         commandLineProcessors = listOf(commandLineProcessor)
+
+        @Suppress("NAME_SHADOWING") // Intentional
+        val pokoPluginArgs = if (compilationMode == CompilationMode.K2WithFirGeneration) {
+            listOfNotNull(
+                pokoPluginArgs,
+                "poko.experimental.enableFirDeclarationGeneration" +
+                    BuildConfig.POKO_PLUGIN_ARGS_ITEM_DELIMITER +
+                    "true",
+            ).joinToString(BuildConfig.POKO_PLUGIN_ARGS_LIST_DELIMITER.toString())
+        } else {
+            pokoPluginArgs
+        }
         pluginOptions = listOfNotNull(
             commandLineProcessor.option(CompilerOptions.ENABLED, true),
             commandLineProcessor.option(CompilerOptions.POKO_ANNOTATION, pokoAnnotationName),
@@ -285,6 +297,13 @@ class PokoCompilerPluginTest(
     )
 
     private fun SourceFile.Companion.fromPath(path: String): SourceFile = fromPath(File(path))
-    //endregion
 
+    @Suppress("unused") // Test parameter values
+    enum class CompilationMode(
+        val k2: Boolean,
+    ) {
+        NotK2(k2 = false),
+        K2WithoutFirGeneration(k2 = true),
+        K2WithFirGeneration(k2 = true),
+    }
 }
