@@ -34,12 +34,12 @@ class AnyArrayHolderTest {
     @Test fun two_AnyArrayHolder_instances_holding_equivalent_nested_typed_arrays_match() {
         val a = AnyArrayHolderPoko(
             any = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
-            nullableAny = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+            nullableAny = arrayOf<Array<Number>>(arrayOf(1L, 2f), arrayOf(3.0, 4)),
             trailingProperty = "trailing string",
         )
         val b = AnyArrayHolderPoko(
             any = arrayOf(arrayOf("xx", "xy"), arrayOf("yx", "yy")),
-            nullableAny = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+            nullableAny = arrayOf<Array<Number>>(arrayOf(1L, 2f), arrayOf(3.0, 4)),
             trailingProperty = "trailing string",
         )
         assertAll {
@@ -238,7 +238,7 @@ class AnyArrayHolderTest {
             trailingProperty = "trailing string",
         )
         val b = AnyArrayHolderPoko(
-            any = arrayOf(arrayOf(1L, 2f), arrayOf(3.0, 4)),
+            any = arrayOf<Array<Number>>(arrayOf(1L, 2f), arrayOf(3.0, 4)),
             nullableAny = null,
             trailingProperty = "trailing string",
         )
@@ -278,13 +278,13 @@ class AnyArrayHolderTest {
 
     @Test fun AnyArrayHolder_has_same_behavior_as_handwritten_implementation() {
         val poko = AnyArrayHolderPoko(
-            any = arrayOf(1, 2L, 3f, 4.0),
-            nullableAny = arrayOf(1, 2L, 3f, 4.0),
+            any = arrayOf<Number>(1, 2L, 3f, 4.0),
+            nullableAny = arrayOf<Number>(1, 2L, 3f, 4.0),
             trailingProperty = "trailing",
         )
         val data = AnyArrayHolderData(
-            any = arrayOf(1, 2L, 3f, 4.0),
-            nullableAny = arrayOf(1, 2L, 3f, 4.0),
+            any = arrayOf<Number>(1, 2L, 3f, 4.0),
+            nullableAny = arrayOf<Number>(1, 2L, 3f, 4.0),
             trailingProperty = "trailing",
         )
         assertThat(poko).all {
