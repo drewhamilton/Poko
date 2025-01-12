@@ -21,7 +21,11 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
     override val supportsK2: Boolean get() = true
 
-    private val knownPokoPluginArgs = emptySet<String>()
+    private val firDeclarationGenerationPluginArg =
+        "poko.experimental.enableFirDeclarationGeneration"
+    private val knownPokoPluginArgs = setOf(
+        firDeclarationGenerationPluginArg,
+    )
 
     override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
         if (!configuration.get(CompilerOptions.ENABLED, DEFAULT_POKO_ENABLED))
@@ -45,12 +49,29 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
             }
         }
 
+        val firDeclarationGenerationPluginValue = pokoPluginArgs[firDeclarationGenerationPluginArg]
+        val firDeclarationGenerationEnabled =
+            firDeclarationGenerationPluginValue?.toBoolean()?.also {
+                messageCollector.report(
+                    severity = CompilerMessageSeverity.WARNING,
+                    message = "$firDeclarationGenerationPluginArg resolved to $it. " +
+                        "This experimental flag may disappear at any time.",
+                )
+            } ?: false
+
         IrGenerationExtension.registerExtension(
-            PokoIrGenerationExtension(pokoAnnotationClassId, messageCollector)
+            PokoIrGenerationExtension(
+                pokoAnnotationName = pokoAnnotationClassId,
+                firDeclarationGeneration = firDeclarationGenerationEnabled,
+                messageCollector = messageCollector,
+            )
         )
 
         FirExtensionRegistrarAdapter.registerExtension(
-            PokoFirExtensionRegistrar(pokoAnnotationClassId)
+            PokoFirExtensionRegistrar(
+                pokoAnnotation = pokoAnnotationClassId,
+                declarationGeneration = firDeclarationGenerationEnabled,
+            )
         )
     }
 }

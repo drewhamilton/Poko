@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.name.ClassId
 
 internal class PokoIrGenerationExtension(
     private val pokoAnnotationName: ClassId,
+    private val firDeclarationGeneration: Boolean,
     private val messageCollector: MessageCollector
 ) : IrGenerationExtension {
 
@@ -21,7 +22,10 @@ internal class PokoIrGenerationExtension(
             return
         }
 
-        if (pluginContext.afterK2) {
+        if (firDeclarationGeneration) {
+            require(pluginContext.afterK2) {
+                "Cannot use experimental Poko FIR generation with K2 disabled"
+            }
             val bodyFiller = PokoFunctionBodyFiller(
                 pokoAnnotation = pokoAnnotationName,
                 context = pluginContext,
