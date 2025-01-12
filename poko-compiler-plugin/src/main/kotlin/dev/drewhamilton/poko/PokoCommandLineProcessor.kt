@@ -46,7 +46,16 @@ public class PokoCommandLineProcessor : CommandLineProcessor {
         CompilerOptions.POKO_PLUGIN_ARGS.toString() ->
             configuration.put(
                 CompilerOptions.POKO_PLUGIN_ARGS,
-                value.split(BuildConfig.POKO_PLUGIN_ARGS_LIST_DELIMITER),
+                value.split(BuildConfig.POKO_PLUGIN_ARGS_LIST_DELIMITER)
+                    .associate { arg ->
+                        arg.split(BuildConfig.POKO_PLUGIN_ARGS_ITEM_DELIMITER).let {
+                            require(it.size == 2) {
+                                "Invalid syntax for ${it.first()}: " +
+                                    "must be in `key=value` property format"
+                            }
+                            it.first() to it.last()
+                        }
+                    },
             )
         else ->
             throw IllegalArgumentException("Unknown plugin option: ${option.optionName}")

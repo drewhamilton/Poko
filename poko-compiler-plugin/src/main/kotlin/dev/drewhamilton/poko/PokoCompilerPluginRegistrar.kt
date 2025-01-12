@@ -35,12 +35,7 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
             MessageCollector.NONE,
         )
 
-        val pokoPluginArgs = configuration.get(CompilerOptions.POKO_PLUGIN_ARGS, emptyList())
-            .associate { arg ->
-                arg.split(BuildConfig.POKO_PLUGIN_ARGS_ITEM_DELIMITER).let {
-                    it.first() to it.last()
-                }
-            }
+        val pokoPluginArgs = configuration.get(CompilerOptions.POKO_PLUGIN_ARGS, emptyMap())
         pokoPluginArgs.keys.forEach { pluginArgName ->
             if (!knownPokoPluginArgs.contains(pluginArgName)) {
                 messageCollector.report(
