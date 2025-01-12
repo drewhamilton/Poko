@@ -56,10 +56,21 @@ public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
         val extension = project.extensions.getByType(PokoPluginExtension::class.java)
 
         return project.provider {
-            listOf(
+            val standardOptions = listOf(
                 SubpluginOption(key = "enabled", value = extension.enabled.get().toString()),
                 SubpluginOption(key = "pokoAnnotation", value = extension.pokoAnnotation.get()),
             )
+            val pokoPluginArgs = project.properties
+                .filter { it.key.startsWith("poko.", ignoreCase = true) }
+                .map { (key, value) -> "$key=$value" }
+            return@provider if (pokoPluginArgs.isNotEmpty()) {
+                standardOptions + SubpluginOption(
+                    key = "pokoPluginArgs",
+                    value = pokoPluginArgs.joinToString(","),
+                )
+            } else {
+                standardOptions
+            }
         }
     }
 
