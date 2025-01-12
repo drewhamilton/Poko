@@ -266,18 +266,13 @@ class PokoCompilerPluginTest(
 
         val commandLineProcessor = PokoCommandLineProcessor()
         commandLineProcessors = listOf(commandLineProcessor)
-        val standardPluginOptions = listOf(
+        pluginOptions = listOfNotNull(
             commandLineProcessor.option(CompilerOptions.ENABLED, true),
-            commandLineProcessor.option(CompilerOptions.POKO_ANNOTATION, pokoAnnotationName)
+            commandLineProcessor.option(CompilerOptions.POKO_ANNOTATION, pokoAnnotationName),
+            pokoPluginArgs?.let {
+                commandLineProcessor.option(CompilerOptions.POKO_PLUGIN_ARGS, it)
+            },
         )
-        pluginOptions = if (pokoPluginArgs == null) {
-            standardPluginOptions
-        } else {
-            standardPluginOptions + commandLineProcessor.option(
-                key = CompilerOptions.POKO_PLUGIN_ARGS,
-                value = pokoPluginArgs
-            )
-        }
     }
 
     private fun CommandLineProcessor.option(
