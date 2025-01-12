@@ -36,11 +36,14 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
         )
 
         val pokoPluginArgs = configuration.get(CompilerOptions.POKO_PLUGIN_ARGS, emptyList())
-        pokoPluginArgs.forEach { pluginArg ->
-            if (!knownPokoPluginArgs.contains(pluginArg)) {
+            .associate { arg ->
+                arg.split('=').let { it.first() to it.last() }
+            }
+        pokoPluginArgs.keys.forEach { pluginArgName ->
+            if (!knownPokoPluginArgs.contains(pluginArgName)) {
                 messageCollector.report(
                     severity = CompilerMessageSeverity.WARNING,
-                    message = "Ignoring unknown Poko plugin arg: $pluginArg",
+                    message = "Ignoring unknown Poko plugin arg: $pluginArgName",
                 )
             }
         }
