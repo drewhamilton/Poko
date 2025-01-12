@@ -14,8 +14,24 @@ public class PokoCommandLineProcessor : CommandLineProcessor {
     override val pluginId: String = BuildConfig.COMPILER_PLUGIN_ARTIFACT
 
     override val pluginOptions: Collection<AbstractCliOption> = listOf(
-        CliOption(CompilerOptions.ENABLED.toString(), "<true|false>", "", required = false),
-        CliOption(CompilerOptions.POKO_ANNOTATION.toString(), "Annotation class name", "", required = false),
+        CliOption(
+            optionName = CompilerOptions.ENABLED.toString(),
+            valueDescription = "<true|false>",
+            description = "",
+            required = false,
+        ),
+        CliOption(
+            optionName = CompilerOptions.POKO_ANNOTATION.toString(),
+            valueDescription = "Annotation class name",
+            description = "",
+            required = false,
+        ),
+        CliOption(
+            optionName = CompilerOptions.POKO_PLUGIN_ARGS.toString(),
+            valueDescription = "",
+            description = "Additional Poko compiler plugin arguments",
+            required = false,
+        ),
     )
 
     override fun processOption(
@@ -23,8 +39,25 @@ public class PokoCommandLineProcessor : CommandLineProcessor {
         value: String,
         configuration: CompilerConfiguration
     ): Unit = when (option.optionName) {
-        CompilerOptions.ENABLED.toString() -> configuration.put(CompilerOptions.ENABLED, value.toBoolean())
-        CompilerOptions.POKO_ANNOTATION.toString() -> configuration.put(CompilerOptions.POKO_ANNOTATION, value)
-        else -> throw IllegalArgumentException("Unknown plugin option: ${option.optionName}")
+        CompilerOptions.ENABLED.toString() ->
+            configuration.put(CompilerOptions.ENABLED, value.toBoolean())
+        CompilerOptions.POKO_ANNOTATION.toString() ->
+            configuration.put(CompilerOptions.POKO_ANNOTATION, value)
+        CompilerOptions.POKO_PLUGIN_ARGS.toString() ->
+            configuration.put(
+                CompilerOptions.POKO_PLUGIN_ARGS,
+                value.split(BuildConfig.POKO_PLUGIN_ARGS_LIST_DELIMITER)
+                    .associate { arg ->
+                        arg.split(BuildConfig.POKO_PLUGIN_ARGS_ITEM_DELIMITER).let {
+                            require(it.size == 2) {
+                                "Invalid syntax for <${it.firstOrNull()}>: " +
+                                    "must be in `key=value` property format"
+                            }
+                            it.first() to it.last()
+                        }
+                    },
+            )
+        else ->
+            throw IllegalArgumentException("Unknown plugin option: ${option.optionName}")
     }
 }
