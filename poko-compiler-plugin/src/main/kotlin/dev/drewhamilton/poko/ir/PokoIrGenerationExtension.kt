@@ -23,8 +23,11 @@ internal class PokoIrGenerationExtension(
         }
 
         if (firDeclarationGeneration) {
-            require(pluginContext.afterK2) {
-                "Cannot use experimental Poko FIR generation with K2 disabled"
+            if (!pluginContext.afterK2) {
+                messageCollector.report(
+                    severity = CompilerMessageSeverity.ERROR,
+                    message = "Cannot use experimental Poko FIR generation with K2 disabled"
+                )
             }
             val bodyFiller = PokoFunctionBodyFiller(
                 pokoAnnotation = pokoAnnotationName,

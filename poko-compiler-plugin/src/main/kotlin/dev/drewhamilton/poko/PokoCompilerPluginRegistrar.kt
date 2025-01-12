@@ -54,7 +54,7 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
             firDeclarationGenerationPluginValue?.toBoolean()?.also {
                 messageCollector.report(
                     severity = CompilerMessageSeverity.WARNING,
-                    message = "$firDeclarationGenerationPluginArg resolved to $it. " +
+                    message = "<$firDeclarationGenerationPluginArg> resolved to $it. " +
                         "This experimental flag may disappear at any time.",
                 )
             } ?: false

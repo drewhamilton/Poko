@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.Assert.fail
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -196,6 +197,26 @@ class PokoCompilerPluginTest(
         }
     }
 
+    @Test fun `compilation with firGenerationDeclaration arg yields warning`() {
+        assumeTrue(compilationMode == CompilationMode.K2WithFirGeneration)
+        testCompilation { result ->
+            val warning = "w: <poko.experimental.enableFirDeclarationGeneration> resolved to " +
+                "true. This experimental flag may disappear at any time."
+            assertThat(result.messages).contains(warning)
+        }
+    }
+
+    @Test fun `non-k2 compilation with firGenerationDeclaration enabled arg fails`() {
+        assumeTrue(compilationMode == CompilationMode.NotK2)
+        testCompilation(
+            pokoPluginArgs = FIR_GENERATION_ENABLED_ARG,
+            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR,
+        ) { result ->
+            val error = "Cannot use experimental Poko FIR generation with K2 disabled"
+            assertThat(result.messages).contains(error)
+        }
+    }
+
     private inline fun testCompilation(
         vararg sourceFileNames: String,
         pokoAnnotationName: String = "dev/drewhamilton/poko/Poko",
@@ -269,12 +290,8 @@ class PokoCompilerPluginTest(
 
         @Suppress("NAME_SHADOWING") // Intentional
         val pokoPluginArgs = if (compilationMode == CompilationMode.K2WithFirGeneration) {
-            listOfNotNull(
-                pokoPluginArgs,
-                "poko.experimental.enableFirDeclarationGeneration" +
-                    BuildConfig.POKO_PLUGIN_ARGS_ITEM_DELIMITER +
-                    "true",
-            ).joinToString(BuildConfig.POKO_PLUGIN_ARGS_LIST_DELIMITER.toString())
+            listOfNotNull(pokoPluginArgs, FIR_GENERATION_ENABLED_ARG)
+                .joinToString(BuildConfig.POKO_PLUGIN_ARGS_LIST_DELIMITER.toString())
         } else {
             pokoPluginArgs
         }
@@ -305,5 +322,12 @@ class PokoCompilerPluginTest(
         NotK2(k2 = false),
         K2WithoutFirGeneration(k2 = true),
         K2WithFirGeneration(k2 = true),
+    }
+
+    private companion object {
+        private const val FIR_GENERATION_ENABLED_ARG =
+            "poko.experimental.enableFirDeclarationGeneration" +
+                BuildConfig.POKO_PLUGIN_ARGS_ITEM_DELIMITER +
+                "true"
     }
 }
