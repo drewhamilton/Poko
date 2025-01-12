@@ -105,8 +105,16 @@ class PokoBuildPlugin : Plugin<Project> {
                 buildConfigField("VERSION", project.pokoVersion)
                 buildConfigField("ANNOTATIONS_ARTIFACT", "poko-annotations")
                 buildConfigField("COMPILER_PLUGIN_ARTIFACT", "poko-compiler-plugin")
+
+                buildConfigField("POKO_ENABLED_OPTION_NAME", "enabled")
                 buildConfigField("DEFAULT_POKO_ENABLED", true)
+
+                buildConfigField("POKO_ANNOTATION_OPTION_NAME", "pokoAnnotation")
                 buildConfigField("DEFAULT_POKO_ANNOTATION", "dev/drewhamilton/poko/Poko")
+
+                buildConfigField("POKO_PLUGIN_ARGS_OPTION_NAME", "pokoPluginArgs")
+                buildConfigField("POKO_PLUGIN_ARGS_LIST_DELIMITER", ';')
+                buildConfigField("POKO_PLUGIN_ARGS_ITEM_DELIMITER", '=')
             }
         }
     }

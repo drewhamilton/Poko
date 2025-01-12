@@ -37,7 +37,9 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
         val pokoPluginArgs = configuration.get(CompilerOptions.POKO_PLUGIN_ARGS, emptyList())
             .associate { arg ->
-                arg.split('=').let { it.first() to it.last() }
+                arg.split(BuildConfig.POKO_PLUGIN_ARGS_ITEM_DELIMITER).let {
+                    it.first() to it.last()
+                }
             }
         pokoPluginArgs.keys.forEach { pluginArgName ->
             if (!knownPokoPluginArgs.contains(pluginArgName)) {

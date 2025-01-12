@@ -44,7 +44,10 @@ public class PokoCommandLineProcessor : CommandLineProcessor {
         CompilerOptions.POKO_ANNOTATION.toString() ->
             configuration.put(CompilerOptions.POKO_ANNOTATION, value)
         CompilerOptions.POKO_PLUGIN_ARGS.toString() ->
-            configuration.put(CompilerOptions.POKO_PLUGIN_ARGS, value.split(','))
+            configuration.put(
+                CompilerOptions.POKO_PLUGIN_ARGS,
+                value.split(BuildConfig.POKO_PLUGIN_ARGS_LIST_DELIMITER),
+            )
         else ->
             throw IllegalArgumentException("Unknown plugin option: ${option.optionName}")
     }
