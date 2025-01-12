@@ -8,8 +8,23 @@ import poko.GenericArrayHolder
 
 class GenericArrayHolderTest {
     @Test fun two_GenericArrayHolder_instances_with_equivalent_typed_arrays_are_equals() {
-        val a = GenericArrayHolder(arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)))
-        val b = GenericArrayHolder(arrayOf(arrayOf("5%, 10%"), intArrayOf(5, 10), booleanArrayOf(false, true)))
+        val a = GenericArrayHolder(
+            generic = arrayOf(
+                arrayOf("5%, 10%"),
+                intArrayOf(5, 10),
+                booleanArrayOf(false, true),
+                Unit,
+            ),
+        )
+        val b = GenericArrayHolder(
+            generic = arrayOf(
+                arrayOf("5%, 10%"),
+                intArrayOf(5, 10),
+                booleanArrayOf(false, true),
+                Unit,
+            ),
+        )
+
         assertThat(a).isEqualTo(b)
         assertThat(b).isEqualTo(a)
         assertThat(a).hashCodeFun().isEqualTo(b.hashCode())
