@@ -21,8 +21,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build
-        # Automatically causes :poko-annotations and :poko-compiler-plugin to build too:
-        run: ./gradlew :poko-gradle-plugin:build publishToMavenLocal --stacktrace
+        run: ./gradlew :poko-annotations:build :poko-compiler-plugin:build :poko-gradle-plugin:build publishToMavenLocal --stacktrace
         env:
           ORG_GRADLE_PROJECT_personalGpgKey: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgKey }}
           ORG_GRADLE_PROJECT_personalGpgPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgPassword }}
