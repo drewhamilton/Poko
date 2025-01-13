@@ -1,9 +1,22 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.plugin.NATIVE_COMPILER_PLUGIN_CLASSPATH_CONFIGURATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.PLUGIN_CLASSPATH_CONFIGURATION_NAME
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
   id("org.jetbrains.kotlin.multiplatform")
+}
+
+val localCompileMode: String? = null // Change to test other modes locally
+val compileMode: String? = localCompileMode ?: System.getenv()["poko_tests_compile_mode"]
+if (compileMode == "WITHOUT_K2") {
+  tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+      languageVersion = KotlinVersion.KOTLIN_1_9
+      progressiveMode = false
+    }
+  }
 }
 
 val jvmToolchainVersion: Int? = System.getenv()["poko_tests_jvm_toolchain_version"]?.toInt()
