@@ -19,7 +19,7 @@ if (compileMode == "WITHOUT_K2") {
   }
 }
 
-val jvmToolchainVersion: Int? = System.getenv()["poko_tests_jvm_toolchain_version"]?.toInt()
+val jvmToolchainVersion = (findProperty("pokoTests.jvmToolchainVersion") as? String)?.toInt()
 
 kotlin {
   jvmToolchainVersion?.let { jvmToolchain(it) }
