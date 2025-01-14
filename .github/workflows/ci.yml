@@ -21,7 +21,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build
-        run: ./gradlew :poko-annotations:build :poko-compiler-plugin:build :poko-gradle-plugin:build publishToMavenLocal --stacktrace
+        run: >-
+          ./gradlew
+          :poko-annotations:build
+          :poko-compiler-plugin:build
+          :poko-gradle-plugin:build
+          publishToMavenLocal
+          --stacktrace
         env:
           ORG_GRADLE_PROJECT_personalGpgKey: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgKey }}
           ORG_GRADLE_PROJECT_personalGpgPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgPassword }}
@@ -39,7 +45,9 @@ jobs:
 
       - name: Test without K2
         # Builds and run tests for any not-yet-built modules, i.e. the :poko-tests modules
-        run: ./gradlew :poko-tests:clean build --stacktrace -Dorg.gradle.project.pokoTests.compileMode=WITHOUT_K2
+        run: >-
+          ./gradlew :poko-tests:clean build --stacktrace
+          -Dorg.gradle.project.pokoTests.compileMode=WITHOUT_K2
 
   test-with-jdk:
     runs-on: ubuntu-latest
@@ -63,7 +71,15 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Test
-        run: ./gradlew :poko-tests:jvmTest --stacktrace -Dorg.gradle.project.pokoTests.jvmToolchainVersion=${{ matrix.poko_tests_jvm_toolchain_version }}
+        run: >-
+          ./gradlew :poko-tests:jvmTest --stacktrace
+          -Dorg.gradle.project.pokoTests.jvmToolchainVersion=${{ matrix.poko_tests_jvm_toolchain_version }}
+
+      - name: Test without K2
+        run: >-
+          ./gradlew :poko-tests:jvmTest --stacktrace
+          -Dorg.gradle.project.pokoTests.jvmToolchainVersion=${{ matrix.poko_tests_jvm_toolchain_version }}
+          -Dorg.gradle.project.pokoTests.compileMode=WITHOUT_K2
 
   build-sample:
     runs-on: ubuntu-latest
