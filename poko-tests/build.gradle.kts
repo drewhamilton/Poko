@@ -10,6 +10,8 @@ plugins {
 
 val compileMode = findProperty("pokoTests.compileMode")
 when (compileMode) {
+  null -> Unit // Nothing to configure
+
   "WITHOUT_K2" -> {
     logger.lifecycle("Building :poko-tests without K2 (language level 1.9)")
     tasks.withType<KotlinCompile>().configureEach {
@@ -19,6 +21,22 @@ when (compileMode) {
       }
     }
   }
+
+  "FIR_GENERATION_ENABLED" -> {
+    logger.lifecycle("Building :poko-tests with FIR declaration generation enabled")
+    tasks.withType<KotlinCompile>().configureEach {
+      compilerOptions {
+        freeCompilerArgs.addAll(
+          listOf(
+            "-P",
+            "plugin:poko-compiler-plugin:pokoPluginArgs=poko.experimental.enableFirDeclarationGeneration=true",
+          ),
+        )
+      }
+    }
+  }
+
+  else -> throw IllegalArgumentException("Unknown pokoTests.compileMode: <$compileMode>")
 }
 
 val jvmToolchainVersion = (findProperty("pokoTests.jvmToolchainVersion") as? String)?.toInt()
