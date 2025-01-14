@@ -13,17 +13,22 @@ import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
+import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.declarations.impl.IrFactoryImpl
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.symbols.impl.IrValueParameterSymbolImpl
 import org.jetbrains.kotlin.ir.types.createType
+import org.jetbrains.kotlin.ir.types.getClass
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isEquals
 import org.jetbrains.kotlin.ir.util.isFakeOverride
 import org.jetbrains.kotlin.ir.util.isHashCode
+import org.jetbrains.kotlin.ir.util.isOverridable
 import org.jetbrains.kotlin.ir.util.isToString
+import org.jetbrains.kotlin.ir.util.parentAsClass
 import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.Name
 
 /**
  * For use only with the K1 compiler. K2 uses [PokoFunctionBodyFiller].
@@ -38,7 +43,12 @@ internal class PokoMembersTransformer(
         messageCollector.log("Reading <$declaration>")
 
         val declarationParent = declaration.parent
-        if (declarationParent is IrClass && declarationParent.isPokoClass() && declaration.isFakeOverride) {
+        if (
+            declarationParent is IrClass &&
+            declarationParent.isPokoClass() &&
+            declaration.isFakeOverride &&
+            canOverride(declaration)
+        ) {
             when {
                 declaration.isEquals() -> declaration.convertToGenerated { properties ->
                     generateEqualsMethodBody(
@@ -109,6 +119,49 @@ internal class PokoMembersTransformer(
         else -> {
             true
         }
+    }
+
+    private fun canOverride(function: IrFunction): Boolean {
+        val superclassSameFunction = function.parentAsClass.findNearestSuperclassFunction(
+            name = function.name,
+            valueParameters = function.valueParameters,
+            extensionReceiverParameter = function.extensionReceiverParameter,
+        )
+
+        return superclassSameFunction?.isOverridable ?: true
+    }
+
+    /**
+     * Recursively finds the function in this class's nearest superclass with the same signature.
+     * Ignores super-interfaces.
+     */
+    @OptIn(UnsafeDuringIrConstructionAPI::class)
+    private fun IrClass.findNearestSuperclassFunction(
+        name: Name,
+        valueParameters: List<IrValueParameter>,
+        extensionReceiverParameter: IrValueParameter?,
+    ): IrFunction? {
+        val superclass = superTypes
+            .mapNotNull { it.getClass() }
+            .apply { check(size < 2) { "Found multiple superclasses" } }
+            .singleOrNull()
+            ?: return null
+
+        val superclassFunction = superclass.declarations
+            .filterIsInstance<IrFunction>()
+            .filter { function ->
+                function.name == name &&
+                    function.valueParameters.map { it.type } == valueParameters.map { it.type } &&
+                    function.extensionReceiverParameter == extensionReceiverParameter
+            }
+            .apply { check(size < 2) { "Found multiple identical superclass functions" } }
+            .singleOrNull()
+
+        return superclassFunction ?: superclass.findNearestSuperclassFunction(
+            name = name,
+            valueParameters = valueParameters,
+            extensionReceiverParameter = extensionReceiverParameter,
+        )
     }
 
     @OptIn(UnsafeDuringIrConstructionAPI::class)
