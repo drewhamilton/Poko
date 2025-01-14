@@ -37,6 +37,10 @@ jobs:
         # Builds and run tests for any not-yet-built modules, i.e. the :poko-tests modules
         run: ./gradlew build --stacktrace
 
+      - name: Test without K2
+        # Builds and run tests for any not-yet-built modules, i.e. the :poko-tests modules
+        run: ./gradlew :poko-tests:clean build --stacktrace -Dorg.gradle.project.pokoTests.compileMode=WITHOUT_K2
+
   test-with-jdk:
     runs-on: ubuntu-latest
     strategy:
@@ -59,9 +63,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Test
-        run: ./gradlew :poko-tests:jvmTest :poko-tests-without-k2:jvmTest --stacktrace
-        env:
-          poko_tests_jvm_toolchain_version: ${{ matrix.poko_tests_jvm_toolchain_version }}
+        run: ./gradlew :poko-tests:jvmTest --stacktrace -Dorg.gradle.project.pokoTests.jvmToolchainVersion=${{ matrix.poko_tests_jvm_toolchain_version }}
 
   build-sample:
     runs-on: ubuntu-latest
