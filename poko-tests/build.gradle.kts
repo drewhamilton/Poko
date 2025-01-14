@@ -8,13 +8,15 @@ plugins {
   id("org.jetbrains.kotlin.multiplatform")
 }
 
-val localCompileMode: String? = null // Change to test other modes locally
-val compileMode: String? = localCompileMode ?: System.getenv()["poko_tests_compile_mode"]
-if (compileMode == "WITHOUT_K2") {
-  tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions {
-      languageVersion = KotlinVersion.KOTLIN_1_9
-      progressiveMode = false
+val compileMode = findProperty("pokoTests.compileMode")
+when (compileMode) {
+  "WITHOUT_K2" -> {
+    logger.lifecycle("Building :poko-tests without K2 (language level 1.9)")
+    tasks.withType<KotlinCompile>().configureEach {
+      compilerOptions {
+        languageVersion = KotlinVersion.KOTLIN_1_9
+        progressiveMode = false
+      }
     }
   }
 }
