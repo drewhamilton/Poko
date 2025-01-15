@@ -1,6 +1,7 @@
 package dev.drewhamilton.poko.fir
 
 import dev.drewhamilton.poko.PokoFunction
+import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
@@ -97,6 +98,7 @@ internal class PokoFirDeclarationGenerationExtension(
         name = PokoFunction.Equals.functionName,
         returnType = session.builtinTypes.booleanType.coneType,
     ) {
+        modality = Modality.OPEN
         valueParameter(
             name = Name.identifier("other"),
             type = session.builtinTypes.nullableAnyType.coneType,
@@ -123,7 +125,9 @@ internal class PokoFirDeclarationGenerationExtension(
         key = PokoKey,
         name = PokoFunction.HashCode.functionName,
         returnType = session.builtinTypes.intType.coneType,
-    )
+    ) {
+        modality = Modality.OPEN
+    }
     //endregion
 
     //region toString
@@ -144,6 +148,8 @@ internal class PokoFirDeclarationGenerationExtension(
         key = PokoKey,
         name = PokoFunction.ToString.functionName,
         returnType = session.builtinTypes.stringType.coneType,
-    )
+    ) {
+        modality = Modality.OPEN
+    }
     //endregion
 }
