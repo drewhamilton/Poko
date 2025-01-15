@@ -1,13 +1,10 @@
 package dev.drewhamilton.poko.ir
 
-import dev.drewhamilton.poko.PokoAnnotationNames
-import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
-import org.jetbrains.kotlin.fir.backend.FirMetadataSource
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
@@ -26,11 +23,11 @@ import org.jetbrains.kotlin.ir.util.isFakeOverride
 import org.jetbrains.kotlin.ir.util.isHashCode
 import org.jetbrains.kotlin.ir.util.isToString
 import org.jetbrains.kotlin.ir.util.primaryConstructor
-import org.jetbrains.kotlin.ir.util.properties
 import org.jetbrains.kotlin.name.ClassId
-import org.jetbrains.kotlin.psi.KtParameter
-import org.jetbrains.kotlin.resolve.source.getPsi
 
+/**
+ * For use only with the K1 compiler. K2 uses [PokoFunctionBodyFiller].
+ */
 internal class PokoMembersTransformer(
     private val pokoAnnotationName: ClassId,
     private val pluginContext: IrPluginContext,
@@ -119,24 +116,7 @@ internal class PokoMembersTransformer(
         generateFunctionBody: IrBlockBodyBuilder.(List<IrProperty>) -> Unit
     ) {
         val parent = parent as IrClass
-        val properties = parent.properties
-            .toList()
-            .filter {
-                val metadata = it.metadata
-                if (metadata is FirMetadataSource.Property) {
-                    // Using K2:
-                    metadata.fir.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
-                } else {
-                    // Not using K2:
-                    @OptIn(ObsoleteDescriptorBasedAPI::class)
-                    it.symbol.descriptor.source.getPsi() is KtParameter
-                }
-            }
-            .filter {
-                !it.hasAnnotation(
-                    classId = pokoAnnotationName.createNestedClassId(PokoAnnotationNames.Skip),
-                )
-            }
+        val properties = parent.pokoProperties(pokoAnnotationName)
         if (properties.isEmpty()) {
             messageCollector.log("No primary constructor properties")
             messageCollector.reportErrorOnClass(
