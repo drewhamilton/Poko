@@ -1,19 +1,28 @@
 package dev.drewhamilton.poko.fir
 
 import dev.drewhamilton.poko.PokoFunction
+import dev.drewhamilton.poko.PokoFunction.Equals
+import dev.drewhamilton.poko.PokoFunction.HashCode
+import dev.drewhamilton.poko.PokoFunction.ToString
+import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Modality
+import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.utils.isFinal
+import org.jetbrains.kotlin.fir.declarations.utils.visibility
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationPredicateRegistrar
 import org.jetbrains.kotlin.fir.extensions.MemberGenerationContext
 import org.jetbrains.kotlin.fir.extensions.predicate.LookupPredicate
 import org.jetbrains.kotlin.fir.extensions.predicateBasedProvider
 import org.jetbrains.kotlin.fir.plugin.createMemberFunction
+import org.jetbrains.kotlin.fir.resolve.toClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.isExtension
+import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
@@ -59,15 +68,15 @@ internal class PokoFirDeclarationGenerationExtension(
 
         val callableName = callableId.callableName
         val function = when (callableName) {
-            PokoFunction.Equals.functionName -> runIf(!owner.hasDeclaredEqualsFunction()) {
+            Equals.functionName -> runIf(owner.canGenerateFunction(Equals)) {
                 createEqualsFunction(owner)
             }
 
-            PokoFunction.HashCode.functionName -> runIf(!owner.hasDeclaredHashCodeFunction()) {
+            HashCode.functionName -> runIf(owner.canGenerateFunction(HashCode)) {
                 createHashCodeFunction(owner)
             }
 
-            PokoFunction.ToString.functionName -> runIf(!owner.hasDeclaredToStringFunction()) {
+            ToString.functionName -> runIf(owner.canGenerateFunction(ToString)) {
                 createToStringFunction(owner)
             }
 
@@ -76,26 +85,69 @@ internal class PokoFirDeclarationGenerationExtension(
         return function?.let { listOf(it.symbol) } ?: emptyList()
     }
 
-    //region equals
-    private fun FirClassSymbol<*>.hasDeclaredEqualsFunction(): Boolean {
+    private fun FirClassSymbol<*>.canGenerateFunction(function: PokoFunction): Boolean {
+        if (hasDeclaredFunction(function)) return false
+
+        val superclassFunction = findNearestSuperclassFunction(function)
+
+        return superclassFunction?.isOverridable ?: true
+    }
+
+    private fun FirClassSymbol<*>.hasDeclaredFunction(function: PokoFunction): Boolean {
+        return declaredFunction(function) != null
+    }
+
+    /**
+     * Recursively finds the [function] in this class's nearest superclass with the same signature.
+     * Ignores super-interfaces.
+     */
+    private fun FirClassSymbol<*>.findNearestSuperclassFunction(
+        function: PokoFunction,
+    ): FirNamedFunctionSymbol? {
+        val superclass = resolvedSuperTypes
+            .mapNotNull { it.toClassSymbol(session) }
+            .filter { it.classKind == ClassKind.CLASS }
+            .apply { check(size < 2) { "Found multiple superclasses" } }
+            .singleOrNull()
+            ?: return null
+
+        return superclass.declaredFunction(function)
+            ?: superclass.findNearestSuperclassFunction(function)
+    }
+
+    /**
+     * Finds the function symbol if this [function] is declared in this class.
+     */
+    private fun FirClassSymbol<*>.declaredFunction(
+        function: PokoFunction,
+    ): FirNamedFunctionSymbol? {
         return declarationSymbols
             .filterIsInstance<FirNamedFunctionSymbol>()
-            .any {
-                !it.isExtension &&
-                    it.name == PokoFunction.Equals.functionName &&
-                    it.valueParameterSymbols.size == 1 &&
-                    it.valueParameterSymbols
-                        .single()
-                        .resolvedReturnType == session.builtinTypes.nullableAnyType.coneType
+            .filter { functionSymbol ->
+                !functionSymbol.isExtension &&
+                    functionSymbol.name == function.functionName &&
+                    functionSymbol.valueParameterSymbols
+                        .map { it.resolvedReturnType } == function.valueParameterTypes()
             }
+            .apply { check(size < 2) { "Found multiple identical functions" } }
+            .singleOrNull()
     }
+
+    private fun PokoFunction.valueParameterTypes(): List<ConeKotlinType> = when (this) {
+        Equals -> listOf(session.builtinTypes.nullableAnyType.coneType)
+        HashCode -> emptyList()
+        ToString -> emptyList()
+    }
+
+    private val FirNamedFunctionSymbol.isOverridable: Boolean
+        get() = visibility != Visibilities.Private && !isFinal
 
     private fun createEqualsFunction(
         owner: FirClassSymbol<*>,
     ): FirSimpleFunction = createMemberFunction(
         owner = owner,
         key = PokoKey,
-        name = PokoFunction.Equals.functionName,
+        name = Equals.functionName,
         returnType = session.builtinTypes.booleanType.coneType,
     ) {
         modality = Modality.OPEN
@@ -105,40 +157,16 @@ internal class PokoFirDeclarationGenerationExtension(
             key = PokoKey,
         )
     }
-    //endregion
-
-    //region hashCode
-    private fun FirClassSymbol<*>.hasDeclaredHashCodeFunction(): Boolean {
-        return declarationSymbols
-            .filterIsInstance<FirNamedFunctionSymbol>()
-            .any {
-                !it.isExtension &&
-                    it.name == PokoFunction.HashCode.functionName &&
-                    it.valueParameterSymbols.isEmpty()
-            }
-    }
 
     private fun createHashCodeFunction(
         owner: FirClassSymbol<*>,
     ): FirSimpleFunction = createMemberFunction(
         owner = owner,
         key = PokoKey,
-        name = PokoFunction.HashCode.functionName,
+        name = HashCode.functionName,
         returnType = session.builtinTypes.intType.coneType,
     ) {
         modality = Modality.OPEN
-    }
-    //endregion
-
-    //region toString
-    private fun FirClassSymbol<*>.hasDeclaredToStringFunction(): Boolean {
-        return declarationSymbols
-            .filterIsInstance<FirNamedFunctionSymbol>()
-            .any {
-                !it.isExtension &&
-                    it.name == PokoFunction.ToString.functionName &&
-                    it.valueParameterSymbols.isEmpty()
-            }
     }
 
     private fun createToStringFunction(
@@ -146,10 +174,9 @@ internal class PokoFirDeclarationGenerationExtension(
     ): FirSimpleFunction = createMemberFunction(
         owner = owner,
         key = PokoKey,
-        name = PokoFunction.ToString.functionName,
+        name = ToString.functionName,
         returnType = session.builtinTypes.stringType.coneType,
     ) {
         modality = Modality.OPEN
     }
-    //endregion
 }
