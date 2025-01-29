@@ -7,7 +7,7 @@ kotlinCompileTesting = "1.6.0"
 # https://central.sonatype.com/artifact/dev.zacsweers.kctfork/core/versions:
 kotlinCompileTestingFork = "0.7.0"
 # https://github.com/google/ksp/releases:
-ksp = "2.1.10-RC2-1.0.29"
+ksp = "2.1.10-1.0.29"
 
 [libraries]
 
