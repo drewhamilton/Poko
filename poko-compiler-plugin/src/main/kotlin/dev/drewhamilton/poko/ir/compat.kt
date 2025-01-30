@@ -4,9 +4,14 @@ import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
+import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.IrType
+import org.jetbrains.kotlin.ir.util.isNullable
+import org.jetbrains.kotlin.ir.util.superTypes
+import org.jetbrains.kotlin.ir.types.isNullable as isNullableDeprecated
+import org.jetbrains.kotlin.ir.types.superTypes as superTypesDeprecated
 
 /**
  * Alias for [irCall] from 2.1.0 – 2.1.20.
@@ -53,5 +58,33 @@ internal fun IrBuilderWithScope.irCallCompat(
                 typeArgumentsCount, // param: typeArgumentsCount
                 origin, // param: origin
             ) as IrCall
+    }
+}
+
+/**
+ * Alias for [isNullable] from 2.1.0 – 2.1.20.
+ *
+ * Remove when support for 2.1.0 & 2.1.1x is dropped.
+ */
+internal fun IrType.isNullableCompat(): Boolean {
+    return try {
+        isNullable()
+    } catch (noSuchMethodError: NoSuchMethodError) {
+        @Suppress("DEPRECATION")
+        isNullableDeprecated()
+    }
+}
+
+/**
+ * Alias for [superTypes] from 2.1.0 – 2.1.20.
+ *
+ * Remove when support for 2.1.0 & 2.1.1x is dropped.
+ */
+internal fun IrClassifierSymbol.superTypesCompat(): List<IrType> {
+    return try {
+        superTypes()
+    } catch (noSuchMethodError: NoSuchMethodError) {
+        @Suppress("DEPRECATION")
+        superTypesDeprecated()
     }
 }

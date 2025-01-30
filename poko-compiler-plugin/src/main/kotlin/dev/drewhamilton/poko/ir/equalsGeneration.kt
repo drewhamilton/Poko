@@ -36,7 +36,6 @@ import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
-import org.jetbrains.kotlin.ir.util.isNullable
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
@@ -228,7 +227,7 @@ private fun findContentDeepEqualsFunctionSymbol(
         // Find the single function with the relevant array type and disambiguate against the
         // older non-nullable receiver overload:
         functionSymbol.owner.extensionReceiverParameter?.type?.let {
-            it.classifierOrNull == classifier && it.isNullable()
+            it.classifierOrNull == classifier && it.isNullableCompat()
         } ?: false
     }
 }
