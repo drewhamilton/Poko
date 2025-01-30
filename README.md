@@ -1,5 +1,5 @@
 # Poko
-[![](https://github.com/drewhamilton/Poko/workflows/CI/badge.svg?branch=main)](https://github.com/drewhamilton/Poko/actions?query=workflow%3ACI+branch%3Amain)
+[![CI status badge](https://github.com/drewhamilton/Poko/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/drewhamilton/Poko/actions/workflows/ci.yml?query=branch%3Amain)
 
 Poko is a Kotlin compiler plugin that makes writing and maintaining data model classes for public
 APIs easy. Like with normal Kotlin data classes, all you have to do is provide properties in your
@@ -87,7 +87,7 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version |
 |-----------------|--------------|
-| 2.1.0           | 0.18.2       |
+| 2.1.0 – 2.1.10  | 0.18.2       |
 | 2.0.0 – 2.0.21  | 0.17.2       |
 | 1.9.0 – 1.9.24  | 0.15.3       |
 | 1.8.20 – 1.8.22 | 0.13.1       |
