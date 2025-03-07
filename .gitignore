@@ -26,6 +26,7 @@
 # Generated files
 .idea/**/artifacts
 .idea/**/contentModel.xml
+.idea/AndroidProjectSystem.xml
 
 # Sensitive or high-churn files
 .idea/**/dataSources/
