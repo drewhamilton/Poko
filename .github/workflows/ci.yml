@@ -81,7 +81,7 @@ jobs:
           -Dorg.gradle.project.pokoTests.jvmToolchainVersion=${{ matrix.poko_tests_jvm_toolchain_version }}
           -Dorg.gradle.project.pokoTests.compileMode=WITHOUT_K2
 
-  test-fir-generation:
+  test-non-fir-generation:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -97,7 +97,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Test
-        run: ./gradlew :poko-tests:build --stacktrace -Dorg.gradle.project.pokoTests.compileMode=FIR_GENERATION_ENABLED
+        run: ./gradlew :poko-tests:build --stacktrace -Dorg.gradle.project.pokoTests.compileMode=FIR_GENERATION_DISABLED
 
   build-sample:
     runs-on: ubuntu-latest
