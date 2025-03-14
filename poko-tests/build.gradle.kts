@@ -22,14 +22,14 @@ when (compileMode) {
     }
   }
 
-  "FIR_GENERATION_ENABLED" -> {
-    logger.lifecycle("Building :poko-tests with FIR declaration generation enabled")
+  "FIR_GENERATION_DISABLED" -> {
+    logger.lifecycle("Building :poko-tests with FIR declaration generation disabled")
     tasks.withType<KotlinCompile>().configureEach {
       compilerOptions {
         freeCompilerArgs.addAll(
           listOf(
             "-P",
-            "plugin:poko-compiler-plugin:pokoPluginArgs=poko.experimental.enableFirDeclarationGeneration=true",
+            "plugin:poko-compiler-plugin:pokoPluginArgs=poko.experimental.enableFirDeclarationGeneration=false",
           ),
         )
       }

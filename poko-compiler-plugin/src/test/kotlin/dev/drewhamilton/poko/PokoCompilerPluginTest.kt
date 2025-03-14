@@ -204,22 +204,11 @@ class PokoCompilerPluginTest(
     }
 
     @Test fun `compilation with firGenerationDeclaration arg yields warning`() {
-        assumeTrue(compilationMode == CompilationMode.K2WithFirGeneration)
+        assumeTrue(compilationMode == CompilationMode.K2WithoutFirGeneration)
         testCompilation { result ->
             val warning = "w: <poko.experimental.enableFirDeclarationGeneration> resolved to " +
-                "true. This experimental flag may disappear at any time."
+                "false. This experimental flag may disappear at any time."
             assertThat(result.messages).contains(warning)
-        }
-    }
-
-    @Test fun `non-k2 compilation with firGenerationDeclaration enabled arg fails`() {
-        assumeTrue(compilationMode == CompilationMode.NotK2)
-        testCompilation(
-            pokoPluginArgs = FIR_GENERATION_ENABLED_ARG,
-            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR,
-        ) { result ->
-            val error = "Cannot use experimental Poko FIR generation with K2 disabled"
-            assertThat(result.messages).contains(error)
         }
     }
 
@@ -295,8 +284,8 @@ class PokoCompilerPluginTest(
         commandLineProcessors = listOf(commandLineProcessor)
 
         @Suppress("NAME_SHADOWING") // Intentional
-        val pokoPluginArgs = if (compilationMode == CompilationMode.K2WithFirGeneration) {
-            listOfNotNull(pokoPluginArgs, FIR_GENERATION_ENABLED_ARG)
+        val pokoPluginArgs = if (compilationMode == CompilationMode.K2WithoutFirGeneration) {
+            listOfNotNull(pokoPluginArgs, FIR_GENERATION_DISABLED_ARG)
                 .joinToString(BuildConfig.POKO_PLUGIN_ARGS_LIST_DELIMITER.toString())
         } else {
             pokoPluginArgs
@@ -332,9 +321,9 @@ class PokoCompilerPluginTest(
     }
 
     private companion object {
-        private const val FIR_GENERATION_ENABLED_ARG =
+        private const val FIR_GENERATION_DISABLED_ARG =
             "poko.experimental.enableFirDeclarationGeneration" +
                 BuildConfig.POKO_PLUGIN_ARGS_ITEM_DELIMITER +
-                "true"
+                "false"
     }
 }
