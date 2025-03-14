@@ -35,6 +35,12 @@ class PokoCompilerPluginTest(
         testCompilation("api/Primitives")
     }
 
+    // TODO: Add similar test to :poko-tests after FIR is the only compilation mode
+    @Test fun `compilation with value interface succeeds`() {
+        assumeTrue(compilationMode == CompilationMode.K2WithFirGeneration)
+        testCompilation("api/DataInterface")
+    }
+
     @Test fun `compilation of interface fails`() {
         testCompilation(
             "illegal/Interface",
