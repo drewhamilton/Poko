@@ -20,7 +20,6 @@ import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.types.impl.IrStarProjectionImpl
-import org.jetbrains.kotlin.ir.types.superTypes
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isAnnotationClass
 import org.jetbrains.kotlin.ir.util.isInterface
@@ -79,7 +78,7 @@ internal fun IrClassifierSymbol?.mayBeRuntimeArray(
 private fun IrTypeParameterSymbol.hasArrayOrPrimitiveArrayUpperBound(
     context: IrGeneratorContextInterface,
 ): Boolean {
-    superTypes().forEach { superType ->
+    superTypesCompat().forEach { superType ->
         val superTypeClassifier = superType.classifierOrNull
         // Note: A generic type cannot have an array as an upper bound, else that would also
         // be checked here.
