@@ -51,13 +51,13 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
         val firDeclarationGenerationPluginValue = pokoPluginArgs[firDeclarationGenerationPluginArg]
         val firDeclarationGenerationEnabled =
-            firDeclarationGenerationPluginValue?.toBoolean()?.also {
+            firDeclarationGenerationPluginValue?.equals("false", ignoreCase = true)?.not()?.also {
                 messageCollector.report(
                     severity = CompilerMessageSeverity.WARNING,
                     message = "<$firDeclarationGenerationPluginArg> resolved to $it. " +
                         "This experimental flag may disappear at any time.",
                 )
-            } ?: false
+            } ?: true
 
         IrGenerationExtension.registerExtension(
             PokoIrGenerationExtension(
