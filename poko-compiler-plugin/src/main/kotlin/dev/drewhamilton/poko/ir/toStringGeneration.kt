@@ -25,7 +25,6 @@ import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
-import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
@@ -201,7 +200,7 @@ private fun findContentDeepToStringFunctionSymbol(
         // Find the single function with the relevant array type and disambiguate against the
         // older non-nullable receiver overload:
         functionSymbol.owner.extensionReceiverParameter?.type?.let {
-            it.classifierOrNull == propertyClassifier && it.isNullable()
+            it.classifierOrNull == propertyClassifier && it.isNullableCompat()
         } ?: false
     }
 }

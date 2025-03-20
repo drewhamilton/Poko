@@ -34,7 +34,6 @@ import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isInt
-import org.jetbrains.kotlin.ir.types.isNullable
 import org.jetbrains.kotlin.ir.types.isUInt
 import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
@@ -133,7 +132,7 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
     val field = property.backingField!!
     val irGetField = { irGetField(receiver(function), field) }
     return when {
-        property.type.isNullable() -> irIfNull(
+        property.type.isNullableCompat() -> irIfNull(
             type = context.irBuiltIns.intType,
             subject = irGetField(),
             thenPart = irInt(0),
@@ -293,7 +292,7 @@ private fun findArrayContentDeepHashCodeFunction(
     ).single { functionSymbol ->
         // Disambiguate against the older non-nullable receiver overload:
         functionSymbol.owner.extensionReceiverParameter?.type?.let {
-            it.classifierOrNull == propertyClassifier && it.isNullable()
+            it.classifierOrNull == propertyClassifier && it.isNullableCompat()
         } ?: false
     }
 }

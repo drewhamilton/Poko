@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
 @OptIn(ExperimentalCompilerApi::class)
 @RunWith(TestParameterInjector::class)
 class PokoCompilerPluginTest(
-    @TestParameter private val compilationMode: CompilationMode,
+    @param:TestParameter private val compilationMode: CompilationMode,
 ) {
 
     @JvmField
@@ -319,6 +319,7 @@ class PokoCompilerPluginTest(
         value.toString()
     )
 
+    @Suppress("DEPRECATION") // Safe as long as we don't write new files at runtime
     private fun SourceFile.Companion.fromPath(path: String): SourceFile = fromPath(File(path))
 
     @Suppress("unused") // Test parameter values
