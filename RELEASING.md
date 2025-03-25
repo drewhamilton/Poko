@@ -1,9 +1,9 @@
 # Releasing
 
  1. Make sure you're on the latest commit on the main branch.
- 2. Change `PUBLISH_VERSION` in gradle.properties to a non-SNAPSHOT version.
- 3. Update README.md for the impending release.
- 4. Update CHANGELOG.md for the impending release.
+ 2. Update CHANGELOG.md for the impending release.
+ 3. Change `PUBLISH_VERSION` in gradle.properties to a non-SNAPSHOT version.
+ 4. Update README.md for the impending release.
  5. Commit (don't push) the changes with message "Release x.y.z", where x.y.z is the new version.
  6. Tag the commit `x.y.z`, where x.y.z is the new version.
  7. Change `PUBLISH_VERSION` in gradle.properties to the next SNAPSHOT version.

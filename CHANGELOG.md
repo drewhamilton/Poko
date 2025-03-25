@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.18.3
+_2025-03-25_
+
+Fix a bug that overrode Poko functions declared `final` in the Poko class's supertype. Fix
+compilation when Poko functions are declared `abstract` in the Poko class's supertype(s).
+
+Under the hood, generate Poko functions with FIR-based declarations backed by IR-based function
+bodies. This allows K2-based IDEs to recognize the overridden functions.
+
+Compile with Kotlin 2.1.20. 
+
 ## 0.18.2
 _2024-12-27_
 
