@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.18.3
-_2025-03-25_
+_2025-03-26_
 
 Fix a bug that overrode Poko functions declared `final` in the Poko class's supertype. Fix
 compilation when Poko functions are declared `abstract` in the Poko class's supertype(s).

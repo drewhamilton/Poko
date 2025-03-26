@@ -12,4 +12,5 @@
 10. Wait for the "Release" Action to complete.
 11. Create the release on GitHub with release notes copied from the changelog.
 
-If steps 10 fails: drop the Sonatype repo, fix the problem, commit, and start again at step 6.
+If steps 10 fails: drop the Sonatype repo, fix the problem, delete the incorrect tag on both local
+and remote, and start over.
