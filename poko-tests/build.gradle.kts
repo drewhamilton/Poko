@@ -42,6 +42,10 @@ when (compileMode) {
 val jvmToolchainVersion = (findProperty("pokoTests.jvmToolchainVersion") as? String)?.toInt()
 
 kotlin {
+  compilerOptions {
+    freeCompilerArgs.add("-Xexpect-actual-classes")
+  }
+
   jvmToolchainVersion?.let { jvmToolchain(it) }
 
   jvm()
