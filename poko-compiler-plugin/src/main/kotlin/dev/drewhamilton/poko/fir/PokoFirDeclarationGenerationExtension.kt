@@ -151,6 +151,9 @@ internal class PokoFirDeclarationGenerationExtension(
         returnType = session.builtinTypes.booleanType.coneType,
     ) {
         modality = Modality.OPEN
+        status {
+            isOperator = true
+        }
         valueParameter(
             name = Name.identifier("other"),
             type = session.builtinTypes.nullableAnyType.coneType,
