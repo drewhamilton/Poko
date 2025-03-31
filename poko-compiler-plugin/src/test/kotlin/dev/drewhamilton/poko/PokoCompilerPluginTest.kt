@@ -41,6 +41,10 @@ class PokoCompilerPluginTest(
         testCompilation("api/DataInterface")
     }
 
+    @Test fun `compilation with multiple interfaces succeeds`() {
+        testCompilation("api/MultipleInterface")
+    }
+
     @Test fun `compilation of interface fails`() {
         testCompilation(
             "illegal/Interface",

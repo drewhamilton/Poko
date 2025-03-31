@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
+import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.impl.LazyClassReceiverParameterDescriptor
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
@@ -143,6 +144,7 @@ internal class PokoMembersTransformer(
     ): IrFunction? {
         val superclass = superTypes
             .mapNotNull { it.getClass() }
+            .filter { it.kind == ClassKind.CLASS }
             .apply { check(size < 2) { "Found multiple superclasses" } }
             .singleOrNull()
             ?: return null
