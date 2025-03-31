@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.18.5
+_2025-03-31_
+
+Fix compilation error when defining a Poko class with multiple super-interfaces while using
+`languageVersion = KotlinVersion.KOTLIN_1_9`.
+
 ## 0.18.4
 _2025-03-27_
 
