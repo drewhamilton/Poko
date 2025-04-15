@@ -34,7 +34,7 @@ internal class PokoIrGenerationExtension(
                 pluginContext = pluginContext,
                 messageCollector = messageCollector,
             )
-            moduleFragment.transform(pokoMembersTransformer, null)
+            moduleFragment.transformCompat(pokoMembersTransformer, null)
         }
     }
 

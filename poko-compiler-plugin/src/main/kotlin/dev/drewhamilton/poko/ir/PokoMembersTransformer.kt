@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
@@ -202,6 +203,7 @@ internal class PokoMembersTransformer(
             startOffset = originalReceiver.startOffset,
             endOffset = originalReceiver.endOffset,
             origin = originalReceiver.origin,
+            kind = IrParameterKind.DispatchReceiver,
             symbol = IrValueParameterSymbolImpl(
                 // IrValueParameterSymbolImpl requires a descriptor; same type as
                 // originalReceiver.symbol:
@@ -211,7 +213,6 @@ internal class PokoMembersTransformer(
                 signature = parentClass.symbol.signature,
             ),
             name = originalReceiver.name,
-            index = originalReceiver.index,
             type = parentClass.symbol.createType(hasQuestionMark = false, emptyList()),
             varargElementType = originalReceiver.varargElementType,
             isCrossinline = originalReceiver.isCrossinline,
