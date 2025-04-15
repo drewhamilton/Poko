@@ -18,8 +18,7 @@ import org.jetbrains.kotlin.ir.util.isEquals
 import org.jetbrains.kotlin.ir.util.isHashCode
 import org.jetbrains.kotlin.ir.util.isToString
 import org.jetbrains.kotlin.ir.util.parentAsClass
-import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
-import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
+import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
 import org.jetbrains.kotlin.name.ClassId
 
 @OptIn(UnsafeDuringIrConstructionAPI::class)
@@ -27,7 +26,7 @@ internal class PokoFunctionBodyFiller(
     private val pokoAnnotation: ClassId,
     private val context: IrPluginContext,
     private val messageCollector: MessageCollector,
-) : IrElementVisitorVoid {
+) : IrVisitorVoid() {
 
     override fun visitSimpleFunction(declaration: IrSimpleFunction) {
         val origin = declaration.origin
@@ -97,7 +96,7 @@ internal class PokoFunctionBodyFiller(
 
     override fun visitElement(element: IrElement) {
         when (element) {
-            is IrDeclaration, is IrFile, is IrModuleFragment -> element.acceptChildrenVoid(this)
+            is IrDeclaration, is IrFile, is IrModuleFragment -> element.acceptChildrenVoidCompat(this)
             else -> Unit
         }
     }
