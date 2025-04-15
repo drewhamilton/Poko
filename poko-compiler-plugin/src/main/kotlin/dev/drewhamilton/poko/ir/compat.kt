@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.ir
 
+import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.expressions.IrCall
@@ -10,6 +11,8 @@ import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.util.isNullable
 import org.jetbrains.kotlin.ir.util.superTypes
+import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
+import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.ir.types.isNullable as isNullableDeprecated
 import org.jetbrains.kotlin.ir.types.superTypes as superTypesDeprecated
 
@@ -86,5 +89,18 @@ internal fun IrClassifierSymbol.superTypesCompat(): List<IrType> {
     } catch (noSuchMethodError: NoSuchMethodError) {
         @Suppress("DEPRECATION")
         superTypesDeprecated()
+    }
+}
+
+/**
+ * Alias for [IrElement.acceptChildrenVoid] for compatibility with 2.1.0 – 2.1.1x.
+ *
+ * Remove when support for 2.1.0 & 2.1.1x is dropped.
+ */
+internal fun IrElement.acceptChildrenVoidCompat(visitor: IrVisitorVoid) {
+    try {
+        acceptChildrenVoid(visitor)
+    } catch (noSuchMethodError: NoSuchMethodError) {
+        acceptChildren(visitor, null)
     }
 }
