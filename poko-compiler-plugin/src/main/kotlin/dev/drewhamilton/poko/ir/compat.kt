@@ -3,6 +3,7 @@ package dev.drewhamilton.poko.ir
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irCall
+import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
@@ -11,6 +12,7 @@ import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.util.isNullable
 import org.jetbrains.kotlin.ir.util.superTypes
+import org.jetbrains.kotlin.ir.visitors.IrTransformer
 import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.ir.types.isNullable as isNullableDeprecated
@@ -93,6 +95,22 @@ internal fun IrClassifierSymbol.superTypesCompat(): List<IrType> {
 }
 
 /**
+ * Alias for [IrModuleFragment.transform] for compatibility with 2.1.x.
+ *
+ * Remove when support for 2.1.0 – 2.1.2x is dropped.
+ */
+internal fun <D> IrModuleFragment.transformCompat(
+    transformer: IrTransformer<D>,
+    data: D,
+): IrModuleFragment {
+    return try {
+        transform(transformer, data)
+    } catch (noSuchMethodError: NoSuchMethodError) {
+        transformer.visitModuleFragment(this, data)
+    }
+}
+
+/**
  * Alias for [IrElement.acceptChildrenVoid] for compatibility with 2.1.0 – 2.1.1x.
  *
  * Remove when support for 2.1.0 & 2.1.1x is dropped.
@@ -101,6 +119,18 @@ internal fun IrElement.acceptChildrenVoidCompat(visitor: IrVisitorVoid) {
     try {
         acceptChildrenVoid(visitor)
     } catch (noSuchMethodError: NoSuchMethodError) {
-        acceptChildren(visitor, null)
+        // https://github.com/JetBrains/kotlin/blob/v2.1.10/compiler/ir/ir.tree/gen/org/jetbrains/kotlin/ir/IrElement.kt#L68
+        this.javaClass
+            .methods
+            .single { function ->
+                function.name == "acceptChildren" &&
+                    function.parameters.size == 2 &&
+                    function.parameters.first().type.name == "org.jetbrains.kotlin.ir.visitors.IrElementVisitor"
+            }
+            .invoke(
+                this, // receiver
+                visitor, // param: visitor
+                null, // param: data
+            )
     }
 }
