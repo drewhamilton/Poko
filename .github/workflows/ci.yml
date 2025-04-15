@@ -106,8 +106,10 @@ jobs:
       fail-fast: false
       matrix:
         poko_sample_kotlin_version: [ 2.1.0, 2.1.10, ~, 2.2.0-Beta1 ]
+        poko_sample_kotlin_language_version: [ 1.9, ~ ]
     env:
       poko_sample_kotlin_version: ${{ matrix.poko_sample_kotlin_version }}
+      ORG_GRADLE_PROJECT_pokoSample_kotlinLanguageVersion: ${{ matrix.poko_sample_kotlin_language_version }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4

@@ -2,6 +2,7 @@ import dev.drewhamilton.poko.sample.build.jvmToolchainLanguageVersion
 import dev.drewhamilton.poko.sample.build.kotlinJvmTarget
 import dev.drewhamilton.poko.sample.build.resolvedJavaVersion
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -18,6 +19,12 @@ apply(from = "properties.gradle")
 
 logger.lifecycle("Compiling sample app with Kotlin ${libs.versions.kotlin.get()}")
 logger.lifecycle("Targeting Java version $resolvedJavaVersion")
+
+val specifiedKotlinLanguageVersion = findProperty("pokoSample_kotlinLanguageVersion")
+    ?.toString()
+    ?.let { it.ifBlank { null } }
+    ?.let { KotlinVersion.fromVersion(it) }
+    ?.also { logger.lifecycle("Compiling sample project with language version $it") }
 
 allprojects {
     repositories {
@@ -52,10 +59,11 @@ allprojects {
         }
     }
 
-    tasks.withType<KotlinCompile> {
+    tasks.withType<KotlinCompile>().configureEach {
         compilerOptions {
-            jvmTarget.set(kotlinJvmTarget)
-            freeCompilerArgs.add("-progressive")
+            jvmTarget = kotlinJvmTarget
+            languageVersion = specifiedKotlinLanguageVersion
+            progressiveMode = (specifiedKotlinLanguageVersion == null)
         }
     }
 }
