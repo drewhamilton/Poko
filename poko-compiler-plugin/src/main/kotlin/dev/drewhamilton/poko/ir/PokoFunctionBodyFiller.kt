@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.ir.util.isEquals
 import org.jetbrains.kotlin.ir.util.isHashCode
 import org.jetbrains.kotlin.ir.util.isToString
 import org.jetbrains.kotlin.ir.util.parentAsClass
-import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
+import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.name.ClassId
 
@@ -27,7 +27,7 @@ internal class PokoFunctionBodyFiller(
     private val pokoAnnotation: ClassId,
     private val context: IrPluginContext,
     private val messageCollector: MessageCollector,
-) : IrElementVisitorVoid {
+) : IrVisitorVoid() {
 
     override fun visitSimpleFunction(declaration: IrSimpleFunction) {
         val origin = declaration.origin
