@@ -46,15 +46,20 @@ allprojects {
         }
     }
 
-    plugins.withId("org.jetbrains.kotlin.jvm") {
-        if (jvmToolchainLanguageVersion == null) {
-            with(extensions.getByType<JavaPluginExtension>()) {
-                sourceCompatibility = resolvedJavaVersion
-                targetCompatibility = resolvedJavaVersion
-            }
-        } else {
-            extensions.getByType<KotlinJvmProjectExtension>().jvmToolchain {
-                languageVersion.set(jvmToolchainLanguageVersion)
+    listOf(
+        "org.jetbrains.kotlin.jvm",
+        "org.jetbrains.kotlin.multiplatform",
+    ).forEach { id ->
+        plugins.withId(id) {
+            if (jvmToolchainLanguageVersion == null) {
+                with(extensions.getByType<JavaPluginExtension>()) {
+                    sourceCompatibility = resolvedJavaVersion
+                    targetCompatibility = resolvedJavaVersion
+                }
+            } else {
+                extensions.getByType<KotlinJvmProjectExtension>().jvmToolchain {
+                    languageVersion.set(jvmToolchainLanguageVersion)
+                }
             }
         }
     }
