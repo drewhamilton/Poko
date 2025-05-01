@@ -328,7 +328,6 @@ private fun IrBlockBodyBuilder.irCallHashCodeFunction(
     return irCallCompat(
         callee = hashCodeFunctionSymbol,
         type = context.irBuiltIns.intType,
-        valueArgumentsCount = if (hasDispatchReceiver || hasExtensionReceiver) 0 else 1,
         typeArgumentsCount = 0,
     ).apply {
         when {

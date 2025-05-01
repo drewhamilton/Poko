@@ -184,7 +184,6 @@ private fun IrBuilderWithScope.irCallContentDeepEquals(
     return irCallCompat(
         callee = findContentDeepEqualsFunctionSymbol(context, classifier),
         type = context.irBuiltIns.booleanType,
-        valueArgumentsCount = 1,
         typeArgumentsCount = 1,
     ).apply {
         extensionReceiver = receiver

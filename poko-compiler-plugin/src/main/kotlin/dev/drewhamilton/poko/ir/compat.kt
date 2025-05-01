@@ -413,7 +413,6 @@ private fun Array<Method>.findIrBuilderExtension(
 internal fun IrBuilderWithScope.irCallCompat(
     callee: IrSimpleFunctionSymbol,
     type: IrType,
-    valueArgumentsCount: Int = callee.owner.valueParameters.size,
     typeArgumentsCount: Int = callee.owner.typeParameters.size,
     origin: IrStatementOrigin? = null,
 ): IrCall {
@@ -460,7 +459,7 @@ internal fun IrBuilderWithScope.irCallCompat(
                     this, // extension receiver
                     callee, // param: callee
                     type, // param: type
-                    valueArgumentsCount, // param: valueArgumentsCount
+                    -1, // param: valueArgumentsCount (unused)
                     typeArgumentsCount, // param: typeArgumentsCount
                     origin, // param: origin
                 )
