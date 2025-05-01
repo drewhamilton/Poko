@@ -26,7 +26,9 @@ import org.jetbrains.kotlin.ir.builders.irSet
 import org.jetbrains.kotlin.ir.builders.irString
 import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrField
+import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrValueDeclaration
+import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
@@ -517,3 +519,25 @@ internal fun IrElement.acceptChildrenVoidCompat(visitor: IrVisitorVoid) {
         acceptChildren(visitor, null)
     }
 }
+
+/**
+ * Alias for [IrFunction.parameters] for compatibility with 2.1.0 – 2.1.1x. Throws if the function
+ * has context parameters on 2.1.1x or lower.
+ *
+ * Remove when support for 2.1.1x is dropped.
+ */
+internal val IrFunction.parametersCompat: List<IrValueParameter>
+    get() = try {
+        parameters
+    } catch (noSuchMethodError: NoSuchMethodError) {
+        require(contextReceiverParametersCount == 0) {
+            "parametersCompat is not supported on functions with context parameters"
+        }
+        buildList {
+            dispatchReceiverParameter?.let { add(it) }
+            extensionReceiverParameter?.let { add(it) }
+            valueParameters.forEach {
+                add(it)
+            }
+        }
+    }
