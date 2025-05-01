@@ -125,8 +125,7 @@ internal class PokoMembersTransformer(
     private fun canOverride(function: IrFunction): Boolean {
         val superclassSameFunction = function.parentAsClass.findNearestSuperclassFunction(
             name = function.name,
-            valueParameters = function.valueParameters,
-            extensionReceiverParameter = function.extensionReceiverParameter,
+            parameters = function.parametersCompat
         )
 
         return superclassSameFunction?.isOverridable ?: true
@@ -139,8 +138,7 @@ internal class PokoMembersTransformer(
     @OptIn(UnsafeDuringIrConstructionAPI::class)
     private fun IrClass.findNearestSuperclassFunction(
         name: Name,
-        valueParameters: List<IrValueParameter>,
-        extensionReceiverParameter: IrValueParameter?,
+        parameters: List<IrValueParameter>,
     ): IrFunction? {
         val superclass = superTypes
             .mapNotNull { it.getClass() }
@@ -153,16 +151,14 @@ internal class PokoMembersTransformer(
             .filterIsInstance<IrFunction>()
             .filter { function ->
                 function.name == name &&
-                    function.valueParameters.map { it.type } == valueParameters.map { it.type } &&
-                    function.extensionReceiverParameter == extensionReceiverParameter
+                    function.parametersCompat.map { it.type } == parameters.map { it.type }
             }
             .apply { check(size < 2) { "Found multiple identical superclass functions" } }
             .singleOrNull()
 
         return superclassFunction ?: superclass.findNearestSuperclassFunction(
             name = name,
-            valueParameters = valueParameters,
-            extensionReceiverParameter = extensionReceiverParameter,
+            parameters = parameters,
         )
     }
 
