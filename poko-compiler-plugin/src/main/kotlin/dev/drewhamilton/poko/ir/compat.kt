@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.ir.builders.irString
 import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrField
 import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrValueDeclaration
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.expressions.IrBranch
@@ -539,4 +540,20 @@ internal val IrFunction.parametersCompat: List<IrValueParameter>
                 add(it)
             }
         }
+    }
+
+/**
+ * Alias for filtering [IrFunction.parameters] to only regular parameters for compatibility with
+ * 2.1.0 – 2.1.1x. Throws if the function has context parameters on 2.1.1x or lower.
+ *
+ * Remove when support for 2.1.1x is dropped.
+ */
+internal val IrFunction.regularParametersCompat: List<IrValueParameter>
+    get() = try {
+        parameters.filter { it.kind == IrParameterKind.Regular }
+    } catch (noSuchMethodError: NoSuchMethodError) {
+        require(contextReceiverParametersCount == 0) {
+            "regularParametersCompat is not supported on functions with context parameters"
+        }
+        valueParameters
     }
