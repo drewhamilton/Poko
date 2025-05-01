@@ -306,9 +306,7 @@ private fun IrBlockBodyBuilder.getHashCodeFunctionForClass(
     irClass: IrClass
 ): IrSimpleFunctionSymbol {
     val explicitHashCodeDeclaration = irClass.functions.singleOrNull {
-        it.name.asString() == "hashCode" &&
-            it.valueParameters.isEmpty() &&
-            it.extensionReceiverParameter == null
+        it.isHashCodeFunctionCompat()
     }
     return explicitHashCodeDeclaration?.symbol
         ?: context.irBuiltIns.anyClass.functions.single { it.owner.name.asString() == "hashCode" }

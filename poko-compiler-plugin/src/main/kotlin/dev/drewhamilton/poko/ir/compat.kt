@@ -557,3 +557,19 @@ internal val IrFunction.regularParametersCompat: List<IrValueParameter>
         }
         valueParameters
     }
+
+/**
+ * Convenience for determining whether a function is the canonical `hashCode` function, for
+ * compatibility with 2.1.0 – 2.1.1x.
+ *
+ * Remove when support for 2.1.1x is dropped.
+ */
+internal fun IrFunction.isHashCodeFunctionCompat(): Boolean {
+    if (name.asString() != "hashCode") return false
+
+    return try {
+        parameters == parameters.filter { it.kind == IrParameterKind.DispatchReceiver }
+    } catch (noSuchMethodError: NoSuchMethodError) {
+        valueParameters.isEmpty() && extensionReceiverParameter == null
+    }
+}
