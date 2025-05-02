@@ -7,16 +7,12 @@ import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
-import org.jetbrains.kotlin.ir.builders.irCallOp
 import org.jetbrains.kotlin.ir.builders.irElseBranch
-import org.jetbrains.kotlin.ir.builders.irGet
-import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irIfNull
 import org.jetbrains.kotlin.ir.builders.irImplicitCast
 import org.jetbrains.kotlin.ir.builders.irInt
 import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irReturn
-import org.jetbrains.kotlin.ir.builders.irSet
 import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
@@ -95,13 +91,13 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
     +irResultVar
 
     for (property in classProperties.drop(1)) {
-        val shiftedResult = irCallOp(
+        val shiftedResult = irCallOpCompat(
             callee = context.irBuiltIns.intTimesSymbol,
             type = irIntType,
-            dispatchReceiver = irGet(irResultVar),
-            argument = irInt(31),
+            dispatchReceiver = irGetCompat(irResultVar),
+            argument = irIntCompat(31),
         )
-        val rhs = irCallOp(
+        val rhs = irCallOpCompat(
             callee = context.irBuiltIns.intPlusSymbol,
             type = irIntType,
             dispatchReceiver = shiftedResult,
@@ -113,10 +109,10 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
                 messageCollector = messageCollector,
             ),
         )
-        +irSet(irResultVar.symbol, rhs)
+        +irSetCompat(irResultVar.symbol, rhs)
     }
 
-    +irReturn(irGet(irResultVar))
+    +irReturn(irGetCompat(irResultVar))
 }
 
 /**
@@ -130,12 +126,12 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
     messageCollector: MessageCollector,
 ): IrExpression {
     val field = property.backingField!!
-    val irGetField = { irGetField(receiver(function), field) }
+    val irGetField = { irGetFieldCompat(receiver(function), field) }
     return when {
-        property.type.isNullableCompat() -> irIfNull(
+        property.type.isNullableCompat() -> irIfNullCompat(
             type = context.irBuiltIns.intType,
             subject = irGetField(),
-            thenPart = irInt(0),
+            thenPart = irIntCompat(0),
             elsePart = getHashCodeOf(pokoAnnotation, context, property, irGetField(), messageCollector)
         )
         else -> getHashCodeOf(pokoAnnotation, context, property, irGetField(), messageCollector)

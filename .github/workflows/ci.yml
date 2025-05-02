@@ -105,7 +105,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        poko_sample_kotlin_version: [ 2.1.0, 2.1.10, ~, 2.1.21-RC2, 2.2.0-Beta1 ]
+        poko_sample_kotlin_version: [ 2.1.0, 2.1.10, ~, 2.1.21-RC2, 2.2.0-Beta2 ]
         poko_sample_kotlin_language_version: [ 1.9, ~ ]
     env:
       poko_sample_kotlin_version: ${{ matrix.poko_sample_kotlin_version }}

@@ -43,6 +43,16 @@ internal class PokoFirCheckersExtension(
     private object PokoFirRegularClassChecker : FirRegularClassChecker(
         mppKind = MppCheckerKind.Common,
     ) {
+        /**
+         * Overload for forward compatibility with 2.2.x.
+         */
+        @Suppress("unused")
+        fun check(
+            context: CheckerContext,
+            reporter: DiagnosticReporter,
+            declaration: FirDeclaration,
+        ) = check(declaration as FirRegularClass, context, reporter)
+
         override fun check(
             declaration: FirRegularClass,
             context: CheckerContext,
