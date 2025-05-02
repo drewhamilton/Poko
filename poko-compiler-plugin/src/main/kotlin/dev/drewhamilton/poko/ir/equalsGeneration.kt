@@ -8,18 +8,13 @@ import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irElseBranch
-import org.jetbrains.kotlin.ir.builders.irEqeqeq
 import org.jetbrains.kotlin.ir.builders.irEquals
 import org.jetbrains.kotlin.ir.builders.irFalse
-import org.jetbrains.kotlin.ir.builders.irGet
-import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irIfThenElse
 import org.jetbrains.kotlin.ir.builders.irIfThenReturnFalse
 import org.jetbrains.kotlin.ir.builders.irIfThenReturnTrue
 import org.jetbrains.kotlin.ir.builders.irImplicitCast
 import org.jetbrains.kotlin.ir.builders.irIs
-import org.jetbrains.kotlin.ir.builders.irNotEquals
-import org.jetbrains.kotlin.ir.builders.irNotIs
 import org.jetbrains.kotlin.ir.builders.irReturnTrue
 import org.jetbrains.kotlin.ir.builders.irTemporary
 import org.jetbrains.kotlin.ir.builders.irWhen
@@ -57,14 +52,14 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
     val irType = irClass.defaultType
     fun irOther(): IrExpression = IrGetValueImpl(functionDeclaration.valueParameters.single())
 
-    +irIfThenReturnTrue(irEqeqeq(receiver(functionDeclaration), irOther()))
-    +irIfThenReturnFalse(irNotIs(irOther(), irType))
+    +irIfThenReturnTrue(irEqeqeqCompat(receiver(functionDeclaration), irOther()))
+    +irIfThenReturnFalse(irNotIsCompat(irOther(), irType))
 
-    val otherWithCast = irTemporary(irImplicitCast(irOther(), irType), "other_with_cast")
+    val otherWithCast = irTemporary(irImplicitCastCompat(irOther(), irType), "other_with_cast")
     for (property in classProperties) {
         val field = property.backingField!!
-        val arg1 = irGetField(receiver(functionDeclaration), field)
-        val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
+        val arg1 = irGetFieldCompat(receiver(functionDeclaration), field)
+        val arg2 = irGetFieldCompat(irGetCompat(irType, otherWithCast.symbol), field)
         val irNotEquals = when {
             property.hasReadArrayContentAnnotation(pokoAnnotation) -> {
                 irNot(
@@ -79,7 +74,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
             }
 
             else -> {
-                irNotEquals(arg1, arg2)
+                irNotEqualsCompat(arg1, arg2)
             }
         }
         +irIfThenReturnFalse(irNotEquals)

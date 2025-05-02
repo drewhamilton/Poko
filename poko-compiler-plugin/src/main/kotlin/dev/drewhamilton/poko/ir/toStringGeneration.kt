@@ -5,13 +5,10 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.irBranch
-import org.jetbrains.kotlin.ir.builders.irConcat
 import org.jetbrains.kotlin.ir.builders.irElseBranch
-import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irImplicitCast
 import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irReturn
-import org.jetbrains.kotlin.ir.builders.irString
 import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
@@ -44,23 +41,23 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
     classProperties: List<IrProperty>,
     messageCollector: MessageCollector,
 ) {
-    val irConcat = irConcat()
-    irConcat.addArgument(irString(irClass.name.asString() + "("))
+    val irConcat = irConcatCompat()
+    irConcat.addArgument(irStringCompat(irClass.name.asString() + "("))
 
     var first = true
     for (property in classProperties) {
-        if (!first) irConcat.addArgument(irString(", "))
+        if (!first) irConcat.addArgument(irStringCompat(", "))
 
-        irConcat.addArgument(irString(property.name.asString() + "="))
+        irConcat.addArgument(irStringCompat(property.name.asString() + "="))
 
-        val propertyValue = irGetField(receiver(functionDeclaration), property.backingField!!)
+        val propertyValue = irGetFieldCompat(receiver(functionDeclaration), property.backingField!!)
 
         val classifier = property.type.classifierOrNull
         val hasArrayContentBasedAnnotation = property.hasReadArrayContentAnnotation(pokoAnnotation)
         val propertyStringValue = when {
             hasArrayContentBasedAnnotation && classifier.mayBeRuntimeArray(context) -> {
                 val field = property.backingField!!
-                val instance = irGetField(receiver(functionDeclaration), field)
+                val instance = irGetFieldCompat(receiver(functionDeclaration), field)
                 irRuntimeArrayContentDeepToString(context, instance)
             }
 
@@ -89,7 +86,7 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
         irConcat.addArgument(propertyStringValue)
         first = false
     }
-    irConcat.addArgument(irString(")"))
+    irConcat.addArgument(irStringCompat(")"))
     +irReturn(irConcat)
 }
 
