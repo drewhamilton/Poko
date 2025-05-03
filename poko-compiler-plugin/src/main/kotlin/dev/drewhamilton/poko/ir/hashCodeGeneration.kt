@@ -5,15 +5,9 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
-import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
-import org.jetbrains.kotlin.ir.builders.irElseBranch
-import org.jetbrains.kotlin.ir.builders.irIfNull
-import org.jetbrains.kotlin.ir.builders.irImplicitCast
 import org.jetbrains.kotlin.ir.builders.irInt
-import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irReturn
-import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
@@ -190,7 +184,7 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
     context: IrPluginContext,
     value: IrExpression,
 ): IrExpression {
-    return irWhen(
+    return irWhenCompat(
         type = context.irBuiltIns.intType,
         branches = listOf(
             irArrayTypeCheckAndContentDeepHashCodeBranch(
@@ -209,11 +203,11 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
                 )
             }.toTypedArray(),
 
-            irElseBranch(
-                irIfNull(
+            irElseBranchCompat(
+                irIfNullCompat(
                     type = context.irBuiltIns.intType,
                     subject = value,
-                    thenPart = irInt(0),
+                    thenPart = irIntCompat(0),
                     elsePart = irCallHashCodeFunction(
                         hashCodeFunctionSymbol = getStandardHashCodeFunctionSymbol(
                             classifier = value.type.classifierOrNull,
@@ -236,13 +230,13 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
     classSymbol: IrClassSymbol,
 ): IrBranch {
     val type = classSymbol.createArrayType(context)
-    return irBranch(
-        condition = irIs(value, type),
+    return irBranchCompat(
+        condition = irIsCompat(value, type),
         result = irCallCompat(
             callee = findArrayContentDeepHashCodeFunction(context, classSymbol),
             type = context.irBuiltIns.intType,
         ).apply {
-            extensionReceiver = irImplicitCast(value, type)
+            extensionReceiver = irImplicitCastCompat(value, type)
         }
     )
 }

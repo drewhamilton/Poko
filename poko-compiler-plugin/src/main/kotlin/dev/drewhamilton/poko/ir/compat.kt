@@ -5,21 +5,29 @@ import kotlin.reflect.KClass
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.builders.IrBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
+import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.irCallOp
 import org.jetbrains.kotlin.ir.builders.irConcat
+import org.jetbrains.kotlin.ir.builders.irElseBranch
 import org.jetbrains.kotlin.ir.builders.irEqeqeq
+import org.jetbrains.kotlin.ir.builders.irEquals
+import org.jetbrains.kotlin.ir.builders.irFalse
 import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irGetField
 import org.jetbrains.kotlin.ir.builders.irIfNull
+import org.jetbrains.kotlin.ir.builders.irIfThenElse
 import org.jetbrains.kotlin.ir.builders.irImplicitCast
 import org.jetbrains.kotlin.ir.builders.irInt
+import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irNotEquals
 import org.jetbrains.kotlin.ir.builders.irNotIs
 import org.jetbrains.kotlin.ir.builders.irSet
 import org.jetbrains.kotlin.ir.builders.irString
+import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrField
 import org.jetbrains.kotlin.ir.declarations.IrValueDeclaration
+import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
@@ -36,6 +44,23 @@ import org.jetbrains.kotlin.ir.types.isNullable as isNullableDeprecated
 import org.jetbrains.kotlin.ir.types.superTypes as superTypesDeprecated
 
 //region https://github.com/JetBrains/kotlin/blob/v2.2.0-Beta2/compiler/ir/ir.tree/src/org/jetbrains/kotlin/ir/builders/ExpressionHelpers.kt
+/**
+ * Alias for [IrBuilderWithScope.irEquals] with forward compatibility for 2.2.x.
+ *
+ * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ */
+internal fun IrBuilderWithScope.irEqualsCompat(
+    arg1: IrExpression,
+    arg2: IrExpression,
+    origin: IrStatementOrigin = IrStatementOrigin.EQEQ,
+) = irExpressionHelperCompat(
+    call = { irEquals(arg1, arg2, origin) },
+    name = "irEquals",
+    IrExpression::class to arg1,
+    IrExpression::class to arg2,
+    IrStatementOrigin::class to origin,
+)
+
 /**
  * Alias for [IrBuilderWithScope.irEqeqeq] with forward compatibility for 2.2.x.
  *
@@ -67,6 +92,21 @@ internal fun IrBuilderWithScope.irNotEqualsCompat(
 )
 
 /**
+ * Alias for [IrBuilderWithScope.irIs] with forward compatibility for 2.2.x.
+ *
+ * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ */
+internal fun IrBuilderWithScope.irIsCompat(
+    argument: IrExpression,
+    type: IrType,
+) = irExpressionHelperCompat(
+    call = { irIs(argument, type) },
+    name = "irIs",
+    IrExpression::class to argument,
+    IrType::class to type,
+)
+
+/**
  * Alias for [IrBuilderWithScope.irNotIs] with forward compatibility for 2.2.x.
  *
  * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
@@ -79,6 +119,16 @@ internal fun IrBuilderWithScope.irNotIsCompat(
     name = "irNotIs",
     IrExpression::class to argument,
     IrType::class to type,
+)
+
+/**
+ * Alias for [IrBuilderWithScope.irFalse] with forward compatibility for 2.2.x.
+ *
+ * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ */
+internal fun IrBuilderWithScope.irFalseCompat() = irExpressionHelperCompat(
+    call = { irFalse() },
+    name = "irFalse",
 )
 
 /**
@@ -113,6 +163,70 @@ internal fun IrBuilderWithScope.irIfNullCompat(
     IrExpression::class to subject,
     IrExpression::class to thenPart,
     IrExpression::class to elsePart,
+)
+
+/**
+ * Alias for [IrBuilderWithScope.irIfThenElse] with forward compatibility for 2.2.x.
+ *
+ * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ */
+internal fun IrBuilderWithScope.irIfThenElseCompat(
+    type: IrType,
+    condition: IrExpression,
+    thenPart: IrExpression,
+    elsePart: IrExpression,
+    origin: IrStatementOrigin? = null,
+) = irExpressionHelperCompat(
+    call = { irIfThenElse(type, condition, thenPart, elsePart, origin) },
+    name = "irIfThenElse",
+    IrType::class to type,
+    IrExpression::class to condition,
+    IrExpression::class to thenPart,
+    IrExpression::class to elsePart,
+    IrStatementOrigin::class to origin,
+)
+
+/**
+ * Alias for [IrBuilderWithScope.irBranch] with forward compatibility for 2.2.x.
+ *
+ * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ */
+internal fun IrBuilderWithScope.irBranchCompat(
+    condition: IrExpression,
+    result: IrExpression,
+) = irExpressionHelperCompat(
+    call = { irBranch(condition, result) },
+    name = "irBranch",
+    IrExpression::class to condition,
+    IrExpression::class to result,
+)
+
+/**
+ * Alias for [IrBuilderWithScope.irElseBranch] with forward compatibility for 2.2.x.
+ *
+ * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ */
+internal fun IrBuilderWithScope.irElseBranchCompat(
+    expression: IrExpression,
+) = irExpressionHelperCompat(
+    call = { irElseBranch(expression) },
+    name = "irElseBranch",
+    IrExpression::class to expression,
+)
+
+/**
+ * Alias for [IrBuilderWithScope.irWhen] with forward compatibility for 2.2.x.
+ *
+ * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ */
+internal fun IrBuilderWithScope.irWhenCompat(
+    type: IrType,
+    branches: List<IrBranch>,
+) = irExpressionHelperCompat(
+    call = { irWhen(type, branches) },
+    name = "irWhen",
+    IrType::class to type,
+    List::class to branches,
 )
 
 /**
