@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.ir
 
+import org.jetbrains.kotlin.DeprecatedForRemovalCompilerApi
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -186,13 +187,14 @@ private fun findContentDeepToStringFunctionSymbol(
     ).single { functionSymbol ->
         // Find the single function with the relevant array type and disambiguate against the
         // older non-nullable receiver overload:
+        @OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
         functionSymbol.owner.extensionReceiverParameter?.type?.let {
             it.classifierOrNull == propertyClassifier && it.isNullableCompat()
         } ?: false
     }
 }
 
-@OptIn(UnsafeDuringIrConstructionAPI::class)
+@OptIn(UnsafeDuringIrConstructionAPI::class, DeprecatedForRemovalCompilerApi::class) // FIXME
 private fun IrBlockBodyBuilder.irCallToStringFunction(
     toStringFunctionSymbol: IrSimpleFunctionSymbol,
     value: IrExpression,
