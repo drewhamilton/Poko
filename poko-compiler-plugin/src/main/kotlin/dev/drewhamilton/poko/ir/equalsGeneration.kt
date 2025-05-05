@@ -6,18 +6,11 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
-import org.jetbrains.kotlin.ir.builders.irBranch
-import org.jetbrains.kotlin.ir.builders.irElseBranch
 import org.jetbrains.kotlin.ir.builders.irEquals
-import org.jetbrains.kotlin.ir.builders.irFalse
-import org.jetbrains.kotlin.ir.builders.irIfThenElse
 import org.jetbrains.kotlin.ir.builders.irIfThenReturnFalse
 import org.jetbrains.kotlin.ir.builders.irIfThenReturnTrue
-import org.jetbrains.kotlin.ir.builders.irImplicitCast
-import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irReturnTrue
 import org.jetbrains.kotlin.ir.builders.irTemporary
-import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
@@ -127,7 +120,7 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
     receiver: IrExpression,
     argument: IrExpression,
 ): IrExpression {
-    return irWhen(
+    return irWhenCompat(
         type = context.irBuiltIns.booleanType,
         branches = listOf(
             irArrayTypeCheckAndContentDeepEqualsBranch(
@@ -148,8 +141,8 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
                 )
             }.toTypedArray(),
 
-            irElseBranch(
-                irEquals(receiver, argument),
+            irElseBranchCompat(
+                irEqualsCompat(receiver, argument),
             ),
         ),
     )
@@ -166,18 +159,18 @@ private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
     classSymbol: IrClassSymbol,
 ): IrBranch {
     val type = classSymbol.createArrayType(context)
-    return irBranch(
-        condition = irIs(receiver, type),
-        result = irIfThenElse(
+    return irBranchCompat(
+        condition = irIsCompat(receiver, type),
+        result = irIfThenElseCompat(
             type = context.irBuiltIns.booleanType,
-            condition = irIs(argument, type),
+            condition = irIsCompat(argument, type),
             thenPart = irCallContentDeepEquals(
                 context = context,
                 classifier = classSymbol,
-                receiver = irImplicitCast(receiver, type),
-                argument = irImplicitCast(argument, type),
+                receiver = irImplicitCastCompat(receiver, type),
+                argument = irImplicitCastCompat(argument, type),
             ),
-            elsePart = irFalse(),
+            elsePart = irFalseCompat(),
         ),
     )
 }

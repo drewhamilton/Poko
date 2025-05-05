@@ -4,12 +4,7 @@ import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
-import org.jetbrains.kotlin.ir.builders.irBranch
-import org.jetbrains.kotlin.ir.builders.irElseBranch
-import org.jetbrains.kotlin.ir.builders.irImplicitCast
-import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irReturn
-import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
@@ -121,7 +116,7 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
     context: IrPluginContext,
     value: IrExpression,
 ): IrExpression {
-    return irWhen(
+    return irWhenCompat(
         type = context.irBuiltIns.stringType,
         branches = listOf(
             irArrayTypeCheckAndContentDeepToStringBranch(
@@ -140,7 +135,7 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
                 )
             }.toTypedArray(),
 
-            irElseBranch(
+            irElseBranchCompat(
                 irCallToStringFunction(
                     toStringFunctionSymbol = context.irBuiltIns.extensionToString,
                     value = value,
@@ -160,11 +155,11 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
     classSymbol: IrClassSymbol,
 ): IrBranch {
     val type = classSymbol.createArrayType(context)
-    return irBranch(
-        condition = irIs(value, type),
+    return irBranchCompat(
+        condition = irIsCompat(value, type),
         result = irCallToStringFunction(
             toStringFunctionSymbol = findContentDeepToStringFunctionSymbol(context, classSymbol),
-            value = irImplicitCast(value, type),
+            value = irImplicitCastCompat(value, type),
         ),
     )
 }
