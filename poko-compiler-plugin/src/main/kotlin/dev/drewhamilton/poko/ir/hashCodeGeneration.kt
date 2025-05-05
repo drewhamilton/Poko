@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.ir
 
+import org.jetbrains.kotlin.DeprecatedForRemovalCompilerApi
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.builtins.StandardNames
@@ -236,6 +237,7 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
             callee = findArrayContentDeepHashCodeFunction(context, classSymbol),
             type = context.irBuiltIns.intType,
         ).apply {
+            @OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
             extensionReceiver = irImplicitCastCompat(value, type)
         }
     )
@@ -281,6 +283,7 @@ private fun findArrayContentDeepHashCodeFunction(
         ),
     ).single { functionSymbol ->
         // Disambiguate against the older non-nullable receiver overload:
+        @OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
         functionSymbol.owner.extensionReceiverParameter?.type?.let {
             it.classifierOrNull == propertyClassifier && it.isNullableCompat()
         } ?: false
@@ -312,7 +315,7 @@ private fun IrBlockBodyBuilder.getHashCodeFunctionForClass(
         ?: context.irBuiltIns.anyClass.functions.single { it.owner.name.asString() == "hashCode" }
 }
 
-@OptIn(UnsafeDuringIrConstructionAPI::class)
+@OptIn(UnsafeDuringIrConstructionAPI::class, DeprecatedForRemovalCompilerApi::class) // FIXME
 private fun IrBlockBodyBuilder.irCallHashCodeFunction(
     hashCodeFunctionSymbol: IrSimpleFunctionSymbol,
     value: IrExpression,
