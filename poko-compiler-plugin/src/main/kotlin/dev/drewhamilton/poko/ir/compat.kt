@@ -51,9 +51,9 @@ import org.jetbrains.kotlin.ir.types.superTypes as superTypesDeprecated
 
 //region https://github.com/JetBrains/kotlin/blob/v2.2.0-Beta2/compiler/ir/ir.tree/src/org/jetbrains/kotlin/ir/builders/ExpressionHelpers.kt
 /**
- * Alias for [IrBuilderWithScope.irEquals] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irEquals] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irEqualsCompat(
     arg1: IrExpression,
@@ -68,9 +68,9 @@ internal fun IrBuilderWithScope.irEqualsCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irEqeqeq] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irEqeqeq] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irEqeqeqCompat(
     arg1: IrExpression,
@@ -83,9 +83,9 @@ internal fun IrBuilderWithScope.irEqeqeqCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irNotEquals] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irNotEquals] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irNotEqualsCompat(
     arg1: IrExpression,
@@ -98,9 +98,9 @@ internal fun IrBuilderWithScope.irNotEqualsCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irIs] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irIs] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irIsCompat(
     argument: IrExpression,
@@ -113,9 +113,9 @@ internal fun IrBuilderWithScope.irIsCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irNotIs] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irNotIs] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irNotIsCompat(
     argument: IrExpression,
@@ -128,9 +128,9 @@ internal fun IrBuilderWithScope.irNotIsCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irFalse] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irFalse] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irFalseCompat() = irExpressionHelperCompat(
     call = { irFalse() },
@@ -138,9 +138,9 @@ internal fun IrBuilderWithScope.irFalseCompat() = irExpressionHelperCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irImplicitCast] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irImplicitCast] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irImplicitCastCompat(
     argument: IrExpression,
@@ -153,9 +153,9 @@ internal fun IrBuilderWithScope.irImplicitCastCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irIfNull] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irIfNull] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irIfNullCompat(
     type: IrType,
@@ -172,9 +172,9 @@ internal fun IrBuilderWithScope.irIfNullCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irIfThenElse] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irIfThenElse] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irIfThenElseCompat(
     type: IrType,
@@ -193,9 +193,9 @@ internal fun IrBuilderWithScope.irIfThenElseCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irBranch] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irBranch] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irBranchCompat(
     condition: IrExpression,
@@ -208,9 +208,9 @@ internal fun IrBuilderWithScope.irBranchCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irElseBranch] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irElseBranch] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irElseBranchCompat(
     expression: IrExpression,
@@ -221,9 +221,9 @@ internal fun IrBuilderWithScope.irElseBranchCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irWhen] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irWhen] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irWhenCompat(
     type: IrType,
@@ -236,9 +236,9 @@ internal fun IrBuilderWithScope.irWhenCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irGetField] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irGetField] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irGetFieldCompat(
     receiver: IrExpression?,
@@ -253,9 +253,9 @@ internal fun IrBuilderWithScope.irGetFieldCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irGet] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irGet] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irGetCompat(
     type: IrType,
@@ -268,9 +268,9 @@ internal fun IrBuilderWithScope.irGetCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irSet] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irSet] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irSetCompat(
     variable: IrValueSymbol,
@@ -285,9 +285,9 @@ internal fun IrBuilderWithScope.irSetCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irGet] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irGet] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irGetCompat(
     variable: IrValueDeclaration,
@@ -298,9 +298,9 @@ internal fun IrBuilderWithScope.irGetCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irInt] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irInt] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irIntCompat(
     value: Int,
@@ -313,9 +313,9 @@ internal fun IrBuilderWithScope.irIntCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irCallOp] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irCallOp] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irCallOpCompat(
     callee: IrSimpleFunctionSymbol,
@@ -334,9 +334,9 @@ internal fun IrBuilderWithScope.irCallOpCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irConcat] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irConcat] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irConcatCompat() = irExpressionHelperCompat(
     call = { irConcat() },
@@ -344,9 +344,9 @@ internal fun IrBuilderWithScope.irConcatCompat() = irExpressionHelperCompat(
 )
 
 /**
- * Alias for [IrBuilderWithScope.irString] with forward compatibility for 2.2.x.
+ * Alias for [IrBuilder.irString] with backward compatibility for 2.1.x.
  *
- * Reverse logic when compiling with 2.2.x. Remove when support for 2.1.x is dropped.
+ * Remove when support for 2.1.x is dropped.
  */
 internal fun IrBuilderWithScope.irStringCompat(
     value: String,
@@ -369,11 +369,11 @@ private fun <T> IrBuilderWithScope.irExpressionHelperCompat(
 ): T = try {
     call()
 } catch (noSuchMethodError: NoSuchMethodError) {
-    // In 2.2.x, the extension receiver becomes `IrBuilder` instead of `IrBuilderWithScope`.
+    // In 2.1.x, the extension receiver was `IrBuilderWithScope` instead of `IrBuilder`.
     @Suppress("UNCHECKED_CAST")
     javaClass.classLoader.loadClass("org.jetbrains.kotlin.ir.builders.ExpressionHelpersKt")
         .methods
-        .findIrBuilderExtension(
+        .findIrBuilderWithScopeExtension(
             name = name,
             argTypes = args.map { it.first.java },
         )
@@ -387,16 +387,16 @@ private fun <T> IrBuilderWithScope.irExpressionHelperCompat(
 }
 
 /**
- * Returns a [Method] defined in ExpressionHelpers.kt as an extension on [IrBuilder] if such a
- * method exists, else returns null.
+ * Returns a [Method] defined in ExpressionHelpers.kt as an extension on [IrBuilderWithScope] if
+ * such a method exists, else returns null.
  */
-private fun Array<Method>.findIrBuilderExtension(
+private fun Array<Method>.findIrBuilderWithScopeExtension(
     name: String,
     argTypes: List<Class<*>>,
 ): Method? {
     val filtered = filter {
         it.name == name &&
-            it.parameters.map { it.type } == listOf(IrBuilder::class.java) + argTypes
+            it.parameters.map { it.type } == listOf(IrBuilderWithScope::class.java) + argTypes
     }
     return when (filtered.size) {
         0 -> null
@@ -421,7 +421,7 @@ internal fun IrBuilderWithScope.irCallCompat(
     origin: IrStatementOrigin? = null,
 ): IrCall {
     return try {
-        // 2.1.20:
+        // 2.2.x:
         irCall(
             callee = callee,
             type = type,
@@ -434,7 +434,7 @@ internal fun IrBuilderWithScope.irCallCompat(
             javaClass.classLoader.loadClass("org.jetbrains.kotlin.ir.builders.ExpressionHelpersKt")
                 .methods
 
-        val kotlinTwoTwoFunction = expressionHelpers.findIrBuilderExtension(
+        val kotlin212xFunction = expressionHelpers.findIrBuilderWithScopeExtension(
             name = functionName,
             argTypes = listOf(
                 IrSimpleFunctionSymbol::class.java,
@@ -443,7 +443,7 @@ internal fun IrBuilderWithScope.irCallCompat(
                 IrStatementOrigin::class.java,
             ),
         )
-        return if (kotlinTwoTwoFunction == null) {
+        return if (kotlin212xFunction == null) {
             // 2.1.0 && 2.1.1x:
             // https://github.com/JetBrains/kotlin/blob/v2.1.0/compiler/ir/ir.tree/src/org/jetbrains/kotlin/ir/builders/ExpressionHelpers.kt#L240
             expressionHelpers
@@ -468,8 +468,8 @@ internal fun IrBuilderWithScope.irCallCompat(
                     origin, // param: origin
                 )
         } else {
-            // 2.2.x:
-            kotlinTwoTwoFunction.invoke(
+            // 2.1.2x:
+            kotlin212xFunction.invoke(
                 null, // static invocation
                 this, // extension receiver
                 callee, // callee
