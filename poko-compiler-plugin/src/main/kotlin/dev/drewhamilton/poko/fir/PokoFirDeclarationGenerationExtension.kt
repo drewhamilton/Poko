@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.declarations.DirectDeclarationsAccess
 import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
 import org.jetbrains.kotlin.fir.declarations.utils.isFinal
 import org.jetbrains.kotlin.fir.declarations.utils.visibility
@@ -121,6 +122,7 @@ internal class PokoFirDeclarationGenerationExtension(
     private fun FirClassSymbol<*>.declaredFunction(
         function: PokoFunction,
     ): FirNamedFunctionSymbol? {
+        @OptIn(DirectDeclarationsAccess::class) // FIXME
         return declarationSymbols
             .filterIsInstance<FirNamedFunctionSymbol>()
             .filter { functionSymbol ->

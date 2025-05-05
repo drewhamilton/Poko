@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.ir
 
+import org.jetbrains.kotlin.DeprecatedForRemovalCompilerApi
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
@@ -199,6 +200,7 @@ internal class PokoMembersTransformer(
     private fun IrFunction.mutateWithNewDispatchReceiverParameterForParentClass() {
         val parentClass = parent as IrClass
         val originalReceiver = requireNotNull(dispatchReceiverParameter)
+        @OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
         dispatchReceiverParameter = IrFactoryImpl.createValueParameter(
             startOffset = originalReceiver.startOffset,
             endOffset = originalReceiver.endOffset,

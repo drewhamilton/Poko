@@ -2,6 +2,7 @@ package dev.drewhamilton.poko.ir
 
 import java.lang.reflect.Method
 import kotlin.reflect.KClass
+import org.jetbrains.kotlin.DeprecatedForRemovalCompilerApi
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.builders.IrBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
@@ -560,12 +561,15 @@ internal val IrFunction.parametersCompat: List<IrValueParameter>
     get() = try {
         parameters
     } catch (noSuchMethodError: NoSuchMethodError) {
+        @OptIn(DeprecatedForRemovalCompilerApi::class)
         require(contextReceiverParametersCount == 0) {
             "parametersCompat is not supported on functions with context parameters"
         }
         buildList {
             dispatchReceiverParameter?.let { add(it) }
+            @OptIn(DeprecatedForRemovalCompilerApi::class)
             extensionReceiverParameter?.let { add(it) }
+            @OptIn(DeprecatedForRemovalCompilerApi::class)
             valueParameters.forEach {
                 add(it)
             }
@@ -582,9 +586,11 @@ internal val IrFunction.regularParametersCompat: List<IrValueParameter>
     get() = try {
         parameters.filter { it.kind == IrParameterKind.Regular }
     } catch (noSuchMethodError: NoSuchMethodError) {
+        @OptIn(DeprecatedForRemovalCompilerApi::class)
         require(contextReceiverParametersCount == 0) {
             "regularParametersCompat is not supported on functions with context parameters"
         }
+        @OptIn(DeprecatedForRemovalCompilerApi::class)
         valueParameters
     }
 
@@ -600,6 +606,7 @@ internal fun IrFunction.isHashCodeFunctionCompat(): Boolean {
     return try {
         parameters == parameters.filter { it.kind == IrParameterKind.DispatchReceiver }
     } catch (noSuchMethodError: NoSuchMethodError) {
+        @OptIn(DeprecatedForRemovalCompilerApi::class)
         valueParameters.isEmpty() && extensionReceiverParameter == null
     }
 }

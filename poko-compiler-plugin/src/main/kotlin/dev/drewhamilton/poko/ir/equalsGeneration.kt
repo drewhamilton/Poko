@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.ir
 
+import org.jetbrains.kotlin.DeprecatedForRemovalCompilerApi
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.irNot
 import org.jetbrains.kotlin.builtins.PrimitiveType
@@ -177,6 +178,7 @@ private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
     )
 }
 
+@OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
 private fun IrBuilderWithScope.irCallContentDeepEquals(
     context: IrPluginContext,
     classifier: IrClassifierSymbol,
@@ -215,6 +217,7 @@ private fun findContentDeepEqualsFunctionSymbol(
     ).single { functionSymbol ->
         // Find the single function with the relevant array type and disambiguate against the
         // older non-nullable receiver overload:
+        @OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
         functionSymbol.owner.extensionReceiverParameter?.type?.let {
             it.classifierOrNull == classifier && it.isNullableCompat()
         } ?: false
