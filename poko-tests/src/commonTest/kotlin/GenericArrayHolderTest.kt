@@ -1,3 +1,4 @@
+
 import assertk.assertThat
 import assertk.assertions.hashCodeFun
 import assertk.assertions.isEqualTo
@@ -61,5 +62,20 @@ class GenericArrayHolderTest {
         val b = GenericArrayHolder("xy")
         assertThat(a).isNotEqualTo(b)
         assertThat(b).isNotEqualTo(a)
+    }
+
+    @Test fun hashCode_produces_expected_value() {
+        val value = GenericArrayHolder(
+            generic = intArrayOf(50, 100),
+        )
+        // Ensure consistency across platforms:
+        assertThat(value).hashCodeFun().isEqualTo(2611)
+    }
+
+    @Test fun toString_produces_expected_value() {
+        val value = GenericArrayHolder(
+            generic = intArrayOf(50, 100),
+        )
+        assertThat(value).toStringFun().isEqualTo("GenericArrayHolder(generic=[50, 100])")
     }
 }
