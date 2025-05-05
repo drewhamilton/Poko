@@ -19,6 +19,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.DeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirRegularClassChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.hasModifier
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
+import org.jetbrains.kotlin.fir.declarations.DirectDeclarationsAccess
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
@@ -43,22 +44,9 @@ internal class PokoFirCheckersExtension(
     private object PokoFirRegularClassChecker : FirRegularClassChecker(
         mppKind = MppCheckerKind.Common,
     ) {
-        /**
-         * Overload for forward compatibility with 2.2.x.
-         */
-        @Suppress("unused")
-        fun check(
-            context: CheckerContext,
-            reporter: DiagnosticReporter,
-            declaration: FirDeclaration,
-        ) = check(declaration as FirRegularClass, context, reporter)
-
-        override fun check(
-            declaration: FirRegularClass,
-            context: CheckerContext,
-            reporter: DiagnosticReporter,
-        ) {
-            val sessionComponent = context.session.pokoFirExtensionSessionComponent
+        context(CheckerContext, DiagnosticReporter)
+        override fun check(declaration: FirRegularClass) {
+            val sessionComponent = session.pokoFirExtensionSessionComponent
             if (!declaration.hasAnnotation(sessionComponent.pokoAnnotation)) return
 
             val errorFactory = when {
@@ -66,18 +54,18 @@ internal class PokoFirCheckersExtension(
                 declaration.isData -> Diagnostics.PokoOnDataClass
                 declaration.hasModifier(KtTokens.VALUE_KEYWORD) -> Diagnostics.PokoOnValueClass
                 declaration.isInner -> Diagnostics.PokoOnInnerClass
-                declaration.primaryConstructorIfAny(context.session) == null ->
+                declaration.primaryConstructorIfAny(session) == null ->
                     Diagnostics.PrimaryConstructorRequired
                 else -> null
             }
             if (errorFactory != null) {
-                reporter.reportOn(
+                reportOn(
                     source = declaration.source,
                     factory = errorFactory,
-                    context = context,
                 )
             }
 
+            @OptIn(DirectDeclarationsAccess::class) // FIXME
             val constructorProperties = declaration.declarations
                 .filterIsInstance<FirProperty>()
                 .filter {
@@ -88,20 +76,34 @@ internal class PokoFirCheckersExtension(
                     val hasSkipAnnotation = it.hasAnnotation(skipAnnotation)
                     if (hasSkipAnnotation && !skipAnnotation.isNestedInDefaultPokoAnnotation()) {
                         // Pseudo-opt-in warning for custom annotation consumers:
-                        reporter.reportOn(
+                        reportOn(
                             source = it.source,
                             factory = Diagnostics.SkippedPropertyWithCustomAnnotation,
-                            context = context,
                         )
                     }
                     !hasSkipAnnotation
                 }
             if (constructorProperties.isEmpty()) {
-                reporter.reportOn(
+                reportOn(
                     source = declaration.source,
                     factory = Diagnostics.PrimaryConstructorPropertiesRequired,
-                    context = context,
                 )
+            }
+        }
+
+        /**
+         * Overload for backward compatibility with 2.1.x.
+         */
+        @Suppress("unused")
+        fun check(
+            declaration: FirDeclaration,
+            context: CheckerContext,
+            reporter: DiagnosticReporter,
+        ) {
+            with(context) {
+                with (reporter) {
+                    check(declaration as FirRegularClass)
+                }
             }
         }
 
