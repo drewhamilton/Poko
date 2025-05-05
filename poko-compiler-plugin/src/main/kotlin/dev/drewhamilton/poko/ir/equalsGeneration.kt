@@ -43,7 +43,9 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
     messageCollector: MessageCollector,
 ) {
     val irType = irClass.defaultType
-    fun irOther(): IrExpression = IrGetValueImpl(functionDeclaration.valueParameters.single())
+    fun irOther(): IrExpression = IrGetValueImpl(
+        parameter = functionDeclaration.regularParametersCompat.single(),
+    )
 
     +irIfThenReturnTrue(irEqeqeqCompat(receiver(functionDeclaration), irOther()))
     +irIfThenReturnFalse(irNotIsCompat(irOther(), irType))
@@ -184,7 +186,6 @@ private fun IrBuilderWithScope.irCallContentDeepEquals(
     return irCallCompat(
         callee = findContentDeepEqualsFunctionSymbol(context, classifier),
         type = context.irBuiltIns.booleanType,
-        valueArgumentsCount = 1,
         typeArgumentsCount = 1,
     ).apply {
         extensionReceiver = receiver

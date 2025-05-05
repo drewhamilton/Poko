@@ -26,7 +26,10 @@ import org.jetbrains.kotlin.ir.builders.irSet
 import org.jetbrains.kotlin.ir.builders.irString
 import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrField
+import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrValueDeclaration
+import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
@@ -411,7 +414,6 @@ private fun Array<Method>.findIrBuilderExtension(
 internal fun IrBuilderWithScope.irCallCompat(
     callee: IrSimpleFunctionSymbol,
     type: IrType,
-    valueArgumentsCount: Int = callee.owner.valueParameters.size,
     typeArgumentsCount: Int = callee.owner.typeParameters.size,
     origin: IrStatementOrigin? = null,
 ): IrCall {
@@ -458,7 +460,7 @@ internal fun IrBuilderWithScope.irCallCompat(
                     this, // extension receiver
                     callee, // param: callee
                     type, // param: type
-                    valueArgumentsCount, // param: valueArgumentsCount
+                    -1, // param: valueArgumentsCount (unused)
                     typeArgumentsCount, // param: typeArgumentsCount
                     origin, // param: origin
                 )
@@ -515,5 +517,59 @@ internal fun IrElement.acceptChildrenVoidCompat(visitor: IrVisitorVoid) {
         acceptChildrenVoid(visitor)
     } catch (noSuchMethodError: NoSuchMethodError) {
         acceptChildren(visitor, null)
+    }
+}
+
+/**
+ * Alias for [IrFunction.parameters] for compatibility with 2.1.0 – 2.1.1x. Throws if the function
+ * has context parameters on 2.1.1x or lower.
+ *
+ * Remove when support for 2.1.1x is dropped.
+ */
+internal val IrFunction.parametersCompat: List<IrValueParameter>
+    get() = try {
+        parameters
+    } catch (noSuchMethodError: NoSuchMethodError) {
+        require(contextReceiverParametersCount == 0) {
+            "parametersCompat is not supported on functions with context parameters"
+        }
+        buildList {
+            dispatchReceiverParameter?.let { add(it) }
+            extensionReceiverParameter?.let { add(it) }
+            valueParameters.forEach {
+                add(it)
+            }
+        }
+    }
+
+/**
+ * Alias for filtering [IrFunction.parameters] to only regular parameters for compatibility with
+ * 2.1.0 – 2.1.1x. Throws if the function has context parameters on 2.1.1x or lower.
+ *
+ * Remove when support for 2.1.1x is dropped.
+ */
+internal val IrFunction.regularParametersCompat: List<IrValueParameter>
+    get() = try {
+        parameters.filter { it.kind == IrParameterKind.Regular }
+    } catch (noSuchMethodError: NoSuchMethodError) {
+        require(contextReceiverParametersCount == 0) {
+            "regularParametersCompat is not supported on functions with context parameters"
+        }
+        valueParameters
+    }
+
+/**
+ * Convenience for determining whether a function is the canonical `hashCode` function, for
+ * compatibility with 2.1.0 – 2.1.1x.
+ *
+ * Remove when support for 2.1.1x is dropped.
+ */
+internal fun IrFunction.isHashCodeFunctionCompat(): Boolean {
+    if (name.asString() != "hashCode") return false
+
+    return try {
+        parameters == parameters.filter { it.kind == IrParameterKind.DispatchReceiver }
+    } catch (noSuchMethodError: NoSuchMethodError) {
+        valueParameters.isEmpty() && extensionReceiverParameter == null
     }
 }
