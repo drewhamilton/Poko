@@ -110,11 +110,6 @@ private fun maybeFindArrayDeepToStringFunction(
         return null
     }
 
-    // Primitive arrays don't need deep toString:
-    if (propertyClassifier in context.irBuiltIns.primitiveArraysToPrimitiveTypes) {
-        return null
-    }
-
     return findContentDeepToStringFunctionSymbol(context, propertyClassifier)
 }
 
