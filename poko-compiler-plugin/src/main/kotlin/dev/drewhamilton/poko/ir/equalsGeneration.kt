@@ -232,8 +232,9 @@ private fun findContentDeepEqualsFunctionSymbol(
     ).single { functionSymbol ->
         // Find the single function with the relevant array type and disambiguate against the
         // older non-nullable receiver overload:
-        @OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
-        functionSymbol.owner.extensionReceiverParameter?.type?.let {
+        val extensionReceiverParameter = functionSymbol.owner.parameters
+            .singleOrNull { it.kind == IrParameterKind.ExtensionReceiver }
+        return@single extensionReceiverParameter?.type?.let {
             it.classifierOrNull == classifier && it.isNullable()
         } ?: false
     }
