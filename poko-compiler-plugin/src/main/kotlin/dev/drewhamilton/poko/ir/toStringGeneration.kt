@@ -1,6 +1,5 @@
 package dev.drewhamilton.poko.ir
 
-import org.jetbrains.kotlin.DeprecatedForRemovalCompilerApi
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -40,6 +39,7 @@ import org.jetbrains.kotlin.name.Name
  * Generate the body of the toString method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateToStringMethodBody].
  */
+@UnsafeDuringIrConstructionAPI
 internal fun IrBlockBodyBuilder.generateToStringMethodBody(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -101,6 +101,7 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
  * Returns `contentDeepToString` function symbol if it is an appropriate option for [property],
  * else returns null.
  */
+@UnsafeDuringIrConstructionAPI
 private fun maybeFindArrayDeepToStringFunction(
     context: IrPluginContext,
     property: IrProperty,
@@ -124,6 +125,7 @@ private fun maybeFindArrayDeepToStringFunction(
  * Generates a `when` branch that checks the runtime type of the [value] instance and invokes
  * `contentDeepToString` or `contentToString` for typed arrays and primitive arrays, respectively.
  */
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
     context: IrPluginContext,
     value: IrExpression,
@@ -161,6 +163,7 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
  * Generates a runtime `when` branch computing the content deep toString of [value]. The branch is
  * only executed if [value] is an instance of [classSymbol].
  */
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
     context: IrPluginContext,
     value: IrExpression,
@@ -180,7 +183,7 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
  * Finds `contentDeepToString` function if [propertyClassifier] is a typed array, or
  * `contentToString` function if it is a primitive array.
  */
-@OptIn(UnsafeDuringIrConstructionAPI::class)
+@UnsafeDuringIrConstructionAPI
 private fun findContentDeepToStringFunctionSymbol(
     context: IrPluginContext,
     propertyClassifier: IrClassifierSymbol,
@@ -206,7 +209,7 @@ private fun findContentDeepToStringFunctionSymbol(
     }
 }
 
-@OptIn(UnsafeDuringIrConstructionAPI::class, DeprecatedForRemovalCompilerApi::class) // FIXME
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irCallToStringFunction(
     toStringFunctionSymbol: IrSimpleFunctionSymbol,
     value: IrExpression,
@@ -215,13 +218,15 @@ private fun IrBlockBodyBuilder.irCallToStringFunction(
         callee = toStringFunctionSymbol,
         type = context.irBuiltIns.stringType,
     ).apply {
-        // Poko modification: check for extension receiver for contentDeepToString
-        val hasExtensionReceiver =
-            toStringFunctionSymbol.owner.extensionReceiverParameter != null
-        if (hasExtensionReceiver) {
-            extensionReceiver = value
-        } else {
-            putValueArgument(0, value)
+        toStringFunctionSymbol.owner.parameters.forEach {
+            arguments.set(
+                parameter = it,
+                value = when (it.kind) {
+                    IrParameterKind.ExtensionReceiver -> value
+                    IrParameterKind.Regular -> value
+                    else -> throw IllegalArgumentException("toString unknown param type")
+                }
+            )
         }
     }
 }
