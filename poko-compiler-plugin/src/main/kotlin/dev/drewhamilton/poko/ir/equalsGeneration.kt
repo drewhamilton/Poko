@@ -1,6 +1,5 @@
 package dev.drewhamilton.poko.ir
 
-import org.jetbrains.kotlin.DeprecatedForRemovalCompilerApi
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.irNot
 import org.jetbrains.kotlin.builtins.PrimitiveType
@@ -50,6 +49,7 @@ import org.jetbrains.kotlin.name.Name
  * Generate the body of the equals method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateEqualsMethodBody].
  */
+@UnsafeDuringIrConstructionAPI
 internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -97,6 +97,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
  * Generates IR code that checks the equality of [receiver] and [argument] by content. If [property]
  * type is not an array type, but may be an array at runtime, generates a runtime type check.
  */
+@UnsafeDuringIrConstructionAPI
 private fun IrBuilderWithScope.irArrayContentDeepEquals(
     context: IrPluginContext,
     receiver: IrExpression,
@@ -133,6 +134,7 @@ private fun IrBuilderWithScope.irArrayContentDeepEquals(
  * Generates IR code that checks the type of [receiver] at runtime, and performs an array content
  * equality check against [argument] if the type is an array type.
  */
+@UnsafeDuringIrConstructionAPI
 private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
     context: IrPluginContext,
     receiver: IrExpression,
@@ -170,6 +172,7 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
  * Generates a runtime `when` branch checking for content deep equality of [receiver] and
  * [argument]. The branch is only executed if [receiver] is an instance of [classSymbol].
  */
+@UnsafeDuringIrConstructionAPI
 private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
     context: IrPluginContext,
     receiver: IrExpression,
@@ -193,20 +196,29 @@ private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
     )
 }
 
-@OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
+@UnsafeDuringIrConstructionAPI
 private fun IrBuilderWithScope.irCallContentDeepEquals(
     context: IrPluginContext,
     classifier: IrClassifierSymbol,
     receiver: IrExpression,
     argument: IrExpression,
 ): IrExpression {
+    val contentDeepEqualsFunctionSymbol = findContentDeepEqualsFunctionSymbol(context, classifier)
     return irCall(
-        callee = findContentDeepEqualsFunctionSymbol(context, classifier),
+        callee = contentDeepEqualsFunctionSymbol,
         type = context.irBuiltIns.booleanType,
         typeArgumentsCount = 1,
     ).apply {
-        extensionReceiver = receiver
-        putValueArgument(0, argument)
+        contentDeepEqualsFunctionSymbol.owner.parameters.forEach {
+            arguments.set(
+                parameter = it,
+                value = when (it.kind) {
+                    IrParameterKind.ExtensionReceiver -> receiver
+                    IrParameterKind.Regular -> argument
+                    else -> throw IllegalArgumentException("contentDeepEquals unknown param type")
+                }
+            )
+        }
     }
 }
 
@@ -214,7 +226,7 @@ private fun IrBuilderWithScope.irCallContentDeepEquals(
  * Finds `contentDeepEquals` function if [classifier] represents a typed array, or `contentEquals`
  * function if it represents a primitive array.
  */
-@OptIn(UnsafeDuringIrConstructionAPI::class)
+@UnsafeDuringIrConstructionAPI
 private fun findContentDeepEqualsFunctionSymbol(
     context: IrPluginContext,
     classifier: IrClassifierSymbol,
