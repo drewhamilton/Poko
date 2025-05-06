@@ -127,7 +127,7 @@ internal class PokoMembersTransformer(
     private fun canOverride(function: IrFunction): Boolean {
         val superclassSameFunction = function.parentAsClass.findNearestSuperclassFunction(
             name = function.name,
-            parameters = function.parametersCompat
+            parameters = function.parameters
         )
 
         return superclassSameFunction?.isOverridable ?: true
@@ -153,7 +153,7 @@ internal class PokoMembersTransformer(
             .filterIsInstance<IrFunction>()
             .filter { function ->
                 function.name == name &&
-                    function.parametersCompat.map { it.type } == parameters.map { it.type }
+                    function.parameters.map { it.type } == parameters.map { it.type }
             }
             .apply { check(size < 2) { "Found multiple identical superclass functions" } }
             .singleOrNull()
