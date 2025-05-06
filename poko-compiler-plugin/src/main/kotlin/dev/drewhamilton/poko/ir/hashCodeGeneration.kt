@@ -6,12 +6,23 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
+import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
+import org.jetbrains.kotlin.ir.builders.irCallOp
+import org.jetbrains.kotlin.ir.builders.irElseBranch
+import org.jetbrains.kotlin.ir.builders.irGet
+import org.jetbrains.kotlin.ir.builders.irGetField
+import org.jetbrains.kotlin.ir.builders.irIfNull
+import org.jetbrains.kotlin.ir.builders.irImplicitCast
 import org.jetbrains.kotlin.ir.builders.irInt
+import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irReturn
+import org.jetbrains.kotlin.ir.builders.irSet
+import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.expressions.IrBranch
@@ -28,6 +39,7 @@ import org.jetbrains.kotlin.ir.types.isInt
 import org.jetbrains.kotlin.ir.types.isUInt
 import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
+import org.jetbrains.kotlin.ir.util.isNullable
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
@@ -86,13 +98,13 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
     +irResultVar
 
     for (property in classProperties.drop(1)) {
-        val shiftedResult = irCallOpCompat(
+        val shiftedResult = irCallOp(
             callee = context.irBuiltIns.intTimesSymbol,
             type = irIntType,
-            dispatchReceiver = irGetCompat(irResultVar),
-            argument = irIntCompat(31),
+            dispatchReceiver = irGet(irResultVar),
+            argument = irInt(31),
         )
-        val rhs = irCallOpCompat(
+        val rhs = irCallOp(
             callee = context.irBuiltIns.intPlusSymbol,
             type = irIntType,
             dispatchReceiver = shiftedResult,
@@ -104,10 +116,10 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
                 messageCollector = messageCollector,
             ),
         )
-        +irSetCompat(irResultVar.symbol, rhs)
+        +irSet(irResultVar.symbol, rhs)
     }
 
-    +irReturn(irGetCompat(irResultVar))
+    +irReturn(irGet(irResultVar))
 }
 
 /**
@@ -121,12 +133,12 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
     messageCollector: MessageCollector,
 ): IrExpression {
     val field = property.backingField!!
-    val irGetField = { irGetFieldCompat(receiver(function), field) }
+    val irGetField = { irGetField(receiver(function), field) }
     return when {
-        property.type.isNullableCompat() -> irIfNullCompat(
+        property.type.isNullable() -> irIfNull(
             type = context.irBuiltIns.intType,
             subject = irGetField(),
-            thenPart = irIntCompat(0),
+            thenPart = irInt(0),
             elsePart = getHashCodeOf(pokoAnnotation, context, property, irGetField(), messageCollector)
         )
         else -> getHashCodeOf(pokoAnnotation, context, property, irGetField(), messageCollector)
@@ -185,7 +197,7 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
     context: IrPluginContext,
     value: IrExpression,
 ): IrExpression {
-    return irWhenCompat(
+    return irWhen(
         type = context.irBuiltIns.intType,
         branches = listOf(
             irArrayTypeCheckAndContentDeepHashCodeBranch(
@@ -204,11 +216,11 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
                 )
             }.toTypedArray(),
 
-            irElseBranchCompat(
-                irIfNullCompat(
+            irElseBranch(
+                irIfNull(
                     type = context.irBuiltIns.intType,
                     subject = value,
-                    thenPart = irIntCompat(0),
+                    thenPart = irInt(0),
                     elsePart = irCallHashCodeFunction(
                         hashCodeFunctionSymbol = getStandardHashCodeFunctionSymbol(
                             classifier = value.type.classifierOrNull,
@@ -231,14 +243,14 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
     classSymbol: IrClassSymbol,
 ): IrBranch {
     val type = classSymbol.createArrayType(context)
-    return irBranchCompat(
-        condition = irIsCompat(value, type),
-        result = irCallCompat(
+    return irBranch(
+        condition = irIs(value, type),
+        result = irCall(
             callee = findArrayContentDeepHashCodeFunction(context, classSymbol),
             type = context.irBuiltIns.intType,
         ).apply {
             @OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
-            extensionReceiver = irImplicitCastCompat(value, type)
+            extensionReceiver = irImplicitCast(value, type)
         }
     )
 }
@@ -285,7 +297,7 @@ private fun findArrayContentDeepHashCodeFunction(
         // Disambiguate against the older non-nullable receiver overload:
         @OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
         functionSymbol.owner.extensionReceiverParameter?.type?.let {
-            it.classifierOrNull == propertyClassifier && it.isNullableCompat()
+            it.classifierOrNull == propertyClassifier && it.isNullable()
         } ?: false
     }
 }
@@ -308,8 +320,11 @@ private fun IrBlockBodyBuilder.getStandardHashCodeFunctionSymbol(
 private fun IrBlockBodyBuilder.getHashCodeFunctionForClass(
     irClass: IrClass
 ): IrSimpleFunctionSymbol {
-    val explicitHashCodeDeclaration = irClass.functions.singleOrNull {
-        it.isHashCodeFunctionCompat()
+    val explicitHashCodeDeclaration = irClass.functions.singleOrNull { function ->
+        function.name.asString() == "hashCode" &&
+            function.parameters == function.parameters.filter {
+                it.kind == IrParameterKind.DispatchReceiver
+            }
     }
     return explicitHashCodeDeclaration?.symbol
         ?: context.irBuiltIns.anyClass.functions.single { it.owner.name.asString() == "hashCode" }
@@ -326,7 +341,7 @@ private fun IrBlockBodyBuilder.irCallHashCodeFunction(
     val (hasDispatchReceiver, hasExtensionReceiver) = with(hashCodeFunctionSymbol.owner) {
         (dispatchReceiverParameter != null) to (extensionReceiverParameter != null)
     }
-    return irCallCompat(
+    return irCall(
         callee = hashCodeFunctionSymbol,
         type = context.irBuiltIns.intType,
         typeArgumentsCount = 0,

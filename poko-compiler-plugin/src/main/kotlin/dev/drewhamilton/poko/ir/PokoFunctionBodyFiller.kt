@@ -19,6 +19,7 @@ import org.jetbrains.kotlin.ir.util.isHashCode
 import org.jetbrains.kotlin.ir.util.isToString
 import org.jetbrains.kotlin.ir.util.parentAsClass
 import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
+import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.name.ClassId
 
 @OptIn(UnsafeDuringIrConstructionAPI::class)
@@ -96,7 +97,7 @@ internal class PokoFunctionBodyFiller(
 
     override fun visitElement(element: IrElement) {
         when (element) {
-            is IrDeclaration, is IrFile, is IrModuleFragment -> element.acceptChildrenVoidCompat(this)
+            is IrDeclaration, is IrFile, is IrModuleFragment -> element.acceptChildrenVoid(this)
             else -> Unit
         }
     }
