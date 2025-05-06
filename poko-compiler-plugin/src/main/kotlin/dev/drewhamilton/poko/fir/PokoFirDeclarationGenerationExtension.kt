@@ -8,8 +8,8 @@ import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.declarations.DirectDeclarationsAccess
 import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.processAllDeclaredCallables
 import org.jetbrains.kotlin.fir.declarations.utils.isFinal
 import org.jetbrains.kotlin.fir.declarations.utils.visibility
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
@@ -19,6 +19,7 @@ import org.jetbrains.kotlin.fir.extensions.predicate.LookupPredicate
 import org.jetbrains.kotlin.fir.extensions.predicateBasedProvider
 import org.jetbrains.kotlin.fir.plugin.createMemberFunction
 import org.jetbrains.kotlin.fir.resolve.toClassSymbol
+import org.jetbrains.kotlin.fir.scopes.impl.FirClassDeclaredMemberScope
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
@@ -66,26 +67,30 @@ internal class PokoFirDeclarationGenerationExtension(
         context: MemberGenerationContext?
     ): List<FirNamedFunctionSymbol> {
         val owner = context?.owner ?: return emptyList()
+        val scope = context.declaredScope ?: return emptyList()
 
         val callableName = callableId.callableName
-        val function = when (callableName) {
-            Equals.functionName -> runIf(owner.canGenerateFunction(Equals)) {
-                createEqualsFunction(owner)
-            }
+        val function = with(scope) {
+            when (callableName) {
+                Equals.functionName -> runIf(owner.canGenerateFunction(Equals)) {
+                    createEqualsFunction(owner)
+                }
 
-            HashCode.functionName -> runIf(owner.canGenerateFunction(HashCode)) {
-                createHashCodeFunction(owner)
-            }
+                HashCode.functionName -> runIf(owner.canGenerateFunction(HashCode)) {
+                    createHashCodeFunction(owner)
+                }
 
-            ToString.functionName -> runIf(owner.canGenerateFunction(ToString)) {
-                createToStringFunction(owner)
-            }
+                ToString.functionName -> runIf(owner.canGenerateFunction(ToString)) {
+                    createToStringFunction(owner)
+                }
 
-            else -> null
+                else -> null
+            }
         }
         return function?.let { listOf(it.symbol) } ?: emptyList()
     }
 
+    context(FirClassDeclaredMemberScope)
     private fun FirClassSymbol<*>.canGenerateFunction(function: PokoFunction): Boolean {
         if (hasDeclaredFunction(function)) return false
 
@@ -94,8 +99,33 @@ internal class PokoFirDeclarationGenerationExtension(
         return superclassFunction?.isOverridable ?: true
     }
 
-    private fun FirClassSymbol<*>.hasDeclaredFunction(function: PokoFunction): Boolean {
+    context(FirClassDeclaredMemberScope)
+    private fun hasDeclaredFunction(function: PokoFunction): Boolean {
         return declaredFunction(function) != null
+    }
+
+    /**
+     * Finds the function symbol if the given [function] is declared in this scope.
+     *
+     * Used for the Poko class.
+     */
+    context(FirClassDeclaredMemberScope)
+    private fun declaredFunction(
+        function: PokoFunction,
+    ): FirNamedFunctionSymbol? {
+        val matchingFunctions = mutableListOf<FirNamedFunctionSymbol>()
+        processFunctionsByName(function.functionName) { functionSymbol ->
+            if (
+                !functionSymbol.isExtension &&
+                functionSymbol.valueParameterSymbols
+                    .map { it.resolvedReturnType } == function.valueParameterTypes()
+            ) {
+                matchingFunctions.add(functionSymbol)
+            }
+        }
+        return matchingFunctions
+            .apply { check(size < 2) { "Found multiple identical functions" } }
+            .singleOrNull()
     }
 
     /**
@@ -117,20 +147,26 @@ internal class PokoFirDeclarationGenerationExtension(
     }
 
     /**
-     * Finds the function symbol if this [function] is declared in this class.
+     * Finds the function symbol if the given [function] is declared in this class.
+     *
+     * Used for the Poko class's superclass(es).
      */
     private fun FirClassSymbol<*>.declaredFunction(
         function: PokoFunction,
     ): FirNamedFunctionSymbol? {
-        @OptIn(DirectDeclarationsAccess::class) // FIXME
-        return declarationSymbols
-            .filterIsInstance<FirNamedFunctionSymbol>()
-            .filter { functionSymbol ->
-                !functionSymbol.isExtension &&
-                    functionSymbol.name == function.functionName &&
-                    functionSymbol.valueParameterSymbols
-                        .map { it.resolvedReturnType } == function.valueParameterTypes()
+        val matchingFunctions = mutableListOf<FirNamedFunctionSymbol>()
+        processAllDeclaredCallables(session) { callableSymbol ->
+            if (
+                callableSymbol is FirNamedFunctionSymbol &&
+                !callableSymbol.isExtension &&
+                callableSymbol.name == function.functionName &&
+                callableSymbol.valueParameterSymbols
+                    .map { it.resolvedReturnType } == function.valueParameterTypes()
+            ) {
+                matchingFunctions.add(callableSymbol)
             }
+        }
+        return matchingFunctions
             .apply { check(size < 2) { "Found multiple identical functions" } }
             .singleOrNull()
     }
