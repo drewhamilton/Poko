@@ -36,6 +36,7 @@ import org.jetbrains.kotlin.name.Name
 /**
  * For use only with the K1 compiler. K2 uses [PokoFunctionBodyFiller].
  */
+@OptIn(UnsafeDuringIrConstructionAPI::class)
 internal class PokoMembersTransformer(
     private val pokoAnnotationName: ClassId,
     private val pluginContext: IrPluginContext,
