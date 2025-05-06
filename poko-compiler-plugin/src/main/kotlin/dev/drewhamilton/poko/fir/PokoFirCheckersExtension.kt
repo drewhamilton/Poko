@@ -19,14 +19,15 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.DeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirRegularClassChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.hasModifier
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
-import org.jetbrains.kotlin.fir.declarations.DirectDeclarationsAccess
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
+import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.primaryConstructorIfAny
+import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.fir.declarations.utils.isInner
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
+import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.coneTypeOrNull
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -65,15 +66,20 @@ internal class PokoFirCheckersExtension(
                 )
             }
 
-            @OptIn(DirectDeclarationsAccess::class) // FIXME
-            val constructorProperties = declaration.declarations
-                .filterIsInstance<FirProperty>()
-                .filter {
-                    it.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
+            val constructorProperties = mutableListOf<FirPropertySymbol>()
+            declaration.processAllDeclarations(session) { declarationSymbol ->
+                if (
+                    declarationSymbol is FirPropertySymbol &&
+                    declarationSymbol.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
+                ) {
+                    constructorProperties.add(declarationSymbol)
                 }
+            }
+
+            val skipAnnotation = sessionComponent.pokoSkipAnnotation
+            val filteredConstructorProperties = constructorProperties
                 .filter {
-                    val skipAnnotation = sessionComponent.pokoSkipAnnotation
-                    val hasSkipAnnotation = it.hasAnnotation(skipAnnotation)
+                    val hasSkipAnnotation = it.hasAnnotation(skipAnnotation, session)
                     if (hasSkipAnnotation && !skipAnnotation.isNestedInDefaultPokoAnnotation()) {
                         // Pseudo-opt-in warning for custom annotation consumers:
                         reportOn(
@@ -83,7 +89,7 @@ internal class PokoFirCheckersExtension(
                     }
                     !hasSkipAnnotation
                 }
-            if (constructorProperties.isEmpty()) {
+            if (filteredConstructorProperties.isEmpty()) {
                 reportOn(
                     source = declaration.source,
                     factory = Diagnostics.PrimaryConstructorPropertiesRequired,
