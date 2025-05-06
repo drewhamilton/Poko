@@ -7,13 +7,27 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
+import org.jetbrains.kotlin.ir.builders.irBranch
+import org.jetbrains.kotlin.ir.builders.irCall
+import org.jetbrains.kotlin.ir.builders.irElseBranch
+import org.jetbrains.kotlin.ir.builders.irEqeqeq
 import org.jetbrains.kotlin.ir.builders.irEquals
+import org.jetbrains.kotlin.ir.builders.irFalse
+import org.jetbrains.kotlin.ir.builders.irGet
+import org.jetbrains.kotlin.ir.builders.irGetField
+import org.jetbrains.kotlin.ir.builders.irIfThenElse
 import org.jetbrains.kotlin.ir.builders.irIfThenReturnFalse
 import org.jetbrains.kotlin.ir.builders.irIfThenReturnTrue
+import org.jetbrains.kotlin.ir.builders.irImplicitCast
+import org.jetbrains.kotlin.ir.builders.irIs
+import org.jetbrains.kotlin.ir.builders.irNotEquals
+import org.jetbrains.kotlin.ir.builders.irNotIs
 import org.jetbrains.kotlin.ir.builders.irReturnTrue
 import org.jetbrains.kotlin.ir.builders.irTemporary
+import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrExpression
@@ -25,6 +39,7 @@ import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
+import org.jetbrains.kotlin.ir.util.isNullable
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
@@ -45,17 +60,17 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
 ) {
     val irType = irClass.defaultType
     fun irOther(): IrExpression = IrGetValueImpl(
-        parameter = functionDeclaration.regularParametersCompat.single(),
+        parameter = functionDeclaration.parameters.single { it.kind == IrParameterKind.Regular },
     )
 
-    +irIfThenReturnTrue(irEqeqeqCompat(receiver(functionDeclaration), irOther()))
-    +irIfThenReturnFalse(irNotIsCompat(irOther(), irType))
+    +irIfThenReturnTrue(irEqeqeq(receiver(functionDeclaration), irOther()))
+    +irIfThenReturnFalse(irNotIs(irOther(), irType))
 
-    val otherWithCast = irTemporary(irImplicitCastCompat(irOther(), irType), "other_with_cast")
+    val otherWithCast = irTemporary(irImplicitCast(irOther(), irType), "other_with_cast")
     for (property in classProperties) {
         val field = property.backingField!!
-        val arg1 = irGetFieldCompat(receiver(functionDeclaration), field)
-        val arg2 = irGetFieldCompat(irGetCompat(irType, otherWithCast.symbol), field)
+        val arg1 = irGetField(receiver(functionDeclaration), field)
+        val arg2 = irGetField(irGet(irType, otherWithCast.symbol), field)
         val irNotEquals = when {
             property.hasReadArrayContentAnnotation(pokoAnnotation) -> {
                 irNot(
@@ -70,7 +85,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
             }
 
             else -> {
-                irNotEqualsCompat(arg1, arg2)
+                irNotEquals(arg1, arg2)
             }
         }
         +irIfThenReturnFalse(irNotEquals)
@@ -123,7 +138,7 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
     receiver: IrExpression,
     argument: IrExpression,
 ): IrExpression {
-    return irWhenCompat(
+    return irWhen(
         type = context.irBuiltIns.booleanType,
         branches = listOf(
             irArrayTypeCheckAndContentDeepEqualsBranch(
@@ -144,8 +159,8 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
                 )
             }.toTypedArray(),
 
-            irElseBranchCompat(
-                irEqualsCompat(receiver, argument),
+            irElseBranch(
+                irEquals(receiver, argument),
             ),
         ),
     )
@@ -162,18 +177,18 @@ private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
     classSymbol: IrClassSymbol,
 ): IrBranch {
     val type = classSymbol.createArrayType(context)
-    return irBranchCompat(
-        condition = irIsCompat(receiver, type),
-        result = irIfThenElseCompat(
+    return irBranch(
+        condition = irIs(receiver, type),
+        result = irIfThenElse(
             type = context.irBuiltIns.booleanType,
-            condition = irIsCompat(argument, type),
+            condition = irIs(argument, type),
             thenPart = irCallContentDeepEquals(
                 context = context,
                 classifier = classSymbol,
-                receiver = irImplicitCastCompat(receiver, type),
-                argument = irImplicitCastCompat(argument, type),
+                receiver = irImplicitCast(receiver, type),
+                argument = irImplicitCast(argument, type),
             ),
-            elsePart = irFalseCompat(),
+            elsePart = irFalse(),
         ),
     )
 }
@@ -185,7 +200,7 @@ private fun IrBuilderWithScope.irCallContentDeepEquals(
     receiver: IrExpression,
     argument: IrExpression,
 ): IrExpression {
-    return irCallCompat(
+    return irCall(
         callee = findContentDeepEqualsFunctionSymbol(context, classifier),
         type = context.irBuiltIns.booleanType,
         typeArgumentsCount = 1,
@@ -219,7 +234,7 @@ private fun findContentDeepEqualsFunctionSymbol(
         // older non-nullable receiver overload:
         @OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
         functionSymbol.owner.extensionReceiverParameter?.type?.let {
-            it.classifierOrNull == classifier && it.isNullableCompat()
+            it.classifierOrNull == classifier && it.isNullable()
         } ?: false
     }
 }

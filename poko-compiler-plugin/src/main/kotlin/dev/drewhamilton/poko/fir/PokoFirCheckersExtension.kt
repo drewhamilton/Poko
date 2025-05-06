@@ -91,22 +91,6 @@ internal class PokoFirCheckersExtension(
             }
         }
 
-        /**
-         * Overload for backward compatibility with 2.1.x.
-         */
-        @Suppress("unused")
-        fun check(
-            declaration: FirDeclaration,
-            context: CheckerContext,
-            reporter: DiagnosticReporter,
-        ) {
-            with(context) {
-                with (reporter) {
-                    check(declaration as FirRegularClass)
-                }
-            }
-        }
-
         private fun FirDeclaration.hasAnnotation(
             annotation: ClassId,
         ): Boolean {

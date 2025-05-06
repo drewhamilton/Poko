@@ -5,7 +5,16 @@ import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
+import org.jetbrains.kotlin.ir.builders.irBranch
+import org.jetbrains.kotlin.ir.builders.irCall
+import org.jetbrains.kotlin.ir.builders.irConcat
+import org.jetbrains.kotlin.ir.builders.irElseBranch
+import org.jetbrains.kotlin.ir.builders.irGetField
+import org.jetbrains.kotlin.ir.builders.irImplicitCast
+import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irReturn
+import org.jetbrains.kotlin.ir.builders.irString
+import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
@@ -19,6 +28,7 @@ import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
+import org.jetbrains.kotlin.ir.util.isNullable
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
@@ -37,23 +47,23 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
     classProperties: List<IrProperty>,
     messageCollector: MessageCollector,
 ) {
-    val irConcat = irConcatCompat()
-    irConcat.addArgument(irStringCompat(irClass.name.asString() + "("))
+    val irConcat = irConcat()
+    irConcat.addArgument(irString(irClass.name.asString() + "("))
 
     var first = true
     for (property in classProperties) {
-        if (!first) irConcat.addArgument(irStringCompat(", "))
+        if (!first) irConcat.addArgument(irString(", "))
 
-        irConcat.addArgument(irStringCompat(property.name.asString() + "="))
+        irConcat.addArgument(irString(property.name.asString() + "="))
 
-        val propertyValue = irGetFieldCompat(receiver(functionDeclaration), property.backingField!!)
+        val propertyValue = irGetField(receiver(functionDeclaration), property.backingField!!)
 
         val classifier = property.type.classifierOrNull
         val hasArrayContentBasedAnnotation = property.hasReadArrayContentAnnotation(pokoAnnotation)
         val propertyStringValue = when {
             hasArrayContentBasedAnnotation && classifier.mayBeRuntimeArray(context) -> {
                 val field = property.backingField!!
-                val instance = irGetFieldCompat(receiver(functionDeclaration), field)
+                val instance = irGetField(receiver(functionDeclaration), field)
                 irRuntimeArrayContentDeepToString(context, instance)
             }
 
@@ -82,7 +92,7 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
         irConcat.addArgument(propertyStringValue)
         first = false
     }
-    irConcat.addArgument(irStringCompat(")"))
+    irConcat.addArgument(irString(")"))
     +irReturn(irConcat)
 }
 
@@ -117,7 +127,7 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
     context: IrPluginContext,
     value: IrExpression,
 ): IrExpression {
-    return irWhenCompat(
+    return irWhen(
         type = context.irBuiltIns.stringType,
         branches = listOf(
             irArrayTypeCheckAndContentDeepToStringBranch(
@@ -136,7 +146,7 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
                 )
             }.toTypedArray(),
 
-            irElseBranchCompat(
+            irElseBranch(
                 irCallToStringFunction(
                     toStringFunctionSymbol = context.irBuiltIns.extensionToString,
                     value = value,
@@ -156,11 +166,11 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
     classSymbol: IrClassSymbol,
 ): IrBranch {
     val type = classSymbol.createArrayType(context)
-    return irBranchCompat(
-        condition = irIsCompat(value, type),
+    return irBranch(
+        condition = irIs(value, type),
         result = irCallToStringFunction(
             toStringFunctionSymbol = findContentDeepToStringFunctionSymbol(context, classSymbol),
-            value = irImplicitCastCompat(value, type),
+            value = irImplicitCast(value, type),
         ),
     )
 }
@@ -189,7 +199,7 @@ private fun findContentDeepToStringFunctionSymbol(
         // older non-nullable receiver overload:
         @OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
         functionSymbol.owner.extensionReceiverParameter?.type?.let {
-            it.classifierOrNull == propertyClassifier && it.isNullableCompat()
+            it.classifierOrNull == propertyClassifier && it.isNullable()
         } ?: false
     }
 }
@@ -199,7 +209,7 @@ private fun IrBlockBodyBuilder.irCallToStringFunction(
     toStringFunctionSymbol: IrSimpleFunctionSymbol,
     value: IrExpression,
 ): IrExpression {
-    return irCallCompat(
+    return irCall(
         callee = toStringFunctionSymbol,
         type = context.irBuiltIns.stringType,
     ).apply {
