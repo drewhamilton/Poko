@@ -295,8 +295,9 @@ private fun findArrayContentDeepHashCodeFunction(
         ),
     ).single { functionSymbol ->
         // Disambiguate against the older non-nullable receiver overload:
-        @OptIn(DeprecatedForRemovalCompilerApi::class) // FIXME
-        functionSymbol.owner.extensionReceiverParameter?.type?.let {
+        val extensionReceiverParameter = functionSymbol.owner.parameters
+            .singleOrNull { it.kind == IrParameterKind.ExtensionReceiver }
+        return@single extensionReceiverParameter?.type?.let {
             it.classifierOrNull == propertyClassifier && it.isNullable()
         } ?: false
     }
