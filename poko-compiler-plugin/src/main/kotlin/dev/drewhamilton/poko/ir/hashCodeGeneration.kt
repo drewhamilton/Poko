@@ -5,12 +5,23 @@ import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
+import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
+import org.jetbrains.kotlin.ir.builders.irCallOp
+import org.jetbrains.kotlin.ir.builders.irElseBranch
+import org.jetbrains.kotlin.ir.builders.irGet
+import org.jetbrains.kotlin.ir.builders.irGetField
+import org.jetbrains.kotlin.ir.builders.irIfNull
+import org.jetbrains.kotlin.ir.builders.irImplicitCast
 import org.jetbrains.kotlin.ir.builders.irInt
+import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irReturn
+import org.jetbrains.kotlin.ir.builders.irSet
+import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.expressions.IrBranch
@@ -27,6 +38,7 @@ import org.jetbrains.kotlin.ir.types.isInt
 import org.jetbrains.kotlin.ir.types.isUInt
 import org.jetbrains.kotlin.ir.util.functions
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
+import org.jetbrains.kotlin.ir.util.isNullable
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
@@ -37,6 +49,7 @@ import org.jetbrains.kotlin.name.Name
  * Generate the body of the hashCode method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateHashCodeMethodBody].
  */
+@UnsafeDuringIrConstructionAPI
 internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -85,13 +98,13 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
     +irResultVar
 
     for (property in classProperties.drop(1)) {
-        val shiftedResult = irCallOpCompat(
+        val shiftedResult = irCallOp(
             callee = context.irBuiltIns.intTimesSymbol,
             type = irIntType,
-            dispatchReceiver = irGetCompat(irResultVar),
-            argument = irIntCompat(31),
+            dispatchReceiver = irGet(irResultVar),
+            argument = irInt(31),
         )
-        val rhs = irCallOpCompat(
+        val rhs = irCallOp(
             callee = context.irBuiltIns.intPlusSymbol,
             type = irIntType,
             dispatchReceiver = shiftedResult,
@@ -103,15 +116,16 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
                 messageCollector = messageCollector,
             ),
         )
-        +irSetCompat(irResultVar.symbol, rhs)
+        +irSet(irResultVar.symbol, rhs)
     }
 
-    +irReturn(irGetCompat(irResultVar))
+    +irReturn(irGet(irResultVar))
 }
 
 /**
  * Generates the hashcode-computing code for [property].
  */
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.getHashCodeOfProperty(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -120,12 +134,12 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
     messageCollector: MessageCollector,
 ): IrExpression {
     val field = property.backingField!!
-    val irGetField = { irGetFieldCompat(receiver(function), field) }
+    val irGetField = { irGetField(receiver(function), field) }
     return when {
-        property.type.isNullableCompat() -> irIfNullCompat(
+        property.type.isNullable() -> irIfNull(
             type = context.irBuiltIns.intType,
             subject = irGetField(),
-            thenPart = irIntCompat(0),
+            thenPart = irInt(0),
             elsePart = getHashCodeOf(pokoAnnotation, context, property, irGetField(), messageCollector)
         )
         else -> getHashCodeOf(pokoAnnotation, context, property, irGetField(), messageCollector)
@@ -136,7 +150,7 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
  * Symbol-retrieval adapted from
  * [org.jetbrains.kotlin.fir.backend.generators.DataClassMembersGenerator].
  */
-@OptIn(UnsafeDuringIrConstructionAPI::class)
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.getHashCodeOf(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -180,11 +194,12 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
  * Generates a `when` branch that checks the runtime type of the [value] instance and invokes
  * `contentDeepHashCode` or `contentHashCode` for typed arrays and primitive arrays, respectively.
  */
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
     context: IrPluginContext,
     value: IrExpression,
 ): IrExpression {
-    return irWhenCompat(
+    return irWhen(
         type = context.irBuiltIns.intType,
         branches = listOf(
             irArrayTypeCheckAndContentDeepHashCodeBranch(
@@ -203,11 +218,11 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
                 )
             }.toTypedArray(),
 
-            irElseBranchCompat(
-                irIfNullCompat(
+            irElseBranch(
+                irIfNull(
                     type = context.irBuiltIns.intType,
                     subject = value,
-                    thenPart = irIntCompat(0),
+                    thenPart = irInt(0),
                     elsePart = irCallHashCodeFunction(
                         hashCodeFunctionSymbol = getStandardHashCodeFunctionSymbol(
                             classifier = value.type.classifierOrNull,
@@ -224,19 +239,29 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
  * Generates a runtime `when` branch computing the content deep hashCode of [value]. The branch is
  * only executed if [value] is an instance of [classSymbol].
  */
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
     context: IrPluginContext,
     value: IrExpression,
     classSymbol: IrClassSymbol,
 ): IrBranch {
     val type = classSymbol.createArrayType(context)
-    return irBranchCompat(
-        condition = irIsCompat(value, type),
-        result = irCallCompat(
-            callee = findArrayContentDeepHashCodeFunction(context, classSymbol),
+    val arrayContentDeepHashCodeFunction = findArrayContentDeepHashCodeFunction(context, classSymbol)
+    return irBranch(
+        condition = irIs(value, type),
+        result = irCall(
+            callee = arrayContentDeepHashCodeFunction,
             type = context.irBuiltIns.intType,
         ).apply {
-            extensionReceiver = irImplicitCastCompat(value, type)
+            arrayContentDeepHashCodeFunction.owner.parameters.forEach {
+                arguments.set(
+                    parameter = it,
+                    value = when (it.kind) {
+                        IrParameterKind.ExtensionReceiver -> irImplicitCast(value, type)
+                        else -> throw IllegalArgumentException("contentDeepHashCode unknown param type")
+                    }
+                )
+            }
         }
     )
 }
@@ -245,6 +270,7 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
  * Returns contentDeepHashCode function symbol if it is an appropriate option for [property],
  * else returns null. [property] must have an array type.
  */
+@UnsafeDuringIrConstructionAPI
 private fun maybeFindArrayContentHashCodeFunction(
     context: IrPluginContext,
     property: IrProperty,
@@ -264,7 +290,7 @@ private fun maybeFindArrayContentHashCodeFunction(
     return findArrayContentDeepHashCodeFunction(context, propertyClassifier)
 }
 
-@OptIn(UnsafeDuringIrConstructionAPI::class)
+@UnsafeDuringIrConstructionAPI
 private fun findArrayContentDeepHashCodeFunction(
     context: IrPluginContext,
     propertyClassifier: IrClassifierSymbol,
@@ -281,13 +307,15 @@ private fun findArrayContentDeepHashCodeFunction(
         ),
     ).single { functionSymbol ->
         // Disambiguate against the older non-nullable receiver overload:
-        functionSymbol.owner.extensionReceiverParameter?.type?.let {
-            it.classifierOrNull == propertyClassifier && it.isNullableCompat()
+        val extensionReceiverParameter = functionSymbol.owner.parameters
+            .singleOrNull { it.kind == IrParameterKind.ExtensionReceiver }
+        return@single extensionReceiverParameter?.type?.let {
+            it.classifierOrNull == propertyClassifier && it.isNullable()
         } ?: false
     }
 }
 
-@OptIn(UnsafeDuringIrConstructionAPI::class)
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.getStandardHashCodeFunctionSymbol(
     classifier: IrClassifierSymbol?,
 ): IrSimpleFunctionSymbol = when {
@@ -301,37 +329,42 @@ private fun IrBlockBodyBuilder.getStandardHashCodeFunctionSymbol(
         error("Unknown classifier kind $classifier")
 }
 
-@OptIn(UnsafeDuringIrConstructionAPI::class)
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.getHashCodeFunctionForClass(
     irClass: IrClass
 ): IrSimpleFunctionSymbol {
-    val explicitHashCodeDeclaration = irClass.functions.singleOrNull {
-        it.isHashCodeFunctionCompat()
+    val explicitHashCodeDeclaration = irClass.functions.singleOrNull { function ->
+        function.name.asString() == "hashCode" &&
+            function.parameters == function.parameters.filter {
+                it.kind == IrParameterKind.DispatchReceiver
+            }
     }
     return explicitHashCodeDeclaration?.symbol
         ?: context.irBuiltIns.anyClass.functions.single { it.owner.name.asString() == "hashCode" }
 }
 
-@OptIn(UnsafeDuringIrConstructionAPI::class)
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irCallHashCodeFunction(
     hashCodeFunctionSymbol: IrSimpleFunctionSymbol,
     value: IrExpression,
 ): IrExpression {
     check(hashCodeFunctionSymbol.isBound) { "$hashCodeFunctionSymbol is not bound" }
 
-    // Poko modification: check for extension receiver for contentDeepHashCode case
-    val (hasDispatchReceiver, hasExtensionReceiver) = with(hashCodeFunctionSymbol.owner) {
-        (dispatchReceiverParameter != null) to (extensionReceiverParameter != null)
-    }
-    return irCallCompat(
+    return irCall(
         callee = hashCodeFunctionSymbol,
         type = context.irBuiltIns.intType,
         typeArgumentsCount = 0,
     ).apply {
-        when {
-            hasDispatchReceiver -> dispatchReceiver = value
-            hasExtensionReceiver -> extensionReceiver = value
-            else -> putValueArgument(0, value)
+        hashCodeFunctionSymbol.owner.parameters.forEach {
+            arguments.set(
+                parameter = it,
+                value = when (it.kind) {
+                    IrParameterKind.DispatchReceiver -> value
+                    IrParameterKind.ExtensionReceiver -> value
+                    IrParameterKind.Regular -> value
+                    else -> throw IllegalArgumentException("hashCode unknown param type")
+                }
+            )
         }
     }
 }

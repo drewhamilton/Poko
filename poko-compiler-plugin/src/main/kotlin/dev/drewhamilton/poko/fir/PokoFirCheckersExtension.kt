@@ -20,12 +20,14 @@ import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirRegularClassChe
 import org.jetbrains.kotlin.fir.analysis.checkers.hasModifier
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
+import org.jetbrains.kotlin.fir.declarations.hasAnnotation
 import org.jetbrains.kotlin.fir.declarations.primaryConstructorIfAny
+import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.fir.declarations.utils.isInner
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
+import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.coneTypeOrNull
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -43,22 +45,9 @@ internal class PokoFirCheckersExtension(
     private object PokoFirRegularClassChecker : FirRegularClassChecker(
         mppKind = MppCheckerKind.Common,
     ) {
-        /**
-         * Overload for forward compatibility with 2.2.x.
-         */
-        @Suppress("unused")
-        fun check(
-            context: CheckerContext,
-            reporter: DiagnosticReporter,
-            declaration: FirDeclaration,
-        ) = check(declaration as FirRegularClass, context, reporter)
-
-        override fun check(
-            declaration: FirRegularClass,
-            context: CheckerContext,
-            reporter: DiagnosticReporter,
-        ) {
-            val sessionComponent = context.session.pokoFirExtensionSessionComponent
+        context(CheckerContext, DiagnosticReporter)
+        override fun check(declaration: FirRegularClass) {
+            val sessionComponent = session.pokoFirExtensionSessionComponent
             if (!declaration.hasAnnotation(sessionComponent.pokoAnnotation)) return
 
             val errorFactory = when {
@@ -66,41 +55,44 @@ internal class PokoFirCheckersExtension(
                 declaration.isData -> Diagnostics.PokoOnDataClass
                 declaration.hasModifier(KtTokens.VALUE_KEYWORD) -> Diagnostics.PokoOnValueClass
                 declaration.isInner -> Diagnostics.PokoOnInnerClass
-                declaration.primaryConstructorIfAny(context.session) == null ->
+                declaration.primaryConstructorIfAny(session) == null ->
                     Diagnostics.PrimaryConstructorRequired
                 else -> null
             }
             if (errorFactory != null) {
-                reporter.reportOn(
+                reportOn(
                     source = declaration.source,
                     factory = errorFactory,
-                    context = context,
                 )
             }
 
-            val constructorProperties = declaration.declarations
-                .filterIsInstance<FirProperty>()
-                .filter {
-                    it.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
+            val constructorProperties = mutableListOf<FirPropertySymbol>()
+            declaration.processAllDeclarations(session) { declarationSymbol ->
+                if (
+                    declarationSymbol is FirPropertySymbol &&
+                    declarationSymbol.source?.kind is KtFakeSourceElementKind.PropertyFromParameter
+                ) {
+                    constructorProperties.add(declarationSymbol)
                 }
+            }
+
+            val skipAnnotation = sessionComponent.pokoSkipAnnotation
+            val filteredConstructorProperties = constructorProperties
                 .filter {
-                    val skipAnnotation = sessionComponent.pokoSkipAnnotation
-                    val hasSkipAnnotation = it.hasAnnotation(skipAnnotation)
+                    val hasSkipAnnotation = it.hasAnnotation(skipAnnotation, session)
                     if (hasSkipAnnotation && !skipAnnotation.isNestedInDefaultPokoAnnotation()) {
                         // Pseudo-opt-in warning for custom annotation consumers:
-                        reporter.reportOn(
+                        reportOn(
                             source = it.source,
                             factory = Diagnostics.SkippedPropertyWithCustomAnnotation,
-                            context = context,
                         )
                     }
                     !hasSkipAnnotation
                 }
-            if (constructorProperties.isEmpty()) {
-                reporter.reportOn(
+            if (filteredConstructorProperties.isEmpty()) {
+                reportOn(
                     source = declaration.source,
                     factory = Diagnostics.PrimaryConstructorPropertiesRequired,
-                    context = context,
                 )
             }
         }
