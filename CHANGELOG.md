@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.18.7
+_2025-05-16_
+
+Fix bug in generated `toString` for `@ReadArrayContent` properties on Poko classes targeting JS:
+array properties would print a value of "\[...]" instead of their actual content. 
+
+Compile with Kotlin 2.1.21. Add forward compatibility with Kotlin 2.2.0-RC. Compile with Java 23.
+
 ## 0.18.6
 _2025-04-16_
 
