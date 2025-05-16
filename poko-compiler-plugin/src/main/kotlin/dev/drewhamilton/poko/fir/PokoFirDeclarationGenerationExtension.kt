@@ -90,7 +90,7 @@ internal class PokoFirDeclarationGenerationExtension(
         return function?.let { listOf(it.symbol) } ?: emptyList()
     }
 
-    context(FirClassDeclaredMemberScope)
+    context(scope: FirClassDeclaredMemberScope)
     private fun FirClassSymbol<*>.canGenerateFunction(function: PokoFunction): Boolean {
         if (hasDeclaredFunction(function)) return false
 
@@ -99,7 +99,7 @@ internal class PokoFirDeclarationGenerationExtension(
         return superclassFunction?.isOverridable ?: true
     }
 
-    context(FirClassDeclaredMemberScope)
+    context(scope: FirClassDeclaredMemberScope)
     private fun hasDeclaredFunction(function: PokoFunction): Boolean {
         return declaredFunction(function) != null
     }
@@ -109,12 +109,12 @@ internal class PokoFirDeclarationGenerationExtension(
      *
      * Used for the Poko class.
      */
-    context(FirClassDeclaredMemberScope)
+    context(scope: FirClassDeclaredMemberScope)
     private fun declaredFunction(
         function: PokoFunction,
     ): FirNamedFunctionSymbol? {
         val matchingFunctions = mutableListOf<FirNamedFunctionSymbol>()
-        processFunctionsByName(function.functionName) { functionSymbol ->
+        scope.processFunctionsByName(function.functionName) { functionSymbol ->
             if (
                 !functionSymbol.isExtension &&
                 functionSymbol.valueParameterSymbols
