@@ -78,7 +78,7 @@ class PokoBuildPlugin : Plugin<Project> {
 
                 signAllPublications()
                 publishToMavenCentral(
-                    host = SonatypeHost.DEFAULT,
+                    host = SonatypeHost.CENTRAL_PORTAL,
                     automaticRelease = true,
                 )
             }
