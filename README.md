@@ -102,7 +102,7 @@ exclusively compatible with specific versions of Poko.
 | 1.3.72          | 0.2.4*       |
 
 Snapshots of the development version are available in [Sonatype's Snapshots
-repository](https://oss.sonatype.org/#view-repositories;snapshots~browsestorage).
+repository](https://central.sonatype.com/repository/maven-snapshots/).
 
 Releases are signed with [this key](https://keyserver.ubuntu.com/pks/lookup?search=09939C73246B4BA7444CAA453D002DBC5EA9615F&fingerprint=on&op=index).
 ```
