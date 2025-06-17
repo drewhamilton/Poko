@@ -35,7 +35,6 @@ internal class PokoFirDeclarationGenerationExtension(
     private val pokoAnnotation by lazy {
         session.pokoFirExtensionSessionComponent.pokoAnnotation
     }
-
     private val pokoAnnotationPredicate by lazy {
         LookupPredicate.create {
             annotated(pokoAnnotation.asSingleFqName())
@@ -50,15 +49,36 @@ internal class PokoFirDeclarationGenerationExtension(
             .filterIsInstance<FirRegularClassSymbol>()
     }
 
+    private val pokoToStringAnnotation by lazy {
+        session.pokoFirExtensionSessionComponent.pokoToStringAnnotation
+    }
+    private val pokoToStringAnnotationPredicate by lazy {
+        LookupPredicate.create {
+            annotated(pokoToStringAnnotation.asSingleFqName())
+        }
+    }
+
+    /**
+     * Pairs of <Poko.Builder ClassId, outer class Symbol>.
+     */
+    private val pokoToStringClasses by lazy {
+        session.predicateBasedProvider.getSymbolsByPredicate(pokoToStringAnnotationPredicate)
+            .filterIsInstance<FirRegularClassSymbol>()
+    }
+
     override fun FirDeclarationPredicateRegistrar.registerPredicates() {
-        register(pokoAnnotationPredicate)
+        register(
+            pokoAnnotationPredicate,
+            pokoToStringAnnotationPredicate,
+        )
     }
 
     override fun getCallableNamesForClass(
         classSymbol: FirClassSymbol<*>,
         context: MemberGenerationContext,
-    ): Set<Name> = when {
-        classSymbol in pokoClasses -> PokoFunction.entries.map { it.functionName }.toSet()
+    ): Set<Name> = when (classSymbol) {
+        in pokoClasses -> PokoFunction.entries.map { it.functionName }.toSet()
+        in pokoToStringClasses -> setOf(ToString.functionName)
         else -> emptySet()
     }
 

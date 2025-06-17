@@ -25,6 +25,15 @@ package dev.drewhamilton.poko
 public annotation class Poko {
 
     /**
+     * Generates the [toString] function of a class without generating the `equals` or `hashCode`
+     * functions. See further documentation on the [Poko] annotation.
+     */
+    @IndependentFunctionsSupport
+    @Retention(AnnotationRetention.SOURCE)
+    @Target(AnnotationTarget.CLASS)
+    public annotation class ToString
+
+    /**
      * Primary constructor properties marked with this annotation will be omitted from generated
      * `equals`, `hashCode`, and `toString` functions, as if they were not properties.
      *
