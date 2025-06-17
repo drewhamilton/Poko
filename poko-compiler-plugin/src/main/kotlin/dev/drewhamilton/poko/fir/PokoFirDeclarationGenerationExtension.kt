@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.utils.addToStdlib.runIf
 internal class PokoFirDeclarationGenerationExtension(
     session: FirSession,
 ) : FirDeclarationGenerationExtension(session) {
+    //region Poko
     private val pokoAnnotation by lazy {
         session.pokoFirExtensionSessionComponent.pokoAnnotation
     }
@@ -46,7 +47,29 @@ internal class PokoFirDeclarationGenerationExtension(
         session.predicateBasedProvider.getSymbolsByPredicate(pokoAnnotationPredicate)
             .filterIsInstance<FirRegularClassSymbol>()
     }
+    //endregion
 
+    //region Poko.EqualsAndHashCode
+    private val pokoEqualsAndHashCodeAnnotation by lazy {
+        session.pokoFirExtensionSessionComponent.pokoEqualsAndHashCodeAnnotation
+    }
+    private val pokoEqualsAndHashCodeAnnotationPredicate by lazy {
+        LookupPredicate.create {
+            annotated(pokoEqualsAndHashCodeAnnotation.asSingleFqName())
+        }
+    }
+
+    /**
+     * Pairs of <Poko.Builder ClassId, outer class Symbol>.
+     */
+    private val pokoEqualsAndHashCodeClasses by lazy {
+        session.predicateBasedProvider
+            .getSymbolsByPredicate(pokoEqualsAndHashCodeAnnotationPredicate)
+            .filterIsInstance<FirRegularClassSymbol>()
+    }
+    //endregion
+
+    //region Poko.ToString
     private val pokoToStringAnnotation by lazy {
         session.pokoFirExtensionSessionComponent.pokoToStringAnnotation
     }
@@ -63,10 +86,12 @@ internal class PokoFirDeclarationGenerationExtension(
         session.predicateBasedProvider.getSymbolsByPredicate(pokoToStringAnnotationPredicate)
             .filterIsInstance<FirRegularClassSymbol>()
     }
+    //endregion
 
     override fun FirDeclarationPredicateRegistrar.registerPredicates() {
         register(
             pokoAnnotationPredicate,
+            pokoEqualsAndHashCodeAnnotationPredicate,
             pokoToStringAnnotationPredicate,
         )
     }
@@ -76,6 +101,7 @@ internal class PokoFirDeclarationGenerationExtension(
         context: MemberGenerationContext,
     ): Set<Name> = when (classSymbol) {
         in pokoClasses -> PokoFunction.entries.map { it.functionName }.toSet()
+        in pokoEqualsAndHashCodeClasses -> setOf(Equals.functionName, HashCode.functionName)
         in pokoToStringClasses -> setOf(ToString.functionName)
         else -> emptySet()
     }
