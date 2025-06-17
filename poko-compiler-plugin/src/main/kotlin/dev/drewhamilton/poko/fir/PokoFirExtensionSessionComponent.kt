@@ -10,6 +10,9 @@ internal class PokoFirExtensionSessionComponent(
     internal val pokoAnnotation: ClassId,
 ) : FirExtensionSessionComponent(session) {
 
+    internal val pokoEqualsAndHashCodeAnnotation: ClassId =
+        pokoAnnotation.createNestedClassId(PokoAnnotationNames.EqualsAndHashCode)
+
     internal val pokoToStringAnnotation: ClassId =
         pokoAnnotation.createNestedClassId(PokoAnnotationNames.ToString)
 
