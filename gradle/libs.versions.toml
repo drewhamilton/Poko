@@ -1,6 +1,6 @@
 [versions]
 
-androidx-compose-runtime = "1.8.2"
+androidx-compose-runtime = "1.8.3"
 
 kotlin = "2.1.21"
 kotlinCompileTesting = "1.6.0"
