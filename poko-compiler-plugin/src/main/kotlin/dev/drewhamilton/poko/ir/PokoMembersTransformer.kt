@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
@@ -34,6 +35,7 @@ import org.jetbrains.kotlin.name.Name
 /**
  * For use only with the K1 compiler. K2 uses [PokoFunctionBodyFiller].
  */
+@OptIn(UnsafeDuringIrConstructionAPI::class)
 internal class PokoMembersTransformer(
     private val pokoAnnotationName: ClassId,
     private val pluginContext: IrPluginContext,
@@ -125,7 +127,7 @@ internal class PokoMembersTransformer(
     private fun canOverride(function: IrFunction): Boolean {
         val superclassSameFunction = function.parentAsClass.findNearestSuperclassFunction(
             name = function.name,
-            parameters = function.parametersCompat
+            parameters = function.parameters
         )
 
         return superclassSameFunction?.isOverridable ?: true
@@ -151,7 +153,7 @@ internal class PokoMembersTransformer(
             .filterIsInstance<IrFunction>()
             .filter { function ->
                 function.name == name &&
-                    function.parametersCompat.map { it.type } == parameters.map { it.type }
+                    function.parameters.map { it.type } == parameters.map { it.type }
             }
             .apply { check(size < 2) { "Found multiple identical superclass functions" } }
             .singleOrNull()
@@ -198,10 +200,11 @@ internal class PokoMembersTransformer(
     private fun IrFunction.mutateWithNewDispatchReceiverParameterForParentClass() {
         val parentClass = parent as IrClass
         val originalReceiver = requireNotNull(dispatchReceiverParameter)
-        dispatchReceiverParameter = IrFactoryImpl.createValueParameter(
+        val newDispatchReceiverParameter = IrFactoryImpl.createValueParameter(
             startOffset = originalReceiver.startOffset,
             endOffset = originalReceiver.endOffset,
             origin = originalReceiver.origin,
+            kind = IrParameterKind.DispatchReceiver,
             symbol = IrValueParameterSymbolImpl(
                 // IrValueParameterSymbolImpl requires a descriptor; same type as
                 // originalReceiver.symbol:
@@ -211,7 +214,6 @@ internal class PokoMembersTransformer(
                 signature = parentClass.symbol.signature,
             ),
             name = originalReceiver.name,
-            index = originalReceiver.index,
             type = parentClass.symbol.createType(hasQuestionMark = false, emptyList()),
             varargElementType = originalReceiver.varargElementType,
             isCrossinline = originalReceiver.isCrossinline,
@@ -220,6 +222,13 @@ internal class PokoMembersTransformer(
             isAssignable = originalReceiver.isAssignable
         ).apply {
             parent = this@mutateWithNewDispatchReceiverParameterForParentClass
+        }
+        parameters = parameters.map {
+            if (it.kind == IrParameterKind.DispatchReceiver) {
+                newDispatchReceiverParameter
+            } else {
+                it
+            }
         }
     }
 }

@@ -4,9 +4,19 @@ import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
+import org.jetbrains.kotlin.ir.builders.irBranch
+import org.jetbrains.kotlin.ir.builders.irCall
+import org.jetbrains.kotlin.ir.builders.irConcat
+import org.jetbrains.kotlin.ir.builders.irElseBranch
+import org.jetbrains.kotlin.ir.builders.irGetField
+import org.jetbrains.kotlin.ir.builders.irImplicitCast
+import org.jetbrains.kotlin.ir.builders.irIs
 import org.jetbrains.kotlin.ir.builders.irReturn
+import org.jetbrains.kotlin.ir.builders.irString
+import org.jetbrains.kotlin.ir.builders.irWhen
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.expressions.IrBranch
 import org.jetbrains.kotlin.ir.expressions.IrExpression
@@ -18,6 +28,7 @@ import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
+import org.jetbrains.kotlin.ir.util.isNullable
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
@@ -28,6 +39,7 @@ import org.jetbrains.kotlin.name.Name
  * Generate the body of the toString method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateToStringMethodBody].
  */
+@UnsafeDuringIrConstructionAPI
 internal fun IrBlockBodyBuilder.generateToStringMethodBody(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -36,23 +48,23 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
     classProperties: List<IrProperty>,
     messageCollector: MessageCollector,
 ) {
-    val irConcat = irConcatCompat()
-    irConcat.addArgument(irStringCompat(irClass.name.asString() + "("))
+    val irConcat = irConcat()
+    irConcat.addArgument(irString(irClass.name.asString() + "("))
 
     var first = true
     for (property in classProperties) {
-        if (!first) irConcat.addArgument(irStringCompat(", "))
+        if (!first) irConcat.addArgument(irString(", "))
 
-        irConcat.addArgument(irStringCompat(property.name.asString() + "="))
+        irConcat.addArgument(irString(property.name.asString() + "="))
 
-        val propertyValue = irGetFieldCompat(receiver(functionDeclaration), property.backingField!!)
+        val propertyValue = irGetField(receiver(functionDeclaration), property.backingField!!)
 
         val classifier = property.type.classifierOrNull
         val hasArrayContentBasedAnnotation = property.hasReadArrayContentAnnotation(pokoAnnotation)
         val propertyStringValue = when {
             hasArrayContentBasedAnnotation && classifier.mayBeRuntimeArray(context) -> {
                 val field = property.backingField!!
-                val instance = irGetFieldCompat(receiver(functionDeclaration), field)
+                val instance = irGetField(receiver(functionDeclaration), field)
                 irRuntimeArrayContentDeepToString(context, instance)
             }
 
@@ -81,7 +93,7 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
         irConcat.addArgument(propertyStringValue)
         first = false
     }
-    irConcat.addArgument(irStringCompat(")"))
+    irConcat.addArgument(irString(")"))
     +irReturn(irConcat)
 }
 
@@ -89,6 +101,7 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
  * Returns `contentDeepToString` function symbol if it is an appropriate option for [property],
  * else returns null.
  */
+@UnsafeDuringIrConstructionAPI
 private fun maybeFindArrayDeepToStringFunction(
     context: IrPluginContext,
     property: IrProperty,
@@ -112,11 +125,12 @@ private fun maybeFindArrayDeepToStringFunction(
  * Generates a `when` branch that checks the runtime type of the [value] instance and invokes
  * `contentDeepToString` or `contentToString` for typed arrays and primitive arrays, respectively.
  */
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
     context: IrPluginContext,
     value: IrExpression,
 ): IrExpression {
-    return irWhenCompat(
+    return irWhen(
         type = context.irBuiltIns.stringType,
         branches = listOf(
             irArrayTypeCheckAndContentDeepToStringBranch(
@@ -135,7 +149,7 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
                 )
             }.toTypedArray(),
 
-            irElseBranchCompat(
+            irElseBranch(
                 irCallToStringFunction(
                     toStringFunctionSymbol = context.irBuiltIns.extensionToString,
                     value = value,
@@ -149,17 +163,18 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
  * Generates a runtime `when` branch computing the content deep toString of [value]. The branch is
  * only executed if [value] is an instance of [classSymbol].
  */
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
     context: IrPluginContext,
     value: IrExpression,
     classSymbol: IrClassSymbol,
 ): IrBranch {
     val type = classSymbol.createArrayType(context)
-    return irBranchCompat(
-        condition = irIsCompat(value, type),
+    return irBranch(
+        condition = irIs(value, type),
         result = irCallToStringFunction(
             toStringFunctionSymbol = findContentDeepToStringFunctionSymbol(context, classSymbol),
-            value = irImplicitCastCompat(value, type),
+            value = irImplicitCast(value, type),
         ),
     )
 }
@@ -168,7 +183,7 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
  * Finds `contentDeepToString` function if [propertyClassifier] is a typed array, or
  * `contentToString` function if it is a primitive array.
  */
-@OptIn(UnsafeDuringIrConstructionAPI::class)
+@UnsafeDuringIrConstructionAPI
 private fun findContentDeepToStringFunctionSymbol(
     context: IrPluginContext,
     propertyClassifier: IrClassifierSymbol,
@@ -186,28 +201,32 @@ private fun findContentDeepToStringFunctionSymbol(
     ).single { functionSymbol ->
         // Find the single function with the relevant array type and disambiguate against the
         // older non-nullable receiver overload:
-        functionSymbol.owner.extensionReceiverParameter?.type?.let {
-            it.classifierOrNull == propertyClassifier && it.isNullableCompat()
+        val extensionReceiverParameter = functionSymbol.owner.parameters
+            .singleOrNull { it.kind == IrParameterKind.ExtensionReceiver }
+        return@single extensionReceiverParameter?.type?.let {
+            it.classifierOrNull == propertyClassifier && it.isNullable()
         } ?: false
     }
 }
 
-@OptIn(UnsafeDuringIrConstructionAPI::class)
+@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irCallToStringFunction(
     toStringFunctionSymbol: IrSimpleFunctionSymbol,
     value: IrExpression,
 ): IrExpression {
-    return irCallCompat(
+    return irCall(
         callee = toStringFunctionSymbol,
         type = context.irBuiltIns.stringType,
     ).apply {
-        // Poko modification: check for extension receiver for contentDeepToString
-        val hasExtensionReceiver =
-            toStringFunctionSymbol.owner.extensionReceiverParameter != null
-        if (hasExtensionReceiver) {
-            extensionReceiver = value
-        } else {
-            putValueArgument(0, value)
+        toStringFunctionSymbol.owner.parameters.forEach {
+            arguments.set(
+                parameter = it,
+                value = when (it.kind) {
+                    IrParameterKind.ExtensionReceiver -> value
+                    IrParameterKind.Regular -> value
+                    else -> throw IllegalArgumentException("toString unknown param type")
+                }
+            )
         }
     }
 }
