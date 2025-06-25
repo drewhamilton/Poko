@@ -2,7 +2,6 @@ package dev.drewhamilton.poko.build
 
 import com.github.gmazzo.buildconfig.BuildConfigExtension
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
-import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -78,7 +77,6 @@ class PokoBuildPlugin : Plugin<Project> {
 
                 signAllPublications()
                 publishToMavenCentral(
-                    host = SonatypeHost.CENTRAL_PORTAL,
                     automaticRelease = true,
                 )
             }
