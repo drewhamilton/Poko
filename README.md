@@ -76,7 +76,7 @@ Data("a") { println("a") } == Data("a") { println("not a") } // yields `true`
 
 ### Download
 
-[![Maven Central](https://img.shields.io/maven-metadata/v.svg?label=maven%20central&metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fdev%2Fdrewhamilton%2Fpoko%2Fpoko-compiler-plugin%2Fmaven-metadata.xml&color=blue](https://central.sonatype.com/namespace/dev.drewhamilton.poko)
+[![Maven Central](https://img.shields.io/maven-metadata/v.svg?label=maven%20central&metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fdev%2Fdrewhamilton%2Fpoko%2Fpoko-compiler-plugin%2Fmaven-metadata.xml&color=blue)](https://central.sonatype.com/namespace/dev.drewhamilton.poko)
 
 Poko is available on Maven Central. It is experimental, and the API may undergo breaking changes
 before version 1.0.0. Kotlin compiler plugins in general are experimental and new versions of Kotlin
