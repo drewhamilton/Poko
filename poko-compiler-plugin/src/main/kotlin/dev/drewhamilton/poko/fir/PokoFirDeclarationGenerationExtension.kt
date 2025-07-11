@@ -158,7 +158,7 @@ internal class PokoFirDeclarationGenerationExtension(
         processAllDeclaredCallables(session) { callableSymbol ->
             if (
                 callableSymbol is FirNamedFunctionSymbol &&
-                !callableSymbol.isExtension &&
+                !callableSymbol.isExtensionCompat() &&
                 callableSymbol.name == function.functionName &&
                 callableSymbol.valueParameterSymbols
                     .map { it.resolvedReturnType } == function.valueParameterTypes()
