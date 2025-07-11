@@ -87,7 +87,7 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version |
 |-----------------|--------------|
-| 2.2.0           | 0.19.0       |
+| 2.2.0           | 0.19.1       |
 | 2.1.0 – 2.1.21  | 0.18.7       |
 | 2.0.0 – 2.0.21  | 0.17.2       |
 | 1.9.0 – 1.9.24  | 0.15.3       |

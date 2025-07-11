@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.19.1
+_2025-07-11_
+
+Add forward compatibility with Kotlin 2.2.20-Beta1.
+
 ## 0.19.0
 _2025-06-25_
 
