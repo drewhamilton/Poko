@@ -23,7 +23,6 @@ import org.jetbrains.kotlin.fir.scopes.impl.FirClassDeclaredMemberScope
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
-import org.jetbrains.kotlin.fir.symbols.impl.isExtension
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
@@ -116,7 +115,7 @@ internal class PokoFirDeclarationGenerationExtension(
         val matchingFunctions = mutableListOf<FirNamedFunctionSymbol>()
         scope.processFunctionsByName(function.functionName) { functionSymbol ->
             if (
-                !functionSymbol.isExtension &&
+                !functionSymbol.isExtensionCompat() &&
                 functionSymbol.valueParameterSymbols
                     .map { it.resolvedReturnType } == function.valueParameterTypes()
             ) {
