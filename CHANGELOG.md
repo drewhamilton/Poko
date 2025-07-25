@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.19.3
+_2025-07-25_
+
+Update the Poko Gradle plugin to target Kotlin 2.1, to ensure compatibility with Gradle's embedded
+Kotlin version ([currently](https://docs.gradle.org/current/userguide/compatibility.html) 2.0.21).
+This does not affect the Kotlin version of Poko itself, which is currently 2.2.0.
+
 ## 0.19.2
 _2025-07-21_
 
