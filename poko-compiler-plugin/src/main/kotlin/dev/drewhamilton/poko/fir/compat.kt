@@ -1,15 +1,15 @@
 package dev.drewhamilton.poko.fir
 
+import org.jetbrains.kotlin.fir.declarations.utils.isExtension
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
-import org.jetbrains.kotlin.fir.symbols.impl.isExtension
 
 internal fun FirCallableSymbol<*>.isExtensionCompat(): Boolean {
     return try {
         isExtension
-    } catch (noSuchMethodError: NoSuchMethodError) {
-        // 2.2.20:
+    } catch (_: NoSuchMethodError) {
+        // 2.2.0:
         javaClass.classLoader
-            .loadClass("org.jetbrains.kotlin.fir.declarations.utils.FirDeclarationUtilKt")
+            .loadClass("org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbolKt")
             .methods
             .single {
                 it.name == "isExtension" &&
