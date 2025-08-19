@@ -7,10 +7,10 @@ import org.jetbrains.kotlin.diagnostics.AbstractSourceElementPositioningStrategy
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory0DelegateProvider
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactoryToRendererMap
+import org.jetbrains.kotlin.diagnostics.KtDiagnosticsContainer
 import org.jetbrains.kotlin.diagnostics.Severity
 import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategies
 import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
-import org.jetbrains.kotlin.diagnostics.rendering.RootDiagnosticRendererFactory
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
@@ -117,7 +117,7 @@ internal class PokoFirCheckersExtension(
         }
     }
 
-    private object Diagnostics : BaseDiagnosticRendererFactory() {
+    private object Diagnostics : KtDiagnosticsContainer() {
 
         /**
          * The compiler and the IDE use a different version of this class, so use reflection to find the available
@@ -160,45 +160,13 @@ internal class PokoFirCheckersExtension(
             positioningStrategy = SourceElementPositioningStrategies.ANNOTATION_USE_SITE,
         )
 
-        override val MAP = KtDiagnosticFactoryToRendererMap("Poko").apply {
-            put(
-                factory = PokoOnNonClass,
-                message = "Poko can only be applied to a class",
-            )
-            put(
-                factory = PokoOnDataClass,
-                message = "Poko cannot be applied to a data class",
-            )
-            put(
-                factory = PokoOnValueClass,
-                message = "Poko cannot be applied to a value class",
-            )
-            put(
-                factory = PokoOnInnerClass,
-                message = "Poko cannot be applied to an inner class"
-            )
-            put(
-                factory = PrimaryConstructorRequired,
-                message = "Poko class must have a primary constructor"
-            )
-            put(
-                factory = PrimaryConstructorPropertiesRequired,
-                message = "Poko class primary constructor must have at least one not-skipped property",
-            )
-            put(
-                factory = SkippedPropertyWithCustomAnnotation,
-                message = "The @Skip annotation is experimental and its behavior may change; use with caution",
-            )
-        }
-
-        init {
-            RootDiagnosticRendererFactory.registerFactory(this)
-        }
+        override fun getRendererFactory(): BaseDiagnosticRendererFactory = DiagnosticRendererFactory
 
         /**
          * Copy of [org.jetbrains.kotlin.diagnostics.error0] with hack for correct `PsiElement`
          * class.
          */
+        context(container: KtDiagnosticsContainer)
         private fun error0(
             positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
         ): DiagnosticFactory0DelegateProvider {
@@ -206,6 +174,7 @@ internal class PokoFirCheckersExtension(
                 severity = Severity.ERROR,
                 positioningStrategy = positioningStrategy,
                 psiType = psiElementClass,
+                container = container,
             )
         }
 
@@ -213,6 +182,7 @@ internal class PokoFirCheckersExtension(
          * Copy of [org.jetbrains.kotlin.diagnostics.warning0] with hack for correct `PsiElement`
          * class.
          */
+        context(container: KtDiagnosticsContainer)
         private fun warning0(
             positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
         ): DiagnosticFactory0DelegateProvider {
@@ -220,6 +190,40 @@ internal class PokoFirCheckersExtension(
                 severity = Severity.WARNING,
                 positioningStrategy = positioningStrategy,
                 psiType = psiElementClass,
+                container = container,
+            )
+        }
+    }
+
+    private object DiagnosticRendererFactory : BaseDiagnosticRendererFactory() {
+        override val MAP by KtDiagnosticFactoryToRendererMap("Poko") {
+            it.put(
+                factory = Diagnostics.PokoOnNonClass,
+                message = "Poko can only be applied to a class",
+            )
+            it.put(
+                factory = Diagnostics.PokoOnDataClass,
+                message = "Poko cannot be applied to a data class",
+            )
+            it.put(
+                factory = Diagnostics.PokoOnValueClass,
+                message = "Poko cannot be applied to a value class",
+            )
+            it.put(
+                factory = Diagnostics.PokoOnInnerClass,
+                message = "Poko cannot be applied to an inner class"
+            )
+            it.put(
+                factory = Diagnostics.PrimaryConstructorRequired,
+                message = "Poko class must have a primary constructor"
+            )
+            it.put(
+                factory = Diagnostics.PrimaryConstructorPropertiesRequired,
+                message = "Poko class primary constructor must have at least one not-skipped property",
+            )
+            it.put(
+                factory = Diagnostics.SkippedPropertyWithCustomAnnotation,
+                message = "The @Skip annotation is experimental and its behavior may change; use with caution",
             )
         }
     }
