@@ -2,7 +2,7 @@
 
 androidx-compose-runtime = "1.9.0"
 
-kotlin = "2.2.20-RC2"
+kotlin = "2.2.20"
 kotlinCompileTesting = "1.6.0"
 # https://central.sonatype.com/artifact/dev.zacsweers.kctfork/core/versions:
 kotlinCompileTestingFork = "0.8.0"
