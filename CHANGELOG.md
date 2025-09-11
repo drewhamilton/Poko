@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.20.0
+_2025-09-11_
+
+Compile with Kotlin 2.2.20.
+
+Drop support for Kotlin 2.2.0 and 2.2.10 due to incompatibility.
+
 ## 0.19.3
 _2025-07-25_
 

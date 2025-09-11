@@ -87,7 +87,8 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version |
 |-----------------|--------------|
-| 2.2.0           | 0.19.3       |
+| 2.2.20          | 0.20.0       |
+| 2.2.0 – 2.2.10  | 0.19.3       |
 | 2.1.0 – 2.1.21  | 0.18.7       |
 | 2.0.0 – 2.0.21  | 0.17.2       |
 | 1.9.0 – 1.9.24  | 0.15.3       |
@@ -101,6 +102,8 @@ exclusively compatible with specific versions of Poko.
 | 1.4.20 – 1.4.21 | 0.5.0*       |
 | 1.4.0 – 1.4.10  | 0.3.1*       |
 | 1.3.72          | 0.2.4*       |
+
+\*Versions prior to 0.7.0 use plugin name `dev.drewhamilton.extracare`.
 
 Snapshots of the development version are available in [Sonatype's Snapshots
 repository](https://central.sonatype.com/repository/maven-snapshots/).
@@ -125,8 +128,6 @@ plugins {
     id("dev.drewhamilton.poko")
 }
 ```
-
-\*Versions prior to 0.7.0 use plugin name `dev.drewhamilton.extracare`.
 
 ## License
 ```
