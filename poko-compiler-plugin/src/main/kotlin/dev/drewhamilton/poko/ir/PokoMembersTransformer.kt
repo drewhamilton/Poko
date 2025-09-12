@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.ir
 
+import dev.drewhamilton.poko.PokoAnnotationNames
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
@@ -42,6 +43,13 @@ internal class PokoMembersTransformer(
     private val messageCollector: MessageCollector,
 ) : IrElementTransformerVoidWithContext() {
 
+    private val pokoEqualsAndHashCodeAnnotation = pokoAnnotationName.createNestedClassId(
+        name = PokoAnnotationNames.EqualsAndHashCode,
+    )
+    private val pokoToStringAnnotation = pokoAnnotationName.createNestedClassId(
+        name = PokoAnnotationNames.ToString,
+    )
+
     override fun visitFunctionNew(declaration: IrFunction): IrStatement {
         messageCollector.log("Reading <$declaration>")
 
@@ -53,36 +61,42 @@ internal class PokoMembersTransformer(
             canOverride(declaration)
         ) {
             when {
-                declaration.isEquals() -> declaration.convertToGenerated { properties ->
-                    generateEqualsMethodBody(
-                        pokoAnnotation = pokoAnnotationName,
-                        context = pluginContext,
-                        irClass = declarationParent,
-                        functionDeclaration = declaration,
-                        classProperties = properties,
-                        messageCollector = messageCollector,
-                    )
+                declaration.isEquals() && declarationParent.shouldGenerateEqualsAndHashCode() -> {
+                    declaration.convertToGenerated { properties ->
+                        generateEqualsMethodBody(
+                            pokoAnnotation = pokoAnnotationName,
+                            context = pluginContext,
+                            irClass = declarationParent,
+                            functionDeclaration = declaration,
+                            classProperties = properties,
+                            messageCollector = messageCollector,
+                        )
+                    }
                 }
 
-                declaration.isHashCode() -> declaration.convertToGenerated { properties ->
-                    generateHashCodeMethodBody(
-                        pokoAnnotation = pokoAnnotationName,
-                        context = pluginContext,
-                        functionDeclaration = declaration,
-                        classProperties = properties,
-                        messageCollector = messageCollector,
-                    )
+                declaration.isHashCode() && declarationParent.shouldGenerateEqualsAndHashCode() -> {
+                    declaration.convertToGenerated { properties ->
+                        generateHashCodeMethodBody(
+                            pokoAnnotation = pokoAnnotationName,
+                            context = pluginContext,
+                            functionDeclaration = declaration,
+                            classProperties = properties,
+                            messageCollector = messageCollector,
+                        )
+                    }
                 }
 
-                declaration.isToString() -> declaration.convertToGenerated { properties ->
-                    generateToStringMethodBody(
-                        pokoAnnotation = pokoAnnotationName,
-                        context = pluginContext,
-                        irClass = declarationParent,
-                        functionDeclaration = declaration,
-                        classProperties = properties,
-                        messageCollector = messageCollector,
-                    )
+                declaration.isToString() && declarationParent.shouldGenerateToString() -> {
+                    declaration.convertToGenerated { properties ->
+                        generateToStringMethodBody(
+                            pokoAnnotation = pokoAnnotationName,
+                            context = pluginContext,
+                            irClass = declarationParent,
+                            functionDeclaration = declaration,
+                            classProperties = properties,
+                            messageCollector = messageCollector,
+                        )
+                    }
                 }
             }
         }
@@ -92,7 +106,7 @@ internal class PokoMembersTransformer(
 
     @OptIn(UnsafeDuringIrConstructionAPI::class)
     private fun IrClass.isPokoClass(): Boolean = when {
-        !hasAnnotation(pokoAnnotationName.asSingleFqName()) -> {
+        !hasAnyPokoAnnotation() -> {
             messageCollector.log("Not Poko class")
             false
         }
@@ -123,6 +137,18 @@ internal class PokoMembersTransformer(
             true
         }
     }
+
+    private fun IrClass.hasAnyPokoAnnotation(): Boolean {
+        return hasAnnotation(pokoAnnotationName) ||
+            hasAnnotation(pokoEqualsAndHashCodeAnnotation) ||
+            hasAnnotation(pokoToStringAnnotation)
+    }
+
+    private fun IrClass.shouldGenerateEqualsAndHashCode(): Boolean =
+        hasAnnotation(pokoAnnotationName) || hasAnnotation(pokoEqualsAndHashCodeAnnotation)
+
+    private fun IrClass.shouldGenerateToString(): Boolean =
+        hasAnnotation(pokoAnnotationName) || hasAnnotation(pokoToStringAnnotation)
 
     private fun canOverride(function: IrFunction): Boolean {
         val superclassSameFunction = function.parentAsClass.findNearestSuperclassFunction(
