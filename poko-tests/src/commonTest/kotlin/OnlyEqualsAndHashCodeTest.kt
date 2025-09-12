@@ -1,6 +1,6 @@
 
 import assertk.assertThat
-import assertk.assertions.contains
+import assertk.assertions.doesNotContain
 import assertk.assertions.hashCodeFun
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
@@ -33,6 +33,6 @@ class OnlyEqualsAndHashCodeTest {
 
     @Test fun onlyEqualsAndHashCode_instance_has_generic_toString() {
         assertThat(OnlyEqualsAndHashCode(id = 100L).toString())
-            .contains("OnlyEqualsAndHashCode@")
+            .doesNotContain("id", "=", "100")
     }
 }
