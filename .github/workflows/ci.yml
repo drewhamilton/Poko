@@ -18,7 +18,7 @@ jobs:
           java-version: 23
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Build
         run: >-
@@ -68,7 +68,7 @@ jobs:
             23
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Test
         run: >-
@@ -94,7 +94,7 @@ jobs:
           java-version: 23
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Test
         run: ./gradlew :poko-tests:build --stacktrace -Dorg.gradle.project.pokoTests.compileMode=FIR_GENERATION_DISABLED
@@ -125,7 +125,7 @@ jobs:
           path: ~/.m2/repository/dev/drewhamilton/poko/
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Upgrade yarn lock
         if: ${{ matrix.poko_sample_kotlin_version != null }}
