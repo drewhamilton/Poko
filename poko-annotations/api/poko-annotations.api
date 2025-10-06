@@ -1,13 +1,22 @@
 public abstract interface annotation class dev/drewhamilton/poko/ArrayContentSupport : java/lang/annotation/Annotation {
 }
 
+public abstract interface annotation class dev/drewhamilton/poko/IndependentFunctionsSupport : java/lang/annotation/Annotation {
+}
+
 public abstract interface annotation class dev/drewhamilton/poko/Poko : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class dev/drewhamilton/poko/Poko$EqualsAndHashCode : java/lang/annotation/Annotation {
 }
 
 public abstract interface annotation class dev/drewhamilton/poko/Poko$ReadArrayContent : java/lang/annotation/Annotation {
 }
 
 public abstract interface annotation class dev/drewhamilton/poko/Poko$Skip : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class dev/drewhamilton/poko/Poko$ToString : java/lang/annotation/Annotation {
 }
 
 public abstract interface annotation class dev/drewhamilton/poko/SkipSupport : java/lang/annotation/Annotation {

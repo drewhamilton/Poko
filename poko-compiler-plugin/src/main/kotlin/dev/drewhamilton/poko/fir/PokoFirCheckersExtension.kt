@@ -48,8 +48,7 @@ internal class PokoFirCheckersExtension(
     ) {
         context(context: CheckerContext, reporter: DiagnosticReporter)
         override fun check(declaration: FirRegularClass) {
-            val sessionComponent = context.session.pokoFirExtensionSessionComponent
-            if (!declaration.hasAnnotation(sessionComponent.pokoAnnotation)) return
+            if (!declaration.hasAnyPokoClassAnnotation(context)) return
 
             val errorFactory = when {
                 declaration.classKind != ClassKind.CLASS -> Diagnostics.PokoOnNonClass
@@ -67,6 +66,7 @@ internal class PokoFirCheckersExtension(
                 )
             }
 
+            val sessionComponent = context.session.pokoFirExtensionSessionComponent
             val constructorProperties = mutableListOf<FirPropertySymbol>()
             declaration.processAllDeclarations(context.session) { declarationSymbol ->
                 if (
@@ -96,6 +96,15 @@ internal class PokoFirCheckersExtension(
                     factory = Diagnostics.PrimaryConstructorPropertiesRequired,
                 )
             }
+        }
+
+        private fun FirRegularClass.hasAnyPokoClassAnnotation(
+            context: CheckerContext,
+        ): Boolean {
+            val sessionComponent = context.session.pokoFirExtensionSessionComponent
+            return hasAnnotation(sessionComponent.pokoAnnotation) ||
+                hasAnnotation(sessionComponent.pokoEqualsAndHashCodeAnnotation) ||
+                hasAnnotation(sessionComponent.pokoToStringAnnotation)
         }
 
         private fun FirDeclaration.hasAnnotation(

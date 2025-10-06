@@ -3,13 +3,18 @@ package dev.drewhamilton.poko.fir
 import dev.drewhamilton.poko.PokoAnnotationNames
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.extensions.FirExtensionSessionComponent
-import org.jetbrains.kotlin.fir.extensions.FirExtensionSessionComponent.Factory
 import org.jetbrains.kotlin.name.ClassId
 
 internal class PokoFirExtensionSessionComponent(
     session: FirSession,
     internal val pokoAnnotation: ClassId,
 ) : FirExtensionSessionComponent(session) {
+
+    internal val pokoEqualsAndHashCodeAnnotation: ClassId =
+        pokoAnnotation.createNestedClassId(PokoAnnotationNames.EqualsAndHashCode)
+
+    internal val pokoToStringAnnotation: ClassId =
+        pokoAnnotation.createNestedClassId(PokoAnnotationNames.ToString)
 
     internal val pokoSkipAnnotation: ClassId =
         pokoAnnotation.createNestedClassId(PokoAnnotationNames.Skip)
