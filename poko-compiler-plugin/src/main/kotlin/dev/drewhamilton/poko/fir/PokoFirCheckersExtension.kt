@@ -3,15 +3,14 @@ package dev.drewhamilton.poko.fir
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ANNOTATION
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.descriptors.ClassKind
-import org.jetbrains.kotlin.diagnostics.AbstractSourceElementPositioningStrategy
-import org.jetbrains.kotlin.diagnostics.DiagnosticFactory0DelegateProvider
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticFactoryToRendererMap
 import org.jetbrains.kotlin.diagnostics.KtDiagnosticsContainer
-import org.jetbrains.kotlin.diagnostics.Severity
 import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategies
+import org.jetbrains.kotlin.diagnostics.error0
 import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
 import org.jetbrains.kotlin.diagnostics.reportOn
+import org.jetbrains.kotlin.diagnostics.warning0
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -32,6 +31,8 @@ import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.coneTypeOrNull
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.psi.KtClass
+import org.jetbrains.kotlin.psi.KtProperty
 
 internal class PokoFirCheckersExtension(
     session: FirSession,
@@ -118,81 +119,35 @@ internal class PokoFirCheckersExtension(
     }
 
     private object Diagnostics : KtDiagnosticsContainer() {
-
-        /**
-         * The compiler and the IDE use a different version of this class, so use reflection to find the available
-         * version.
-         */
-        // Adapted from https://github.com/TadeasKriz/K2PluginBase/blob/main/kotlin-plugin/src/main/kotlin/com/tadeaskriz/example/ExamplePluginErrors.kt#L8
-        private val psiElementClass by lazy {
-            try {
-                Class.forName("org.jetbrains.kotlin.com.intellij.psi.PsiElement")
-            } catch (_: ClassNotFoundException) {
-                Class.forName("com.intellij.psi.PsiElement")
-            }.kotlin
-        }
-
-        val PokoOnNonClass by error0(
+        val PokoOnNonClass by error0<KtClass>(
             positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
         )
 
-        val PokoOnDataClass by error0(
+        val PokoOnDataClass by error0<KtClass>(
             positioningStrategy = SourceElementPositioningStrategies.DATA_MODIFIER,
         )
 
-        val PokoOnValueClass by error0(
+        val PokoOnValueClass by error0<KtClass>(
             positioningStrategy = SourceElementPositioningStrategies.INLINE_OR_VALUE_MODIFIER,
         )
 
-        val PokoOnInnerClass by error0(
+        val PokoOnInnerClass by error0<KtClass>(
             positioningStrategy = SourceElementPositioningStrategies.INNER_MODIFIER,
         )
 
-        val PrimaryConstructorRequired by error0(
+        val PrimaryConstructorRequired by error0<KtClass>(
             positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
         )
 
-        val PrimaryConstructorPropertiesRequired by error0(
+        val PrimaryConstructorPropertiesRequired by error0<KtClass>(
             positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
         )
 
-        val SkippedPropertyWithCustomAnnotation by warning0(
+        val SkippedPropertyWithCustomAnnotation by warning0<KtProperty>(
             positioningStrategy = SourceElementPositioningStrategies.ANNOTATION_USE_SITE,
         )
 
         override fun getRendererFactory(): BaseDiagnosticRendererFactory = DiagnosticRendererFactory
-
-        /**
-         * Copy of [org.jetbrains.kotlin.diagnostics.error0] with hack for correct `PsiElement`
-         * class.
-         */
-        context(container: KtDiagnosticsContainer)
-        private fun error0(
-            positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
-        ): DiagnosticFactory0DelegateProvider {
-            return DiagnosticFactory0DelegateProvider(
-                severity = Severity.ERROR,
-                positioningStrategy = positioningStrategy,
-                psiType = psiElementClass,
-                container = container,
-            )
-        }
-
-        /**
-         * Copy of [org.jetbrains.kotlin.diagnostics.warning0] with hack for correct `PsiElement`
-         * class.
-         */
-        context(container: KtDiagnosticsContainer)
-        private fun warning0(
-            positioningStrategy: AbstractSourceElementPositioningStrategy = SourceElementPositioningStrategies.DEFAULT,
-        ): DiagnosticFactory0DelegateProvider {
-            return DiagnosticFactory0DelegateProvider(
-                severity = Severity.WARNING,
-                positioningStrategy = positioningStrategy,
-                psiType = psiElementClass,
-                container = container,
-            )
-        }
     }
 
     private object DiagnosticRendererFactory : BaseDiagnosticRendererFactory() {
