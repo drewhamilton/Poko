@@ -1,4 +1,3 @@
-import dev.drewhamilton.poko.sample.build.jvmToolchainLanguageVersion
 import dev.drewhamilton.poko.sample.build.resolvedJavaVersion
 
 plugins {
@@ -10,14 +9,6 @@ plugins {
 
 poko {
     pokoAnnotation.set("dev/drewhamilton/poko/sample/compose/Poko")
-}
-
-if (jvmToolchainLanguageVersion != null) {
-    kotlin {
-        jvmToolchain {
-            languageVersion.set(jvmToolchainLanguageVersion)
-        }
-    }
 }
 
 android {

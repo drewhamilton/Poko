@@ -1,15 +1,11 @@
-import dev.drewhamilton.poko.sample.build.jvmToolchainLanguageVersion
+
 import dev.drewhamilton.poko.sample.build.kotlinJvmTarget
 import dev.drewhamilton.poko.sample.build.resolvedJavaVersion
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val ciJavaVersion = dev.drewhamilton.poko.sample.build.ciJavaVersion
-    if (ciJavaVersion == null || ciJavaVersion >= 17) {
-        alias(libs.plugins.android.library) apply false
-    }
+    alias(libs.plugins.android.library) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.multiplatform) apply false
@@ -51,15 +47,9 @@ allprojects {
         "org.jetbrains.kotlin.multiplatform",
     ).forEach { id ->
         plugins.withId(id) {
-            if (jvmToolchainLanguageVersion == null) {
-                with(extensions.getByType<JavaPluginExtension>()) {
-                    sourceCompatibility = resolvedJavaVersion
-                    targetCompatibility = resolvedJavaVersion
-                }
-            } else {
-                extensions.getByType<KotlinJvmProjectExtension>().jvmToolchain {
-                    languageVersion.set(jvmToolchainLanguageVersion)
-                }
+            with(extensions.getByType<JavaPluginExtension>()) {
+                sourceCompatibility = resolvedJavaVersion
+                targetCompatibility = resolvedJavaVersion
             }
         }
     }
