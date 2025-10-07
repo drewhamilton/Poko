@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.name.ClassId
 @AutoService(CompilerPluginRegistrar::class)
 public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
-    override val pluginId: String get() = BuildConfig.COMPILER_PLUGIN_ARTIFACT
+    override val pluginId: String get() = BuildConfig.COMPILER_PLUGIN_ID
 
     override val supportsK2: Boolean get() = true
 
