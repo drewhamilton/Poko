@@ -41,11 +41,11 @@ public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun isApplicable(kotlinCompilation: KotlinCompilation<*>): Boolean = true
 
-    override fun getCompilerPluginId(): String = BuildConfig.COMPILER_PLUGIN_ARTIFACT
+    override fun getCompilerPluginId(): String = BuildConfig.COMPILER_PLUGIN_ID
 
     override fun getPluginArtifact(): SubpluginArtifact = SubpluginArtifact(
         groupId = BuildConfig.GROUP,
-        artifactId = getCompilerPluginId(),
+        artifactId = BuildConfig.COMPILER_PLUGIN_ARTIFACT,
         version = BuildConfig.VERSION
     )
 
