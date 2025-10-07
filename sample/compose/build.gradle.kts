@@ -1,4 +1,3 @@
-import dev.drewhamilton.poko.sample.build.jvmToolchainLanguageVersion
 import dev.drewhamilton.poko.sample.build.resolvedJavaVersion
 
 plugins {
@@ -12,17 +11,9 @@ poko {
     pokoAnnotation.set("dev/drewhamilton/poko/sample/compose/Poko")
 }
 
-if (jvmToolchainLanguageVersion != null) {
-    kotlin {
-        jvmToolchain {
-            languageVersion.set(jvmToolchainLanguageVersion)
-        }
-    }
-}
-
 android {
     namespace = "dev.drewhamilton.poko.sample.compose"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 21
@@ -33,8 +24,10 @@ android {
         targetCompatibility(resolvedJavaVersion)
     }
 
-    kotlinOptions {
-        freeCompilerArgs = listOf("-progressive")
+    kotlin {
+        compilerOptions {
+            progressiveMode.set(true)
+        }
     }
 
     buildFeatures {
@@ -43,8 +36,9 @@ android {
         // Disable unused AGP features
         resValues = false
         shaders = false
-        androidResources = false
     }
+
+    androidResources.enable = false
 }
 
 dependencies {

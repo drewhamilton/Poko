@@ -42,14 +42,7 @@ rootProject.name = "PokoSample"
 
 include(":jvm")
 include(":mpp")
-
-// Android requires JDK 17; skip it on CI tests for lower JDKs
-private val ciJavaVersion = System.getenv()["ci_java_version"]?.toInt()
-if (ciJavaVersion == null || ciJavaVersion >= 17) {
-    include(":compose")
-} else {
-    logger.lifecycle("Testing on JDK $ciJavaVersion; skipping :compose module")
-}
+include(":compose")
 
 private val isCi = System.getenv()["CI"] == "true"
 if (!isCi) {
