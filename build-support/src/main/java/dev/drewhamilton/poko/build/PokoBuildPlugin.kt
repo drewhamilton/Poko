@@ -114,6 +114,8 @@ class PokoBuildPlugin : Plugin<Project> {
                 buildConfigField("ANNOTATIONS_ARTIFACT", "poko-annotations")
                 buildConfigField("COMPILER_PLUGIN_ARTIFACT", "poko-compiler-plugin")
 
+                buildConfigField("COMPILER_PLUGIN_ID", "dev.drewhamilton.poko")
+
                 buildConfigField("POKO_ENABLED_OPTION_NAME", "enabled")
                 buildConfigField("DEFAULT_POKO_ENABLED", true)
 
