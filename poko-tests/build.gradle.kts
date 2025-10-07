@@ -29,7 +29,7 @@ when (compileMode) {
         freeCompilerArgs.addAll(
           listOf(
             "-P",
-            "plugin:poko-compiler-plugin:pokoPluginArgs=poko.experimental.enableFirDeclarationGeneration=false",
+            "plugin:dev.drewhamilton.poko:pokoPluginArgs=poko.experimental.enableFirDeclarationGeneration=false",
           ),
         )
       }
