@@ -9,6 +9,7 @@ import org.gradle.api.plugins.AppliedPlugin
 import org.gradle.kotlin.dsl.buildConfigField
 import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 private val Project.pokoGroupId get() = property("PUBLISH_GROUP") as String
@@ -113,6 +114,19 @@ class PokoBuildPlugin : Plugin<Project> {
                 buildConfigField("POKO_PLUGIN_ARGS_OPTION_NAME", "pokoPluginArgs")
                 buildConfigField("POKO_PLUGIN_ARGS_LIST_DELIMITER", ';')
                 buildConfigField("POKO_PLUGIN_ARGS_ITEM_DELIMITER", '=')
+            }
+        }
+
+        override fun enableBackwardsCompatibility() {
+            project.tasks.withType(KotlinCompilationTask::class.java).configureEach {
+                compilerOptions {
+                    // Keep these in sync with the Gradle version defined in poko-gradle-plugin/build.gradle.kts.
+                    apiVersion.set(KotlinVersion.KOTLIN_1_8)
+                    languageVersion.set(KotlinVersion.KOTLIN_1_8)
+
+                    // This mode has no effect when targeting old api/language versions.
+                    progressiveMode.set(false)
+                }
             }
         }
     }

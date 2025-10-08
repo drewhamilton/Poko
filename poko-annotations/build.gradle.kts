@@ -6,6 +6,7 @@ plugins {
 
 pokoBuild {
   publishing("Poko Annotations")
+  enableBackwardsCompatibility()
 }
 
 kotlin {
