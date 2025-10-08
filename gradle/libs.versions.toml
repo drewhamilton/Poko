@@ -5,9 +5,9 @@ androidx-compose-runtime = "1.9.2"
 kotlin = "2.2.20"
 kotlinCompileTesting = "1.6.0"
 # https://central.sonatype.com/artifact/dev.zacsweers.kctfork/core/versions:
-kotlinCompileTestingFork = "0.9.0"
+kotlinCompileTestingFork = "0.10.0"
 # https://github.com/google/ksp/releases:
-ksp = "2.2.20-2.0.2"
+ksp = "2.2.20-2.0.4"
 
 [libraries]
 
