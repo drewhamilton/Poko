@@ -132,8 +132,8 @@ class PokoBuildPlugin : Plugin<Project> {
             project.tasks.withType(KotlinCompilationTask::class.java).configureEach {
                 compilerOptions {
                     // Keep these in sync with the Gradle version defined in poko-gradle-plugin/build.gradle.kts.
-                    apiVersion.set(KotlinVersion.KOTLIN_1_8)
-                    languageVersion.set(KotlinVersion.KOTLIN_1_8)
+                    apiVersion.set(KotlinVersion.KOTLIN_2_2)
+                    languageVersion.set(KotlinVersion.KOTLIN_2_2)
 
                     // This mode has no effect when targeting old api/language versions.
                     progressiveMode.set(false)
