@@ -22,8 +22,8 @@ gradlePlugin {
 
 // HEY! If you update the minimum-supported Gradle version check to see if the Kotlin language version
 // can be bumped in PokoBuildPlugin.kt. See https://docs.gradle.org/current/userguide/compatibility.html#kotlin.
-val minimumGradleVersion = "8.11"
-val minimumGradleVersionJavaVersion = 23
+val minimumGradleVersion = "9.0.0"
+val minimumGradleVersionJavaVersion = 24
 
 kotlin {
     jvmToolchain(minimumGradleVersionJavaVersion)
