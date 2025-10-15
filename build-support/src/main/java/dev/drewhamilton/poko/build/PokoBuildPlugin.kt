@@ -6,6 +6,7 @@ import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.AppliedPlugin
+import org.gradle.api.publish.PublishingExtension
 import org.gradle.kotlin.dsl.buildConfigField
 import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
@@ -42,6 +43,14 @@ class PokoBuildPlugin : Plugin<Project> {
     ) : PokoBuildExtension {
         override fun publishing(pomName: String) {
             project.pluginManager.apply("com.vanniktech.maven.publish")
+
+            val publishing = project.extensions.getByName("publishing") as PublishingExtension
+            publishing.repositories {
+                maven {
+                    name = "testing"
+                    setUrl(project.rootProject.layout.buildDirectory.dir("localMaven"))
+                }
+            }
 
             val mavenPublishing = project.extensions.getByName("mavenPublishing") as MavenPublishBaseExtension
             mavenPublishing.apply {
