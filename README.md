@@ -42,6 +42,11 @@ Nested annotations mentioned below can optionally be added with the same name to
 and used for their respective features. For example, `@MyData.ReadArrayContent` will cause the
 annotated property's contents to be used in the Poko-generated functions.
 
+### Independent function generation
+Use `@Poko.EqualsAndHashCode` instead of the base `@Poko` annotation to generate only the `equals`
+and `hashCode` functions for the annotated class. Use `@Poko.ToString` to generate only the
+`toString` function.
+
 ### Arrays
 By default, Poko does nothing to inspect the contents of array properties. [This aligns with the
 behavior of data classes](https://blog.jetbrains.com/kotlin/2015/09/feedback-request-limitations-on-data-classes/#Appendix.Comparingarrays).
@@ -87,7 +92,7 @@ exclusively compatible with specific versions of Poko.
 
 | Kotlin version  | Poko version |
 |-----------------|--------------|
-| 2.2.20          | 0.20.0       |
+| 2.2.20          | 0.20.1       |
 | 2.2.0 – 2.2.10  | 0.19.3       |
 | 2.1.0 – 2.1.21  | 0.18.7       |
 | 2.0.0 – 2.0.21  | 0.17.2       |
