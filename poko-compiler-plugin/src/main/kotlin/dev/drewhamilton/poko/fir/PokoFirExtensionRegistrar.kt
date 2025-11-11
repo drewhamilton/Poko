@@ -5,13 +5,10 @@ import org.jetbrains.kotlin.name.ClassId
 
 internal class PokoFirExtensionRegistrar(
     private val pokoAnnotation: ClassId,
-    private val declarationGeneration: Boolean,
 ) : FirExtensionRegistrar() {
     override fun ExtensionRegistrarContext.configurePlugin() {
         +PokoFirExtensionSessionComponent.getFactory(pokoAnnotation)
         +::PokoFirCheckersExtension
-        if (declarationGeneration) {
-            +::PokoFirDeclarationGenerationExtension
-        }
+        +::PokoFirDeclarationGenerationExtension
     }
 }
