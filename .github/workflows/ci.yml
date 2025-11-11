@@ -110,7 +110,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Upgrade yarn lock
-        if: ${{ matrix.poko_sample_kotlin_version != null }}
+        if: ${{ matrix.poko_sample_kotlin_version != null && !(startsWith(matrix.poko_sample_kotlin_version, '2.3') && startsWith(matrix.poko_sample_kotlin_language_version, '1')) }}
         run: cd sample && ./gradlew kotlinUpgradeYarnLock
 
       - name: Build sample
