@@ -16,6 +16,9 @@ internal class PokoFirExtensionSessionComponent(
     internal val pokoToStringAnnotation: ClassId =
         pokoAnnotation.createNestedClassId(PokoAnnotationNames.ToString)
 
+    internal val pokoReadArrayContentAnnotation: ClassId =
+        pokoAnnotation.createNestedClassId(PokoAnnotationNames.ReadArrayContent)
+
     internal val pokoSkipAnnotation: ClassId =
         pokoAnnotation.createNestedClassId(PokoAnnotationNames.Skip)
 

@@ -18,8 +18,7 @@ internal fun MessageCollector.reportErrorOnClass(irClass: IrClass, message: Stri
     report(CompilerMessageSeverity.ERROR, message, location)
 }
 
-// TODO: Implement an FIR-based declaration checker:
-@OptIn(ObsoleteDescriptorBasedAPI::class)
+@OptIn(ObsoleteDescriptorBasedAPI::class) // Only needed for non-K2 compilation
 internal fun MessageCollector.reportErrorOnProperty(property: IrProperty, message: String) {
     val psi = property.descriptor.source.getPsi()
     val location = MessageUtil.psiElementToMessageLocation(psi)
