@@ -1,8 +1,9 @@
 
 import dev.drewhamilton.poko.sample.build.kotlinJvmTarget
 import dev.drewhamilton.poko.sample.build.resolvedJavaVersion
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
     alias(libs.plugins.android.library) apply false
@@ -54,9 +55,11 @@ allprojects {
         }
     }
 
-    tasks.withType<KotlinCompile>().configureEach {
+    tasks.withType<KotlinCompilationTask<*>>().configureEach {
         compilerOptions {
-            jvmTarget = kotlinJvmTarget
+            if (this is KotlinJvmCompilerOptions) {
+                jvmTarget = kotlinJvmTarget
+            }
             languageVersion = specifiedKotlinLanguageVersion
             progressiveMode = (specifiedKotlinLanguageVersion == null)
         }
