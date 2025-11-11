@@ -22,20 +22,6 @@ when (compileMode) {
     }
   }
 
-  "FIR_GENERATION_DISABLED" -> {
-    logger.lifecycle("Building :poko-tests with FIR declaration generation disabled")
-    tasks.withType<KotlinCompile>().configureEach {
-      compilerOptions {
-        freeCompilerArgs.addAll(
-          listOf(
-            "-P",
-            "plugin:poko-compiler-plugin:pokoPluginArgs=poko.experimental.enableFirDeclarationGeneration=false",
-          ),
-        )
-      }
-    }
-  }
-
   else -> throw IllegalArgumentException("Unknown pokoTests.compileMode: <$compileMode>")
 }
 

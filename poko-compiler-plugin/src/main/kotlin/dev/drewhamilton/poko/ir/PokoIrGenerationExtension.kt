@@ -12,7 +12,6 @@ import org.jetbrains.kotlin.name.ClassId
 
 internal class PokoIrGenerationExtension(
     private val pokoAnnotationName: ClassId,
-    private val firDeclarationGeneration: Boolean,
     private val messageCollector: MessageCollector
 ) : IrGenerationExtension {
 
@@ -22,7 +21,7 @@ internal class PokoIrGenerationExtension(
             return
         }
 
-        if (firDeclarationGeneration && pluginContext.afterK2) {
+        if (pluginContext.afterK2) {
             val bodyFiller = PokoFunctionBodyFiller(
                 pokoAnnotation = pokoAnnotationName,
                 context = pluginContext,
