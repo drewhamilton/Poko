@@ -29,7 +29,6 @@ import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
 import org.jetbrains.kotlin.ir.util.isNullable
-import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
@@ -113,7 +112,7 @@ private fun maybeFindArrayDeepToStringFunction(
     if (!isArray) {
         messageCollector.reportErrorOnProperty(
             property = property,
-            message = "@ArrayContentBased on property of type <${property.type.render()}> not supported",
+            message = "@ReadArrayContent is only supported on properties with array type or `Any` type",
         )
         return null
     }

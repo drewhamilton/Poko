@@ -27,8 +27,11 @@ import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.fir.declarations.utils.isInner
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
+import org.jetbrains.kotlin.fir.types.ConeKotlinType
+import org.jetbrains.kotlin.fir.types.ConeTypeParameterType
 import org.jetbrains.kotlin.fir.types.classId
 import org.jetbrains.kotlin.fir.types.coneTypeOrNull
+import org.jetbrains.kotlin.fir.types.isArrayOrPrimitiveArray
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.psi.KtClass
@@ -90,6 +93,23 @@ internal class PokoFirCheckersExtension(
                     }
                     !hasSkipAnnotation
                 }
+                .onEach { propertySymbol ->
+                    val hasReadArrayContentAnnotation = propertySymbol.hasAnnotation(
+                        classId = sessionComponent.pokoReadArrayContentAnnotation,
+                        session = context.session,
+                    )
+                    val propertyType = propertySymbol.resolvedReturnType
+                    if (
+                        hasReadArrayContentAnnotation &&
+                        !propertyType.isArrayOrPrimitiveArray &&
+                        !propertyType.mayBeRuntimeArray()
+                    ) {
+                        reporter.reportOn(
+                            source = propertySymbol.source,
+                            factory = Diagnostics.ReadArrayContentOnNonArrayProperty,
+                        )
+                    }
+                }
             if (filteredConstructorProperties.isEmpty()) {
                 reporter.reportOn(
                     source = declaration.source,
@@ -125,6 +145,38 @@ internal class PokoFirCheckersExtension(
                 // Multiplatform FqName has "." instead of "/" for package:
                 outerFqName?.replace(".", "/") == DEFAULT_POKO_ANNOTATION
         }
+
+        /**
+         * Returns true if the property represents a type that may be an array at runtime (e.g.
+         * [Any] or a generic type).
+         */
+        context(context: CheckerContext)
+        private fun ConeKotlinType.mayBeRuntimeArray(): Boolean {
+            val builtinTypes = context.session.builtinTypes
+            return this == builtinTypes.anyType.coneType ||
+                this == builtinTypes.nullableAnyType.coneType ||
+                (this is ConeTypeParameterType && hasArrayOrPrimitiveArrayUpperBound())
+        }
+
+        context(context: CheckerContext)
+        private fun ConeTypeParameterType.hasArrayOrPrimitiveArrayUpperBound(): Boolean {
+            val builtinTypes = context.session.builtinTypes
+            lookupTag.typeParameterSymbol.resolvedBounds.forEach { resolvedBound ->
+                val resolvedBoundConeType = resolvedBound.coneType
+                // Note: A generic type cannot have an array as an upper bound, else that would also be
+                // checked here.
+                val foundUpperBoundMatch = resolvedBoundConeType == builtinTypes.anyType.coneType ||
+                    resolvedBoundConeType == builtinTypes.nullableAnyType.coneType ||
+                    (resolvedBoundConeType is ConeTypeParameterType &&
+                        resolvedBoundConeType.hasArrayOrPrimitiveArrayUpperBound())
+
+                if (foundUpperBoundMatch) {
+                    return true
+                }
+            }
+
+            return false
+        }
     }
 
     private object Diagnostics : KtDiagnosticsContainer() {
@@ -153,6 +205,10 @@ internal class PokoFirCheckersExtension(
         )
 
         val SkippedPropertyWithCustomAnnotation by warning0<KtProperty>(
+            positioningStrategy = SourceElementPositioningStrategies.ANNOTATION_USE_SITE,
+        )
+
+        val ReadArrayContentOnNonArrayProperty by error0<KtProperty>(
             positioningStrategy = SourceElementPositioningStrategies.ANNOTATION_USE_SITE,
         )
 
@@ -188,6 +244,10 @@ internal class PokoFirCheckersExtension(
             it.put(
                 factory = Diagnostics.SkippedPropertyWithCustomAnnotation,
                 message = "The @Skip annotation is experimental and its behavior may change; use with caution",
+            )
+            it.put(
+                factory = Diagnostics.ReadArrayContentOnNonArrayProperty,
+                message = "@ReadArrayContent is only supported on properties with array type or `Any` type"
             )
         }
     }
