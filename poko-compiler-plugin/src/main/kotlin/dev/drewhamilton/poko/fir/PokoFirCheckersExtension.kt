@@ -152,16 +152,30 @@ internal class PokoFirCheckersExtension(
          */
         context(context: CheckerContext)
         private fun ConeKotlinType.mayBeRuntimeArray(): Boolean {
-            return this == context.session.builtinTypes.anyType.coneType ||
+            val builtinTypes = context.session.builtinTypes
+            return this == builtinTypes.anyType.coneType ||
+                this == builtinTypes.nullableAnyType.coneType ||
                 (this is ConeTypeParameterType && hasArrayOrPrimitiveArrayUpperBound())
         }
 
         context(context: CheckerContext)
         private fun ConeTypeParameterType.hasArrayOrPrimitiveArrayUpperBound(): Boolean {
-            // Note: A generic type cannot have an array as an upper bound, else that would also be
-            // checked here.
-            return lookupTag.typeParameterSymbol.resolvedBounds.singleOrNull()?.coneType ==
-                context.session.builtinTypes.anyType.coneType
+            val builtinTypes = context.session.builtinTypes
+            lookupTag.typeParameterSymbol.resolvedBounds.forEach { resolvedBound ->
+                val resolvedBoundConeType = resolvedBound.coneType
+                // Note: A generic type cannot have an array as an upper bound, else that would also be
+                // checked here.
+                val foundUpperBoundMatch = resolvedBoundConeType == builtinTypes.anyType.coneType ||
+                    resolvedBoundConeType == builtinTypes.nullableAnyType.coneType ||
+                    (resolvedBoundConeType is ConeTypeParameterType &&
+                        resolvedBoundConeType.hasArrayOrPrimitiveArrayUpperBound())
+
+                if (foundUpperBoundMatch) {
+                    return true
+                }
+            }
+
+            return false
         }
     }
 
