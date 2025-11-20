@@ -20,7 +20,9 @@ import org.jetbrains.kotlin.name.ClassId
 public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
     // TODO: Update for 2.3.0
-    public val pluginId: String get() = BuildConfig.COMPILER_PLUGIN_ARTIFACT
+    @Suppress("unused") // Added for forward compatibility
+    @get:JvmName("getPluginId")
+    internal val pluginId: String get() = BuildConfig.COMPILER_PLUGIN_ARTIFACT
 
     override val supportsK2: Boolean get() = true
 
