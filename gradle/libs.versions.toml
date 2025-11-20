@@ -31,7 +31,7 @@ assertk = "com.willowtreeapps.assertk:assertk:0.28.1"
 asm-util = "org.ow2.asm:asm-util:9.9"
 testParameterInjector = "com.google.testparameterinjector:test-parameter-injector:1.19"
 
-plugin-buildconfig = "com.github.gmazzo.buildconfig:plugin:5.7.1"
+plugin-buildconfig = "com.github.gmazzo.buildconfig:plugin:6.0.0"
 plugin-mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.35.0"
 plugin-dokka = "org.jetbrains.dokka:dokka-gradle-plugin:2.1.0"
 
