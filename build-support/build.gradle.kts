@@ -18,13 +18,13 @@ dependencies {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_23
-    targetCompatibility = JavaVersion.VERSION_23
+    sourceCompatibility = JavaVersion.VERSION_24
+    targetCompatibility = JavaVersion.VERSION_24
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_23)
+        jvmTarget.set(JvmTarget.JVM_24)
     }
 }
 
