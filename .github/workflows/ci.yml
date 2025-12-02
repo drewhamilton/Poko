@@ -11,11 +11,14 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v6
+
       - name: Install JDK
         uses: actions/setup-java@v5
         with:
           distribution: zulu
-          java-version: 24
+          java-version: |
+            23
+            24
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
