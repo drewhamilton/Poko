@@ -17,8 +17,8 @@ jobs:
         with:
           distribution: zulu
           java-version: |
-            23
             24
+            25
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
@@ -68,7 +68,7 @@ jobs:
           distribution: zulu
           java-version: |
             ${{ matrix.poko_tests_jvm_toolchain_version }}
-            24
+            25
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
@@ -102,7 +102,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: zulu
-          java-version: 24
+          java-version: 25
       - name: Download MavenLocal
         uses: actions/download-artifact@v7
         with:
