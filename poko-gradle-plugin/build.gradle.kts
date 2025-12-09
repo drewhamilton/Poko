@@ -1,14 +1,23 @@
 import com.github.gmazzo.buildconfig.BuildConfigExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     `java-gradle-plugin`
     id("org.jetbrains.kotlin.jvm")
 }
 
+// Keep these in sync with each other. See https://docs.gradle.org/current/userguide/compatibility.html#kotlin.
+private val minimumGradleVersion = "9.0.0"
+private val minimumGradleKotlinVersion = KotlinVersion.KOTLIN_2_2
+private val minimumGradleJavaVersion = 24
+
 pokoBuild {
     publishing("Poko Gradle Plugin")
     generateBuildConfig("dev.drewhamilton.poko.gradle")
-    enableBackwardsCompatibility()
+    enableBackwardsCompatibility(
+        lowestSupportedKotlinVersion = minimumGradleKotlinVersion,
+        lowestSupportedKotlinJvmVersion = minimumGradleKotlinVersion,
+    )
 }
 
 gradlePlugin {
@@ -20,13 +29,8 @@ gradlePlugin {
     }
 }
 
-// HEY! If you update the minimum-supported Gradle version check to see if the Kotlin language version
-// can be bumped in PokoBuildPlugin.kt. See https://docs.gradle.org/current/userguide/compatibility.html#kotlin.
-val minimumGradleVersion = "8.11"
-val minimumGradleVersionJavaVersion = 23
-
 kotlin {
-    jvmToolchain(minimumGradleVersionJavaVersion)
+    jvmToolchain(minimumGradleJavaVersion)
 }
 
 configurations.apiElements {
