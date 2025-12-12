@@ -36,7 +36,7 @@ jobs:
           ORG_GRADLE_PROJECT_personalGpgPassword: ${{ secrets.ORG_GRADLE_PROJECT_personalGpgPassword }}
 
       - name: Upload MavenLocal directory
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: MavenLocal
           path: ~/.m2/repository/dev/drewhamilton/poko/
@@ -104,7 +104,7 @@ jobs:
           distribution: zulu
           java-version: 24
       - name: Download MavenLocal
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: MavenLocal
           path: ~/.m2/repository/dev/drewhamilton/poko/
