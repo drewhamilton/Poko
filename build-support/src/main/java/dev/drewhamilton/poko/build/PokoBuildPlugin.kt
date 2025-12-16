@@ -10,6 +10,7 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.kotlin.dsl.buildConfigField
 import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
@@ -114,6 +115,8 @@ class PokoBuildPlugin : Plugin<Project> {
                 buildConfigField("ANNOTATIONS_ARTIFACT", "poko-annotations")
                 buildConfigField("COMPILER_PLUGIN_ARTIFACT", "poko-compiler-plugin")
 
+                buildConfigField("COMPILER_PLUGIN_ID", "dev.drewhamilton.poko")
+
                 buildConfigField("POKO_ENABLED_OPTION_NAME", "enabled")
                 buildConfigField("DEFAULT_POKO_ENABLED", true)
 
@@ -126,15 +129,24 @@ class PokoBuildPlugin : Plugin<Project> {
             }
         }
 
-        override fun enableBackwardsCompatibility() {
+        override fun enableBackwardsCompatibility(
+            lowestSupportedKotlinVersion: KotlinVersion,
+            lowestSupportedKotlinJvmVersion: KotlinVersion,
+        ) {
             project.tasks.withType(KotlinCompilationTask::class.java).configureEach {
                 compilerOptions {
-                    // Keep these in sync with the Gradle version defined in poko-gradle-plugin/build.gradle.kts.
-                    apiVersion.set(KotlinVersion.KOTLIN_1_8)
-                    languageVersion.set(KotlinVersion.KOTLIN_1_8)
+                    val actualKotlinVersion = if (this is KotlinJvmCompilerOptions) {
+                        lowestSupportedKotlinJvmVersion
+                    } else {
+                        lowestSupportedKotlinVersion
+                    }
+                    apiVersion.set(actualKotlinVersion)
+                    languageVersion.set(actualKotlinVersion)
 
-                    // This mode has no effect when targeting old api/language versions.
-                    progressiveMode.set(false)
+                    if (actualKotlinVersion != KotlinVersion.DEFAULT) {
+                        // This mode has no effect when targeting old api/language versions.
+                        progressiveMode.set(false)
+                    }
                 }
             }
         }
