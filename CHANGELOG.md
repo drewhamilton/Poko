@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.21.0
+_2025-12-16_
+
+Update compiler plugin ID to "dev.drewhamilton.poko" (was previously "poko-compiler-plugin").
+
+Deprecate `@SkipSupport` annotation and stop requiring it for using `@Poko.Skip` annotation. Update
+deprecation level of `@ArrayContentSupport` and `@ArrayContentBased` to `ERROR`.
+
+Compile with Kotlin 2.3.0. Compile with Java 25, except for the Gradle plugin, which is compiled
+with Java 24.
+
+Drop support for Kotlin 2.2 due to incompatibility. Increase the minimum supported Gradle version to
+9.0.0.
+
 ## 0.20.2
 _2025-11-19_
 
