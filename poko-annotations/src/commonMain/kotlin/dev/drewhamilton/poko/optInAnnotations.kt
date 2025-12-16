@@ -11,6 +11,9 @@ public annotation class IndependentFunctionsSupport
  * Denotes an experimental API that enables the ability to skip a Poko class primary constructor
  * property when generating Poko functions.
  */
+@Deprecated(
+    message = "Skip support no longer requires opt-in",
+)
 @RequiresOptIn
 public annotation class SkipSupport
 
