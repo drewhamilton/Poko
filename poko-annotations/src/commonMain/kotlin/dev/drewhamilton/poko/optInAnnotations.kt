@@ -15,9 +15,11 @@ public annotation class IndependentFunctionsSupport
 public annotation class SkipSupport
 
 /**
- * Denotes an API that enables support for array content reading, which is experimental and may
- * change or break.
+ * Denotes an experimental API that enables support for array content reading.
  */
-@Deprecated("Array content support no longer requires opt-in")
+@Deprecated(
+    message = "Array content support no longer requires opt-in",
+    level = DeprecationLevel.ERROR,
+)
 @RequiresOptIn
 public annotation class ArrayContentSupport
