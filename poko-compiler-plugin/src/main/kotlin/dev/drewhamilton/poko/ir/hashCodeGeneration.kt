@@ -170,15 +170,15 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
         }
     }
 
-    val hasArrayContentBasedAnnotation = property.hasReadArrayContentAnnotation(pokoAnnotation)
+    val hasReadArrayContentAnnotation = property.hasReadArrayContentAnnotation(pokoAnnotation)
     val classifier = property.type.classifierOrNull
 
-    if (hasArrayContentBasedAnnotation && classifier.mayBeRuntimeArray(context)) {
+    if (hasReadArrayContentAnnotation && classifier.mayBeRuntimeArray(context)) {
         return irRuntimeArrayContentDeepHashCode(context, value)
     }
 
     // Non-null if content-based hashCode will be used, else null:
-    val contentHashCodeFunctionSymbol = if (hasArrayContentBasedAnnotation) {
+    val contentHashCodeFunctionSymbol = if (hasReadArrayContentAnnotation) {
         maybeFindArrayContentHashCodeFunction(context, property, messageCollector)
     } else {
         null
