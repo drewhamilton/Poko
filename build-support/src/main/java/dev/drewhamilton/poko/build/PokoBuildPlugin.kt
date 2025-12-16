@@ -122,10 +122,6 @@ class PokoBuildPlugin : Plugin<Project> {
 
                 buildConfigField("POKO_ANNOTATION_OPTION_NAME", "pokoAnnotation")
                 buildConfigField("DEFAULT_POKO_ANNOTATION", "dev/drewhamilton/poko/Poko")
-
-                buildConfigField("POKO_PLUGIN_ARGS_OPTION_NAME", "pokoPluginArgs")
-                buildConfigField("POKO_PLUGIN_ARGS_LIST_DELIMITER", ';')
-                buildConfigField("POKO_PLUGIN_ARGS_ITEM_DELIMITER", '=')
             }
         }
 
