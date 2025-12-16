@@ -48,7 +48,6 @@ public annotation class Poko {
      *
      * This annotation has no effect on properties declared outside the primary constructor.
      */
-    @SkipSupport
     @Retention(AnnotationRetention.SOURCE)
     @Target(AnnotationTarget.PROPERTY)
     public annotation class Skip

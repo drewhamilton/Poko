@@ -18,10 +18,8 @@ public abstract class PokoPluginExtension @Inject constructor(objects: ObjectFac
      * Note that this must be in the format of a string where packages are delimited by `/` and
      * classes by `.`, e.g. `com/example/Nested.Annotation`.
      *
-     * Note that this only affects the main Poko annotation. Additional Poko annotations, such as
-     * `@ArrayContentBased`, are not customizable. If a custom Poko marker annotation is defined
-     * _and_ additional Poko annotations are used, the poko-annotations artifact must be manually
-     * added as an `implementation` dependency.
+     * Note that this affects the main Poko annotation and any nested annotations, such as
+     * `@Poko.ReadArrayContent` and `@Poko.Skip`.
      */
     public val pokoAnnotation: Property<String> = objects.property(String::class.java)
         .convention(DEFAULT_POKO_ANNOTATION)

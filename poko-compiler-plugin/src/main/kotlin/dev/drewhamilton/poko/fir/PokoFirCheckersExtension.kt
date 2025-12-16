@@ -1,6 +1,5 @@
 package dev.drewhamilton.poko.fir
 
-import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ANNOTATION
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
@@ -10,7 +9,6 @@ import org.jetbrains.kotlin.diagnostics.SourceElementPositioningStrategies
 import org.jetbrains.kotlin.diagnostics.error0
 import org.jetbrains.kotlin.diagnostics.rendering.BaseDiagnosticRendererFactory
 import org.jetbrains.kotlin.diagnostics.reportOn
-import org.jetbrains.kotlin.diagnostics.warning0
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -83,15 +81,7 @@ internal class PokoFirCheckersExtension(
             val skipAnnotation = sessionComponent.pokoSkipAnnotation
             val filteredConstructorProperties = constructorProperties
                 .filter {
-                    val hasSkipAnnotation = it.hasAnnotation(skipAnnotation, context.session)
-                    if (hasSkipAnnotation && !skipAnnotation.isNestedInDefaultPokoAnnotation()) {
-                        // Pseudo-opt-in warning for custom annotation consumers:
-                        reporter.reportOn(
-                            source = it.source,
-                            factory = Diagnostics.SkippedPropertyWithCustomAnnotation,
-                        )
-                    }
-                    !hasSkipAnnotation
+                    !it.hasAnnotation(skipAnnotation, context.session)
                 }
                 .onEach { propertySymbol ->
                     val hasReadArrayContentAnnotation = propertySymbol.hasAnnotation(
@@ -137,13 +127,6 @@ internal class PokoFirCheckersExtension(
 
         private fun FirAnnotation.classId(): ClassId? {
             return annotationTypeRef.coneTypeOrNull?.classId
-        }
-
-        private fun ClassId.isNestedInDefaultPokoAnnotation(): Boolean {
-            val outerFqName = outerClassId?.asFqNameString()
-            return outerFqName == DEFAULT_POKO_ANNOTATION ||
-                // Multiplatform FqName has "." instead of "/" for package:
-                outerFqName?.replace(".", "/") == DEFAULT_POKO_ANNOTATION
         }
 
         /**
@@ -204,10 +187,6 @@ internal class PokoFirCheckersExtension(
             positioningStrategy = SourceElementPositioningStrategies.NAME_IDENTIFIER,
         )
 
-        val SkippedPropertyWithCustomAnnotation by warning0<KtProperty>(
-            positioningStrategy = SourceElementPositioningStrategies.ANNOTATION_USE_SITE,
-        )
-
         val ReadArrayContentOnNonArrayProperty by error0<KtProperty>(
             positioningStrategy = SourceElementPositioningStrategies.ANNOTATION_USE_SITE,
         )
@@ -240,10 +219,6 @@ internal class PokoFirCheckersExtension(
             it.put(
                 factory = Diagnostics.PrimaryConstructorPropertiesRequired,
                 message = "Poko class primary constructor must have at least one not-skipped property",
-            )
-            it.put(
-                factory = Diagnostics.SkippedPropertyWithCustomAnnotation,
-                message = "The @Skip annotation is experimental and its behavior may change; use with caution",
             )
             it.put(
                 factory = Diagnostics.ReadArrayContentOnNonArrayProperty,

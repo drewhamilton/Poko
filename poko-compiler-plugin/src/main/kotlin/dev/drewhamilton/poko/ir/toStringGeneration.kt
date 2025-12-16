@@ -59,15 +59,15 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
         val propertyValue = irGetField(receiver(functionDeclaration), property.backingField!!)
 
         val classifier = property.type.classifierOrNull
-        val hasArrayContentBasedAnnotation = property.hasReadArrayContentAnnotation(pokoAnnotation)
+        val hasReadArrayContentAnnotation = property.hasReadArrayContentAnnotation(pokoAnnotation)
         val propertyStringValue = when {
-            hasArrayContentBasedAnnotation && classifier.mayBeRuntimeArray(context) -> {
+            hasReadArrayContentAnnotation && classifier.mayBeRuntimeArray(context) -> {
                 val field = property.backingField!!
                 val instance = irGetField(receiver(functionDeclaration), field)
                 irRuntimeArrayContentDeepToString(context, instance)
             }
 
-            hasArrayContentBasedAnnotation -> {
+            hasReadArrayContentAnnotation -> {
                 val toStringFunctionSymbol = maybeFindArrayDeepToStringFunction(
                     context = context,
                     property = property,
