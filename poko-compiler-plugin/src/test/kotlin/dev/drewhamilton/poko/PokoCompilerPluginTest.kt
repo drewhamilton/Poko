@@ -188,35 +188,14 @@ class PokoCompilerPluginTest(
         }
     }
 
-    @Test fun `compilation with unknown pokoPluginArg yields warning`() {
-        testCompilation(
-            pokoPluginArgs = "poko.nothing=value",
-        ) { result ->
-            val warning = "w: Ignoring unknown Poko plugin arg: poko.nothing"
-            assertThat(result.messages).contains(warning)
-        }
-    }
-
-    @Test fun `compilation with invalid pokoPluginArg fails`() {
-        testCompilation(
-            pokoPluginArgs = "poko.nothing",
-            expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR,
-        ) { result ->
-            val error = "Invalid syntax for <poko.nothing>: must be in `key=value` property format"
-            assertThat(result.messages).contains(error)
-        }
-    }
-
     private inline fun testCompilation(
         vararg sourceFileNames: String,
         pokoAnnotationName: String = "dev/drewhamilton/poko/Poko",
-        pokoPluginArgs: String? = null,
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
         additionalTesting: (JvmCompilationResult) -> Unit = {}
     ) = testCompilation(
         *sourceFileNames.map { SourceFile.fromPath("src/test/resources/$it.kt") }.toTypedArray(),
         pokoAnnotationName = pokoAnnotationName,
-        pokoPluginArgs = pokoPluginArgs,
         expectedExitCode = expectedExitCode,
         additionalTesting = additionalTesting
     )
@@ -224,14 +203,12 @@ class PokoCompilerPluginTest(
     private inline fun testCompilation(
         vararg sourceFiles: SourceFile,
         pokoAnnotationName: String,
-        pokoPluginArgs: String? = null,
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
         additionalTesting: (JvmCompilationResult) -> Unit = {}
     ) {
         val result = prepareCompilation(
             *sourceFiles,
             pokoAnnotationName = pokoAnnotationName,
-            pokoPluginArgs = pokoPluginArgs,
         ).compile()
         if (
             expectedExitCode == KotlinCompilation.ExitCode.OK &&
@@ -260,7 +237,6 @@ class PokoCompilerPluginTest(
     private fun prepareCompilation(
         vararg sourceFiles: SourceFile,
         pokoAnnotationName: String,
-        pokoPluginArgs: String?,
     ) = KotlinCompilation().apply {
         workingDir = temporaryFolder.root
         compilerPluginRegistrars = listOf(PokoCompilerPluginRegistrar())
@@ -281,9 +257,6 @@ class PokoCompilerPluginTest(
         pluginOptions = listOfNotNull(
             commandLineProcessor.option(CompilerOptions.ENABLED, true),
             commandLineProcessor.option(CompilerOptions.POKO_ANNOTATION, pokoAnnotationName),
-            pokoPluginArgs?.let {
-                commandLineProcessor.option(CompilerOptions.POKO_PLUGIN_ARGS, it)
-            },
         )
     }
 
