@@ -29,7 +29,13 @@ class PokoGradlePluginFixtureTest(
             }
             .withProjectDir(fixtureDir)
             .withDebug(true) // Run in-process.
-            .withArguments(*tasks, "--stacktrace", VERSION_PROPERTY, VALIDATE_KOTLIN_METADATA)
+            .withArguments(
+                *tasks,
+                "--stacktrace",
+                VERSION_PROPERTY,
+                VALIDATE_KOTLIN_METADATA,
+                "-Dorg.gradle.configuration-cache=true",
+            )
             .forwardOutput()
     }
 }

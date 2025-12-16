@@ -68,4 +68,8 @@ tasks.test {
         ":poko-compiler-plugin:publishAllPublicationsToTestingRepository",
         ":poko-gradle-plugin:publishAllPublicationsToTestingRepository",
     )
+    jvmArgs(
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+    )
 }
