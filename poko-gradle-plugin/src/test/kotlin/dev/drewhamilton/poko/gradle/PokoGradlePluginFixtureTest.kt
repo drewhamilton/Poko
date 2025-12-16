@@ -12,6 +12,8 @@ import org.junit.runner.RunWith
 class PokoGradlePluginFixtureTest(
     @param:TestParameter(LATEST_GRADLE_VERSION, MINIMUM_GRADLE_VERSION)
     private val gradleVersion: String,
+    @param:TestParameter
+    private val isolatedProjects: Boolean,
 ) {
     @Test fun simple() {
         createRunner(File("src/test/fixtures/simple")).build()
@@ -35,6 +37,7 @@ class PokoGradlePluginFixtureTest(
                 VERSION_PROPERTY,
                 VALIDATE_KOTLIN_METADATA,
                 "-Dorg.gradle.configuration-cache=true",
+                "-Dorg.gradle.unsafe.isolated-projects=$isolatedProjects"
             )
             .forwardOutput()
     }
