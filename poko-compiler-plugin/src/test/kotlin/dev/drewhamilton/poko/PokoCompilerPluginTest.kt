@@ -244,10 +244,7 @@ class PokoCompilerPluginTest(
         sources = sourceFiles.asList()
         verbose = false
         jvmTarget = JvmTarget.JVM_1_8.description
-        if (compilationMode.k2) {
-            supportsK2 = true
-        } else {
-            supportsK2 = false
+        if (!compilationMode.k2) {
             languageVersion = "1.9"
         }
 
