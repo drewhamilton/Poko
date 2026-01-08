@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.21.1
+_2026-01-08_
+
+Fix Gradle plugin compatibility with Gradle isolated projects.
+
+Add forward compatibility with Kotlin 2.3.20-Beta1.
+
 ## 0.21.0
 _2025-12-16_
 
