@@ -8,7 +8,6 @@ import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
 import org.jetbrains.kotlin.fir.declarations.processAllDeclaredCallables
 import org.jetbrains.kotlin.fir.declarations.utils.isExtension
 import org.jetbrains.kotlin.fir.declarations.utils.isFinal
@@ -18,7 +17,6 @@ import org.jetbrains.kotlin.fir.extensions.FirDeclarationPredicateRegistrar
 import org.jetbrains.kotlin.fir.extensions.MemberGenerationContext
 import org.jetbrains.kotlin.fir.extensions.predicate.LookupPredicate
 import org.jetbrains.kotlin.fir.extensions.predicateBasedProvider
-import org.jetbrains.kotlin.fir.plugin.createMemberFunction
 import org.jetbrains.kotlin.fir.resolve.toClassSymbol
 import org.jetbrains.kotlin.fir.scopes.impl.FirClassDeclaredMemberScope
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
@@ -228,7 +226,7 @@ internal class PokoFirDeclarationGenerationExtension(
 
     private fun createEqualsFunction(
         owner: FirClassSymbol<*>,
-    ): FirSimpleFunction = createMemberFunction(
+    ): FirSimpleFunctionCompat = createMemberFunctionCompat(
         owner = owner,
         key = PokoKey,
         name = Equals.functionName,
@@ -247,7 +245,7 @@ internal class PokoFirDeclarationGenerationExtension(
 
     private fun createHashCodeFunction(
         owner: FirClassSymbol<*>,
-    ): FirSimpleFunction = createMemberFunction(
+    ): FirSimpleFunctionCompat = createMemberFunctionCompat(
         owner = owner,
         key = PokoKey,
         name = HashCode.functionName,
@@ -258,7 +256,7 @@ internal class PokoFirDeclarationGenerationExtension(
 
     private fun createToStringFunction(
         owner: FirClassSymbol<*>,
-    ): FirSimpleFunction = createMemberFunction(
+    ): FirSimpleFunctionCompat = createMemberFunctionCompat(
         owner = owner,
         key = PokoKey,
         name = ToString.functionName,

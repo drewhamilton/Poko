@@ -27,12 +27,15 @@ import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
+import org.jetbrains.kotlin.ir.types.isNullableAny
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
 import org.jetbrains.kotlin.ir.util.isNullable
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.util.OperatorNameConventions
 
 /**
  * Generate the body of the toString method. Adapted from
@@ -150,12 +153,45 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
 
             irElseBranch(
                 irCallToStringFunction(
-                    toStringFunctionSymbol = context.irBuiltIns.extensionToString,
+                    toStringFunctionSymbol = context.findExtensionToStringFunctionSymbol(),
                     value = value,
                 ),
             ),
         ),
     )
+}
+
+@UnsafeDuringIrConstructionAPI
+private fun IrPluginContext.findExtensionToStringFunctionSymbol(): IrSimpleFunctionSymbol {
+    val callableId = CallableId(
+        callableName = OperatorNameConventions.TO_STRING,
+        packageName = StandardClassIds.BASE_KOTLIN_PACKAGE,
+    )
+    return referenceFunctions(callableId = callableId)
+        .filter { simpleFunctionSymbol ->
+            val extensionReceiverParameter = simpleFunctionSymbol.owner.parameters
+                .firstOrNull { it.kind == IrParameterKind.ExtensionReceiver }
+            extensionReceiverParameter?.type?.isNullableAny() == true
+        }
+        // TODO: Simplify to a `.single()` call when non-K2 support is dropped
+        .also { simpleFunctionSymbols ->
+            if (simpleFunctionSymbols.size > 1) {
+                val symbolStrings = simpleFunctionSymbols
+                    .map { it.toString() }
+                    .toSet()
+                if (symbolStrings.size > 1) {
+                    val message = buildString {
+                        append("Found multiple matching extensionToString functions:")
+                        symbolStrings.forEach { symbolString ->
+                            append("\n")
+                            append(symbolString)
+                        }
+                    }
+                    throw IllegalArgumentException(message)
+                }
+            }
+        }
+        .first()
 }
 
 /**
