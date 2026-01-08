@@ -27,12 +27,15 @@ import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
+import org.jetbrains.kotlin.ir.types.isNullableAny
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
 import org.jetbrains.kotlin.ir.util.isNullable
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.StandardClassIds
+import org.jetbrains.kotlin.util.OperatorNameConventions
 
 /**
  * Generate the body of the toString method. Adapted from
@@ -150,12 +153,26 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
 
             irElseBranch(
                 irCallToStringFunction(
-                    toStringFunctionSymbol = context.irBuiltIns.extensionToString,
+                    toStringFunctionSymbol = context.findExtensionToStringFunctionSymbol(),
                     value = value,
                 ),
             ),
         ),
     )
+}
+
+@UnsafeDuringIrConstructionAPI
+private fun IrPluginContext.findExtensionToStringFunctionSymbol(): IrSimpleFunctionSymbol {
+    return referenceFunctions(
+        callableId = CallableId(
+            callableName = OperatorNameConventions.TO_STRING,
+            packageName = StandardClassIds.BASE_KOTLIN_PACKAGE
+        )
+    ).single { simpleFunctionSymbol ->
+        val extensionReceiverParameter = simpleFunctionSymbol.owner.parameters
+            .firstOrNull { it.kind == IrParameterKind.ExtensionReceiver }
+        extensionReceiverParameter?.type?.isNullableAny() == true
+    }
 }
 
 /**
