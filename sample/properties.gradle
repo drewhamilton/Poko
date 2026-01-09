@@ -1,5 +1,4 @@
-// Copies main project Gradle properties to sample project. Can't use buildSrc because settings.gradle
-// must access these properties.
+// Copies main project Gradle properties to sample project.
 
 List<String> propertiesFiles = [
     "../gradle.properties",

@@ -1,6 +1,5 @@
-
-import dev.drewhamilton.poko.sample.build.kotlinJvmTarget
-import dev.drewhamilton.poko.sample.build.resolvedJavaVersion
+import com.android.build.gradle.LibraryExtension
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
@@ -14,8 +13,14 @@ plugins {
 }
 apply(from = "properties.gradle")
 
+private val javaVersion = JavaVersion.VERSION_11
+private val kotlinJvmTarget: JvmTarget = when (javaVersion) {
+    JavaVersion.VERSION_1_8 -> JvmTarget.JVM_1_8
+    else -> JvmTarget.valueOf("JVM_${javaVersion.majorVersion}")
+}
+
 logger.lifecycle("Compiling sample app with Kotlin ${libs.versions.kotlin.get()}")
-logger.lifecycle("Targeting Java version $resolvedJavaVersion")
+logger.lifecycle("Targeting Java version $javaVersion")
 
 val specifiedKotlinLanguageVersion = findProperty("pokoSample_kotlinLanguageVersion")
     ?.toString()
@@ -49,8 +54,17 @@ allprojects {
     ).forEach { id ->
         plugins.withId(id) {
             with(extensions.getByType<JavaPluginExtension>()) {
-                sourceCompatibility = resolvedJavaVersion
-                targetCompatibility = resolvedJavaVersion
+                sourceCompatibility = javaVersion
+                targetCompatibility = javaVersion
+            }
+        }
+    }
+
+    plugins.withId("com.android.library") {
+        with(extensions.getByType<LibraryExtension>()) {
+            compileOptions {
+                sourceCompatibility = javaVersion
+                targetCompatibility = javaVersion
             }
         }
     }
