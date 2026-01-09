@@ -6,7 +6,7 @@ internal val IrDeclarationOrigin.Companion.DEFINED_COMPAT: IrDeclarationOrigin
     get() = try {
         DEFINED
     } catch (_: NoSuchMethodError) {
-        // 2.3.20:
+        // 2.3.0:
         this::class.java.classLoader
             .loadClass($$"org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin$Companion")
             .methods
