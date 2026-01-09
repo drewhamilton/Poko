@@ -1,7 +1,7 @@
 package dev.drewhamilton.poko.fir
 
 import org.jetbrains.kotlin.GeneratedDeclarationKey
-import org.jetbrains.kotlin.fir.declarations.FirSimpleFunction
+import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.extensions.FirExtension
 import org.jetbrains.kotlin.fir.plugin.SimpleFunctionBuildingContext
 import org.jetbrains.kotlin.fir.plugin.createMemberFunction
@@ -16,7 +16,7 @@ internal fun FirExtension.createMemberFunctionCompat(
     name: Name,
     returnType: ConeKotlinType,
     config: SimpleFunctionBuildingContext.() -> Unit = {}
-): FirSimpleFunctionCompat {
+): FirNamedFunctionCompat {
     val value = try {
         createMemberFunction(
             owner = owner,
@@ -26,7 +26,7 @@ internal fun FirExtension.createMemberFunctionCompat(
             config = config
         )
     } catch (_: NoSuchMethodError) {
-        // 2.3.20:
+        // 2.3.0:
         javaClass.classLoader
             .loadClass("org.jetbrains.kotlin.fir.plugin.SimpleFunctionBuildingContextKt")
             .methods
@@ -49,25 +49,24 @@ internal fun FirExtension.createMemberFunctionCompat(
                 config,
             )
     }
-    return FirSimpleFunctionCompat(value)
+    return FirNamedFunctionCompat(value)
 }
 
 /**
- * Wrapper for [org.jetbrains.kotlin.fir.declarations.FirSimpleFunction], which is renamed to
- * `FirNamedFunction` in Kotlin 2.3.20. Uses reflection to resolve needed properties and functions
- * if resolving them directly fails.
+ * Wrapper for [FirNamedFunction], which is renamed from `FirSimpleFunction` in Kotlin 2.3.20. Uses
+ * reflection to resolve needed properties and functions if resolving them directly fails.
  */
 @JvmInline
-internal value class FirSimpleFunctionCompat(
+internal value class FirNamedFunctionCompat(
     val value: Any,
 ) {
     val symbol: FirNamedFunctionSymbol
         get() = try {
-            (value as FirSimpleFunction).symbol
+            (value as FirNamedFunction).symbol
         } catch (_: NoClassDefFoundError) {
-            // 2.3.20:
+            // 2.3.0:
             javaClass.classLoader
-                .loadClass("org.jetbrains.kotlin.fir.declarations.FirNamedFunction")
+                .loadClass("org.jetbrains.kotlin.fir.declarations.FirSimpleFunction")
                 .methods
                 .single {
                     it.name == "getSymbol" &&

@@ -226,7 +226,7 @@ internal class PokoFirDeclarationGenerationExtension(
 
     private fun createEqualsFunction(
         owner: FirClassSymbol<*>,
-    ): FirSimpleFunctionCompat = createMemberFunctionCompat(
+    ): FirNamedFunctionCompat = createMemberFunctionCompat(
         owner = owner,
         key = PokoKey,
         name = Equals.functionName,
@@ -245,7 +245,7 @@ internal class PokoFirDeclarationGenerationExtension(
 
     private fun createHashCodeFunction(
         owner: FirClassSymbol<*>,
-    ): FirSimpleFunctionCompat = createMemberFunctionCompat(
+    ): FirNamedFunctionCompat = createMemberFunctionCompat(
         owner = owner,
         key = PokoKey,
         name = HashCode.functionName,
@@ -256,7 +256,7 @@ internal class PokoFirDeclarationGenerationExtension(
 
     private fun createToStringFunction(
         owner: FirClassSymbol<*>,
-    ): FirSimpleFunctionCompat = createMemberFunctionCompat(
+    ): FirNamedFunctionCompat = createMemberFunctionCompat(
         owner = owner,
         key = PokoKey,
         name = ToString.functionName,
