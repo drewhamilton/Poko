@@ -33,12 +33,14 @@ kotlin {
     jvmToolchain(minimumGradleJavaVersion)
 }
 
-configurations.apiElements {
-    attributes {
-        attribute(
-            GradlePluginApiVersion.GRADLE_PLUGIN_API_VERSION_ATTRIBUTE,
-            objects.named(GradlePluginApiVersion::class, minimumGradleVersion),
-        )
+configurations.configureEach {
+    if (isCanBeConsumed) {
+        attributes {
+            attribute(
+                GradlePluginApiVersion.GRADLE_PLUGIN_API_VERSION_ATTRIBUTE,
+                objects.named(minimumGradleVersion),
+            )
+        }
     }
 }
 
