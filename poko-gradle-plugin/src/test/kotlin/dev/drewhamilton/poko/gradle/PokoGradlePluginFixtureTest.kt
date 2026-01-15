@@ -24,7 +24,7 @@ class PokoGradlePluginFixtureTest(
 
     }
 
-    @Test fun simpleMPP() {
+    @Test fun simpleMpp() {
         val result = createRunner(File("src/test/fixtures/simple-mpp")).build()
         assertThat(result.output).contains(BuildConfig.annotationsDependency)
     }
@@ -34,7 +34,7 @@ class PokoGradlePluginFixtureTest(
         assertThat(result.output).doesNotContain(BuildConfig.annotationsDependency)
     }
 
-    @Test fun customMPP() {
+    @Test fun customMpp() {
         val result = createRunner(File("src/test/fixtures/custom-mpp")).build()
         assertThat(result.output).doesNotContain(BuildConfig.annotationsDependency)
     }

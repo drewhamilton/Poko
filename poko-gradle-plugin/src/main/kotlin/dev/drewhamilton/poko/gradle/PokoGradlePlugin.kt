@@ -16,8 +16,6 @@ public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun apply(target: Project) {
         val extension = target.extensions.create("poko", PokoPluginExtension::class.java)
-        extension.enabled.convention(DEFAULT_POKO_ENABLED)
-        extension.pokoAnnotation.convention(DEFAULT_POKO_ANNOTATION)
 
         val pokoAnnotationDependency = extension.pokoAnnotation.map {
             when (it) {
