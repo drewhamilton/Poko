@@ -1,9 +1,10 @@
 package dev.drewhamilton.poko.gradle
 
 import dev.drewhamilton.poko.gradle.BuildConfig.DEFAULT_POKO_ANNOTATION
+import dev.drewhamilton.poko.gradle.BuildConfig.DEFAULT_POKO_ENABLED
 import org.gradle.api.Project
-import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.SourceSetContainer
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerPluginSupportPlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.Companion.COMMON_MAIN_SOURCE_SET_NAME
@@ -16,24 +17,27 @@ public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
     override fun apply(target: Project) {
         val extension = target.extensions.create("poko", PokoPluginExtension::class.java)
 
-        target.afterEvaluate {
-            val annotationDependency = when (extension.pokoAnnotation.get()) {
-                DEFAULT_POKO_ANNOTATION -> BuildConfig.annotationsDependency
+        val pokoAnnotationDependency = extension.pokoAnnotation.map {
+            when (it) {
+                DEFAULT_POKO_ANNOTATION -> target.dependencyFactory.create(BuildConfig.annotationsDependency)
                 else -> null
             }
-            if (annotationDependency != null) {
-                if (target.plugins.hasPlugin("org.jetbrains.kotlin.multiplatform")) {
-                    val kotlin = target.extensions.getByName("kotlin") as KotlinSourceSetContainer
-                    kotlin.sourceSets.getByName(COMMON_MAIN_SOURCE_SET_NAME) { sourceSet ->
-                        sourceSet.dependencies {
-                            implementation(annotationDependency)
-                        }
-                    }
-                } else {
-                    if (target.plugins.hasPlugin("org.gradle.java-test-fixtures")) {
-                        target.dependencies.add("testFixturesImplementation", annotationDependency)
-                    }
-                    target.dependencies.add(IMPLEMENTATION_CONFIGURATION_NAME, annotationDependency)
+        }
+
+        target.pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
+            val kotlin = target.extensions.getByName("kotlin") as KotlinSourceSetContainer
+            val commonMainSourceSet = kotlin.sourceSets.getByName(COMMON_MAIN_SOURCE_SET_NAME)
+
+            target.configurations.named(commonMainSourceSet.implementationConfigurationName).configure {
+                it.dependencies.addLater(pokoAnnotationDependency)
+            }
+        }
+
+        target.pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+            val sourceSets = target.extensions.getByName("sourceSets") as SourceSetContainer
+            sourceSets.configureEach { sourceSet ->
+                target.configurations.named(sourceSet.implementationConfigurationName).configure {
+                    it.dependencies.addLater(pokoAnnotationDependency)
                 }
             }
         }
