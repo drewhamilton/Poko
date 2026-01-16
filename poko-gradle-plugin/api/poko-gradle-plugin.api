@@ -9,9 +9,8 @@ public final class dev/drewhamilton/poko/gradle/PokoGradlePlugin : org/jetbrains
 	public fun isApplicable (Lorg/jetbrains/kotlin/gradle/plugin/KotlinCompilation;)Z
 }
 
-public abstract class dev/drewhamilton/poko/gradle/PokoPluginExtension {
-	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
-	public final fun getEnabled ()Lorg/gradle/api/provider/Property;
-	public final fun getPokoAnnotation ()Lorg/gradle/api/provider/Property;
+public abstract interface class dev/drewhamilton/poko/gradle/PokoPluginExtension {
+	public abstract fun getEnabled ()Lorg/gradle/api/provider/Property;
+	public abstract fun getPokoAnnotation ()Lorg/gradle/api/provider/Property;
 }
 

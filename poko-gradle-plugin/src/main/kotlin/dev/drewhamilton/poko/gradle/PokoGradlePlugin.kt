@@ -1,6 +1,7 @@
 package dev.drewhamilton.poko.gradle
 
 import dev.drewhamilton.poko.gradle.BuildConfig.DEFAULT_POKO_ANNOTATION
+import dev.drewhamilton.poko.gradle.BuildConfig.DEFAULT_POKO_ENABLED
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
 import org.gradle.api.provider.Provider
@@ -15,6 +16,8 @@ public class PokoGradlePlugin : KotlinCompilerPluginSupportPlugin {
 
     override fun apply(target: Project) {
         val extension = target.extensions.create("poko", PokoPluginExtension::class.java)
+        extension.enabled.convention(DEFAULT_POKO_ENABLED)
+        extension.pokoAnnotation.convention(DEFAULT_POKO_ANNOTATION)
 
         target.afterEvaluate {
             val annotationDependency = when (extension.pokoAnnotation.get()) {
