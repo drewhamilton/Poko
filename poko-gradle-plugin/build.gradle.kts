@@ -33,6 +33,10 @@ kotlin {
     jvmToolchain(minimumGradleJavaVersion)
 }
 
+private val disambiguationAttribute = Attribute.of(
+    "dev.drewhamilton.poko.gradle.disambiguation-attribute",
+    String::class.java,
+)
 configurations.configureEach {
     if (isCanBeConsumed) {
         attributes {
@@ -40,6 +44,10 @@ configurations.configureEach {
                 GradlePluginApiVersion.GRADLE_PLUGIN_API_VERSION_ATTRIBUTE,
                 objects.named(minimumGradleVersion),
             )
+
+            // Configurations are not allowed to have an identical attribute set, so add a unique
+            // attribute to disambiguate:
+            attribute(disambiguationAttribute, this@configureEach.name)
         }
     }
 }
