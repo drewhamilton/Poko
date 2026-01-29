@@ -162,7 +162,7 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
         return value
     }
     if (property.type.isUInt()) {
-        val uintToInt = context.referenceClass(StandardNames.FqNames.uInt)!!
+        val uintToInt = context.finderForBuiltins().findClass(StandardNames.FqNames.uInt)!!
             .functions
             .single { it.owner.name.asString() == "toInt" }
         return irCall(uintToInt).apply {
@@ -299,7 +299,7 @@ private fun findArrayContentDeepHashCodeFunction(
     } else {
         "contentHashCode"
     }
-    return context.referenceFunctions(
+    return context.finderForBuiltins().findFunctions(
         callableId = CallableId(
             packageName = FqName("kotlin.collections"),
             callableName = Name.identifier(callableName),
