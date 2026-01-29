@@ -77,7 +77,7 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
     val irResultVar = IrVariableImpl(
         startOffset = startOffset,
         endOffset = endOffset,
-        origin = IrDeclarationOrigin.DEFINED_COMPAT,
+        origin = IrDeclarationOrigin.DEFINED,
         symbol = IrVariableSymbolImpl(),
         name = Name.identifier("result"),
         type = irIntType,
