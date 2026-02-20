@@ -235,7 +235,7 @@ private fun findContentDeepEqualsFunctionSymbol(
     } else {
         "contentEquals"
     }
-    return context.referenceFunctions(
+    return context.finderForBuiltins().findFunctions(
         callableId = CallableId(
             packageName = FqName("kotlin.collections"),
             callableName = Name.identifier(callableName),

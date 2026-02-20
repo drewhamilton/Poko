@@ -167,7 +167,7 @@ private fun IrPluginContext.findExtensionToStringFunctionSymbol(): IrSimpleFunct
         callableName = OperatorNameConventions.TO_STRING,
         packageName = StandardClassIds.BASE_KOTLIN_PACKAGE,
     )
-    return referenceFunctions(callableId = callableId)
+    return finderForBuiltins().findFunctions(callableId = callableId)
         .filter { simpleFunctionSymbol ->
             val extensionReceiverParameter = simpleFunctionSymbol.owner.parameters
                 .firstOrNull { it.kind == IrParameterKind.ExtensionReceiver }
@@ -228,7 +228,7 @@ private fun findContentDeepToStringFunctionSymbol(
     } else {
         "contentToString"
     }
-    return context.referenceFunctions(
+    return context.finderForBuiltins().findFunctions(
         callableId = CallableId(
             packageName = FqName("kotlin.collections"),
             callableName = Name.identifier(callableName),
