@@ -18,7 +18,7 @@ pluginManagement {
         // KSP:
         google()
 
-        // buildconfig plugin:
+        // buildconfig and foojay plugins:
         gradlePluginPortal()
 
         if (extra.has("kotlin_dev_repository")) {
