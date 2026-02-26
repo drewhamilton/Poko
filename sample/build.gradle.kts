@@ -38,7 +38,11 @@ allprojects {
                 }
             }
         }
+
         mavenCentral()
+
+        // Used for non-ephemeral dev versions:
+        maven("https://redirector.kotlinlang.org/maven/bootstrap")
 
         val kotlinDevRepository = rootProject.findProperty("kotlin_dev_repository")
         if (kotlinDevRepository != null) {

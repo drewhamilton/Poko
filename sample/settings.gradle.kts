@@ -24,6 +24,9 @@ pluginManagement {
         // foojay plugin:
         gradlePluginPortal()
 
+        // Used for non-ephemeral dev versions:
+        maven("https://redirector.kotlinlang.org/maven/bootstrap")
+
         if (extra.has("kotlin_dev_repository")) {
             val kotlinDevRepository = extra["kotlin_dev_repository"]!!
             logger.lifecycle("Adding <$kotlinDevRepository> repository for plugins")
