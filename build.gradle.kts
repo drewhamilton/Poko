@@ -4,8 +4,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Note: kotlin-jvm and kotlin-multiplatform plugins are added implicitly via build-support
-
-    alias(libs.plugins.kotlinx.binaryCompatibilityValidator) apply false
     alias(libs.plugins.ksp) apply false
 }
 
