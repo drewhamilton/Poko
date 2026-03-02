@@ -8,6 +8,8 @@ import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import dev.drewhamilton.poko.gradle.TestBuildConfig.MINIMUM_GRADLE_VERSION
 import java.io.File
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.util.GradleVersion
+import org.junit.AssumptionViolatedException
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -25,6 +27,13 @@ class PokoGradlePluginFixtureTest(
     }
 
     @Test fun simpleAndroid() {
+        if (gradleVersion != LATEST_GRADLE_VERSION) {
+            val requestedGradleVersion = GradleVersion.version(gradleVersion)
+            if (requestedGradleVersion < GradleVersion.version("9.1.0")) {
+                throw AssumptionViolatedException("AGP requires 9.1.0 or later")
+            }
+        }
+
         val result = createRunner(File("src/test/fixtures/simple-android")).build()
         assertThat(result.output).contains(BuildConfig.annotationsDependency)
     }

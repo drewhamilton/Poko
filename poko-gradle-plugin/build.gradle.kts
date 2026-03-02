@@ -1,5 +1,8 @@
 import com.github.gmazzo.buildconfig.BuildConfigExtension
+import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `java-gradle-plugin`
@@ -7,10 +10,10 @@ plugins {
 }
 
 // Keep these in sync with each other. See https://docs.gradle.org/current/userguide/compatibility.html#kotlin.
-private val minimumGradleVersion = "9.1.0"
+private val minimumGradleVersion = "9.0.0"
 private val minimumGradleKotlinVersion = KotlinVersion.KOTLIN_2_2
-private val gradleJavaVersion = 17
-private val minimumGradleJavaVersion = 24
+private val minimumGradleMinimumJavaVersion = 17
+private val minimumGradleMaximumJavaVersion = 24
 
 pokoBuild {
     publishing("Poko Gradle Plugin")
@@ -31,7 +34,18 @@ gradlePlugin {
 }
 
 kotlin {
-    jvmToolchain(gradleJavaVersion)
+    jvmToolchain(minimumGradleMaximumJavaVersion)
+}
+
+project.tasks.withType<JavaCompile>().configureEach {
+    sourceCompatibility = minimumGradleMinimumJavaVersion.toString()
+    targetCompatibility = minimumGradleMinimumJavaVersion.toString()
+}
+project.tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(minimumGradleMinimumJavaVersion.toString()))
+        freeCompilerArgs.add("-Xjdk-release=$minimumGradleMinimumJavaVersion")
+    }
 }
 
 configurations.configureEach {
