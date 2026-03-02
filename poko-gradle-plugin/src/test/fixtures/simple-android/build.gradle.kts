@@ -5,7 +5,7 @@ plugins {
 
 buildscript {
     dependencies {
-        val kotlinVersion = providers.gradleProperty("kotlinVersion").get()
+        val kotlinVersion = libs.versions.kotlin.get()
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }

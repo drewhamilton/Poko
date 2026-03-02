@@ -9,6 +9,7 @@ plugins {
 // Keep these in sync with each other. See https://docs.gradle.org/current/userguide/compatibility.html#kotlin.
 private val minimumGradleVersion = "9.1.0"
 private val minimumGradleKotlinVersion = KotlinVersion.KOTLIN_2_2
+private val gradleJavaVersion = 17
 private val minimumGradleJavaVersion = 24
 
 pokoBuild {
@@ -30,7 +31,7 @@ gradlePlugin {
 }
 
 kotlin {
-    jvmToolchain(minimumGradleJavaVersion)
+    jvmToolchain(gradleJavaVersion)
 }
 
 configurations.configureEach {
@@ -54,7 +55,6 @@ configurations.archives {
 with(the<BuildConfigExtension>()) {
     sourceSets.named("test") {
         buildConfigField(String::class.java, "MINIMUM_GRADLE_VERSION", minimumGradleVersion)
-        buildConfigField(String::class.java, "KOTLIN_VERSION", libs.versions.kotlin)
     }
 }
 
