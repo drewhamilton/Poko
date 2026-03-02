@@ -8,6 +8,7 @@ kotlinCompileTesting = "1.6.0"
 kotlinCompileTestingFork = "0.12.1"
 # https://github.com/google/ksp/releases:
 ksp = "2.3.6"
+android = "9.0.1"
 
 [libraries]
 
@@ -35,9 +36,11 @@ plugin-buildconfig = "com.github.gmazzo.buildconfig:plugin:6.0.7"
 plugin-mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.36.0"
 plugin-dokka = "org.jetbrains.dokka:dokka-gradle-plugin:2.1.0"
 
+android-gradleApi = { module = "com.android.tools.build:gradle-api", version.ref = "android" }
+
 [plugins]
 
-android-library = { id = "com.android.library", version = "9.0.1" }
+android-library = { id = "com.android.library", version.ref = "android" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
