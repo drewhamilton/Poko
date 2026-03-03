@@ -1,8 +1,8 @@
 package dev.drewhamilton.poko.gradle
 
 import assertk.assertThat
-import assertk.assertions.doesNotContain
 import assertk.assertions.contains
+import assertk.assertions.doesNotContain
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import dev.drewhamilton.poko.gradle.TestBuildConfig.MINIMUM_GRADLE_VERSION
@@ -35,6 +35,11 @@ class PokoGradlePluginFixtureTest(
         }
 
         val result = createRunner(File("src/test/fixtures/simple-android")).build()
+        assertThat(result.output).contains(BuildConfig.annotationsDependency)
+    }
+
+    @Test fun simpleAndroidAgp8() {
+        val result = createRunner(File("src/test/fixtures/simple-android-agp8")).build()
         assertThat(result.output).contains(BuildConfig.annotationsDependency)
     }
 
