@@ -11,7 +11,7 @@ buildscript {
 }
 
 android {
-    namespace = "dev.drewhamilton.poko.test"
+    namespace = "dev.drewhamilton.poko.gradle.test.android"
     compileSdk = 36
 
     defaultConfig {
