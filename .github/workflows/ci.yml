@@ -49,7 +49,7 @@ jobs:
       - name: Test without K2
         # Builds and run tests for any not-yet-built modules, i.e. the :poko-tests modules
         run: >-
-          ./gradlew :poko-tests:clean build --stacktrace
+          ./gradlew :poko-tests:clean :poko-tests:build --stacktrace
           -Dorg.gradle.project.pokoTests.compileMode=WITHOUT_K2
 
   test-with-jdk:
