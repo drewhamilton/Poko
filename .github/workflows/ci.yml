@@ -92,7 +92,7 @@ jobs:
       matrix:
         # Note: periodically update dev version with latest from
         # https://packages.jetbrains.team/maven/p/kt/bootstrap/org/jetbrains/kotlin/kotlin-gradle-plugin/
-        poko_sample_kotlin_version: [ 2.3.0, ~, 2.3.20-RC2, 2.4.0-dev-3806 ]
+        poko_sample_kotlin_version: [ 2.3.0, ~, 2.3.20-RC3, 2.4.0-dev-3806 ]
         poko_sample_kotlin_language_version: [ 1.9, ~ ]
         exclude:
           - poko_sample_kotlin_version: 2.4.0-dev-3806
