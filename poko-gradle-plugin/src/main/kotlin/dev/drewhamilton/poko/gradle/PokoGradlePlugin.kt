@@ -2,6 +2,7 @@ package dev.drewhamilton.poko.gradle
 
 import com.android.build.api.dsl.CommonExtension
 import dev.drewhamilton.poko.gradle.BuildConfig.DEFAULT_POKO_ANNOTATION
+import dev.drewhamilton.poko.gradle.BuildConfig.DEFAULT_POKO_ENABLED
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSetContainer
