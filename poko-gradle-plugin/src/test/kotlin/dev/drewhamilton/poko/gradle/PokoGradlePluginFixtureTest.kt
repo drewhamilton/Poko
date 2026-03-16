@@ -1,13 +1,15 @@
 package dev.drewhamilton.poko.gradle
 
 import assertk.assertThat
-import assertk.assertions.doesNotContain
 import assertk.assertions.contains
+import assertk.assertions.doesNotContain
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import dev.drewhamilton.poko.gradle.TestBuildConfig.MINIMUM_GRADLE_VERSION
 import java.io.File
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.util.GradleVersion
+import org.junit.AssumptionViolatedException
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -22,6 +24,23 @@ class PokoGradlePluginFixtureTest(
         val result = createRunner(File("src/test/fixtures/simple-jvm")).build()
         assertThat(result.output).contains(BuildConfig.annotationsDependency)
 
+    }
+
+    @Test fun simpleAndroid() {
+        if (gradleVersion != LATEST_GRADLE_VERSION) {
+            val requestedGradleVersion = GradleVersion.version(gradleVersion)
+            if (requestedGradleVersion < GradleVersion.version("9.1.0")) {
+                throw AssumptionViolatedException("AGP requires 9.1.0 or later")
+            }
+        }
+
+        val result = createRunner(File("src/test/fixtures/simple-android")).build()
+        assertThat(result.output).contains(BuildConfig.annotationsDependency)
+    }
+
+    @Test fun simpleAndroidAgp8() {
+        val result = createRunner(File("src/test/fixtures/simple-android-agp8")).build()
+        assertThat(result.output).contains(BuildConfig.annotationsDependency)
     }
 
     @Test fun simpleMpp() {
@@ -57,7 +76,7 @@ class PokoGradlePluginFixtureTest(
                 VERSION_PROPERTY,
                 VALIDATE_KOTLIN_METADATA,
                 "-Dorg.gradle.configuration-cache=true",
-                "-Dorg.gradle.unsafe.isolated-projects=$isolatedProjects"
+                "-Dorg.gradle.unsafe.isolated-projects=$isolatedProjects",
             )
             .forwardOutput()
     }

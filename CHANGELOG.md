@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.21.3
+_2026-03-02_
+
+Fix bug where Poko would not automatically add the poko-annotations dependency when used with
+Android Gradle Plugin 9+.
+
 ## 0.21.2
 _2026-02-27_
 

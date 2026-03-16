@@ -1,13 +1,14 @@
 [versions]
 
-androidx-compose-runtime = "1.10.4"
+androidx-compose-runtime = "1.10.5"
 
-kotlin = "2.3.10"
+kotlin = "2.3.20"
 kotlinCompileTesting = "1.6.0"
 # https://central.sonatype.com/artifact/dev.zacsweers.kctfork/core/versions:
 kotlinCompileTestingFork = "0.12.1"
 # https://github.com/google/ksp/releases:
 ksp = "2.3.6"
+android = "9.1.0"
 
 [libraries]
 
@@ -31,15 +32,16 @@ assertk = "com.willowtreeapps.assertk:assertk:0.28.1"
 asm-util = "org.ow2.asm:asm-util:9.9.1"
 testParameterInjector = "com.google.testparameterinjector:test-parameter-injector:1.21"
 
-plugin-buildconfig = "com.github.gmazzo.buildconfig:plugin:6.0.7"
+plugin-buildconfig = "com.github.gmazzo.buildconfig:plugin:6.0.9"
 plugin-mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.36.0"
 plugin-dokka = "org.jetbrains.dokka:dokka-gradle-plugin:2.1.0"
 
+android-gradleApi = { module = "com.android.tools.build:gradle-api", version.ref = "android" }
+
 [plugins]
 
-android-library = { id = "com.android.library", version = "9.0.1" }
+android-library = { id = "com.android.library", version.ref = "android" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlinx-binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version = "0.18.1" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

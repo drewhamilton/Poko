@@ -6,12 +6,16 @@ import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.AppliedPlugin
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.kotlin.dsl.buildConfigField
 import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension
+import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationMultiplatformExtension
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 private val Project.pokoGroupId get() = property("PUBLISH_GROUP") as String
@@ -42,6 +46,7 @@ class PokoBuildPlugin : Plugin<Project> {
     private class PokoBuildExtensionImpl(
         private val project: Project,
     ) : PokoBuildExtension {
+        @OptIn(ExperimentalAbiValidation::class)
         override fun publishing(pomName: String) {
             project.pluginManager.apply("com.vanniktech.maven.publish")
 
@@ -93,12 +98,23 @@ class PokoBuildPlugin : Plugin<Project> {
             }
 
             project.pluginManager.apply("org.jetbrains.dokka")
-            project.pluginManager.apply("org.jetbrains.kotlinx.binary-compatibility-validator")
 
             // Published modules should be explicit about their API visibility.
             val kotlinPluginHandler = Action<AppliedPlugin> {
                 val kotlin = project.extensions.getByType<KotlinBaseExtension>()
                 kotlin.explicitApi()
+                val abiValidation = (kotlin as ExtensionAware).extensions.getByName("abiValidation")
+                // KT-84630 KGP: AbiValidationMultiplatformExtension does not extend AbiValidationExtension
+                if (abiValidation is AbiValidationMultiplatformExtension) {
+                    abiValidation.enabled.set(true)
+                } else {
+                    abiValidation as AbiValidationExtension
+                    abiValidation.enabled.set(true)
+                }
+                // KT-78525 KGP: abiValidation: check does not depend on checkLegacyAbi when enabled
+                project.tasks.named("check") {
+                    dependsOn(project.tasks.named("checkLegacyAbi"))
+                }
             }
             project.pluginManager.withPlugin("org.jetbrains.kotlin.jvm", kotlinPluginHandler)
             project.pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform", kotlinPluginHandler)

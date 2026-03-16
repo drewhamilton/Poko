@@ -1,0 +1,39 @@
+// Klib ABI Dump
+// Targets: [androidNativeArm32, androidNativeArm64, androidNativeX64, androidNativeX86, iosArm64, iosSimulatorArm64, iosX64, js, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, wasmWasi, watchosArm32, watchosArm64, watchosDeviceArm64, watchosSimulatorArm64, watchosX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <dev.drewhamilton.poko:poko-annotations>
+open annotation class dev.drewhamilton.poko/ArrayContentSupport : kotlin/Annotation { // dev.drewhamilton.poko/ArrayContentSupport|null[0]
+    constructor <init>() // dev.drewhamilton.poko/ArrayContentSupport.<init>|<init>(){}[0]
+}
+
+open annotation class dev.drewhamilton.poko/IndependentFunctionsSupport : kotlin/Annotation { // dev.drewhamilton.poko/IndependentFunctionsSupport|null[0]
+    constructor <init>() // dev.drewhamilton.poko/IndependentFunctionsSupport.<init>|<init>(){}[0]
+}
+
+open annotation class dev.drewhamilton.poko/Poko : kotlin/Annotation { // dev.drewhamilton.poko/Poko|null[0]
+    constructor <init>() // dev.drewhamilton.poko/Poko.<init>|<init>(){}[0]
+
+    open annotation class EqualsAndHashCode : kotlin/Annotation { // dev.drewhamilton.poko/Poko.EqualsAndHashCode|null[0]
+        constructor <init>() // dev.drewhamilton.poko/Poko.EqualsAndHashCode.<init>|<init>(){}[0]
+    }
+
+    open annotation class ReadArrayContent : kotlin/Annotation { // dev.drewhamilton.poko/Poko.ReadArrayContent|null[0]
+        constructor <init>() // dev.drewhamilton.poko/Poko.ReadArrayContent.<init>|<init>(){}[0]
+    }
+
+    open annotation class Skip : kotlin/Annotation { // dev.drewhamilton.poko/Poko.Skip|null[0]
+        constructor <init>() // dev.drewhamilton.poko/Poko.Skip.<init>|<init>(){}[0]
+    }
+
+    open annotation class ToString : kotlin/Annotation { // dev.drewhamilton.poko/Poko.ToString|null[0]
+        constructor <init>() // dev.drewhamilton.poko/Poko.ToString.<init>|<init>(){}[0]
+    }
+}
+
+open annotation class dev.drewhamilton.poko/SkipSupport : kotlin/Annotation { // dev.drewhamilton.poko/SkipSupport|null[0]
+    constructor <init>() // dev.drewhamilton.poko/SkipSupport.<init>|<init>(){}[0]
+}

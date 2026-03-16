@@ -49,7 +49,7 @@ jobs:
       - name: Test without K2
         # Builds and run tests for any not-yet-built modules, i.e. the :poko-tests modules
         run: >-
-          ./gradlew :poko-tests:clean build --stacktrace
+          ./gradlew :poko-tests:clean :poko-tests:build --stacktrace
           -Dorg.gradle.project.pokoTests.compileMode=WITHOUT_K2
 
   test-with-jdk:
@@ -92,7 +92,7 @@ jobs:
       matrix:
         # Note: periodically update dev version with latest from
         # https://packages.jetbrains.team/maven/p/kt/bootstrap/org/jetbrains/kotlin/kotlin-gradle-plugin/
-        poko_sample_kotlin_version: [ 2.3.0, ~, 2.3.20-RC, 2.4.0-dev-3806 ]
+        poko_sample_kotlin_version: [ ~, 2.4.0-dev-3806 ]
         poko_sample_kotlin_language_version: [ 1.9, ~ ]
         exclude:
           - poko_sample_kotlin_version: 2.4.0-dev-3806
@@ -107,7 +107,8 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: zulu
-          java-version: 25
+          # Minimum supported Java version for Gradle:
+          java-version: 17
       - name: Download MavenLocal
         uses: actions/download-artifact@v8
         with:
