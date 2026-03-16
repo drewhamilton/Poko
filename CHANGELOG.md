@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.22.0
+_2026-03-16_
+
+Convert `PokoPluginExtension` from abstract class to interface.
+
+Increase deprecation level of `@SkipSupport` annotation from `WARNING` to `ERROR`. Increase
+deprecation level of `@ArrayContentBased` annotation from `ERROR` to `HIDDEN`.
+
+Compile with Kotlin 2.3.20.
+
+Drop support for Kotlin 2.3.0 and 2.3.10 due to incompatibility.
+
 ## 0.21.3
 _2026-03-02_
 
