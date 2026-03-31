@@ -28,7 +28,6 @@ class PokoCompilerPluginTest {
         testCompilation("api/Primitives")
     }
 
-    // TODO: Add similar test to :poko-tests
     @Test fun `compilation with value interface succeeds`() {
         testCompilation("api/DataInterface")
     }
