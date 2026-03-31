@@ -21,21 +21,12 @@ internal class PokoIrGenerationExtension(
             return
         }
 
-        if (pluginContext.afterK2) {
-            val bodyFiller = PokoFunctionBodyFiller(
-                pokoAnnotation = pokoAnnotationName,
-                context = pluginContext,
-                messageCollector = messageCollector,
-            )
-            moduleFragment.acceptChildrenVoid(bodyFiller)
-        } else {
-            val pokoMembersTransformer = PokoMembersTransformer(
-                pokoAnnotationName = pokoAnnotationName,
-                pluginContext = pluginContext,
-                messageCollector = messageCollector,
-            )
-            moduleFragment.transform(pokoMembersTransformer, null)
-        }
+        val bodyFiller = PokoFunctionBodyFiller(
+            pokoAnnotation = pokoAnnotationName,
+            context = pluginContext,
+            messageCollector = messageCollector,
+        )
+        moduleFragment.acceptChildrenVoid(bodyFiller)
     }
 
     private fun IrModuleFragment.reportError(message: String) {
