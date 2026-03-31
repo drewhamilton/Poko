@@ -1,5 +1,4 @@
 import com.github.gmazzo.buildconfig.BuildConfigExtension
-import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -18,10 +17,7 @@ private val minimumGradleMaximumJavaVersion = 24
 pokoBuild {
     publishing("Poko Gradle Plugin")
     generateBuildConfig("dev.drewhamilton.poko.gradle")
-    enableBackwardsCompatibility(
-        lowestSupportedKotlinVersion = minimumGradleKotlinVersion,
-        lowestSupportedKotlinJvmVersion = minimumGradleKotlinVersion,
-    )
+    enableBackwardsCompatibility(lowestSupportedKotlinVersion = minimumGradleKotlinVersion)
 }
 
 gradlePlugin {

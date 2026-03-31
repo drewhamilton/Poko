@@ -1,28 +1,9 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.plugin.NATIVE_COMPILER_PLUGIN_CLASSPATH_CONFIGURATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.PLUGIN_CLASSPATH_CONFIGURATION_NAME
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
-}
-
-val compileMode = findProperty("pokoTests.compileMode")
-when (compileMode) {
-    null -> Unit // Nothing to configure
-
-    "WITHOUT_K2" -> {
-        logger.lifecycle("Building :poko-tests without K2 (language level 1.9)")
-        tasks.withType<KotlinCompile>().configureEach {
-            compilerOptions {
-                languageVersion = KotlinVersion.KOTLIN_1_9
-                progressiveMode = false
-            }
-        }
-    }
-
-    else -> throw IllegalArgumentException("Unknown pokoTests.compileMode: <$compileMode>")
 }
 
 val jvmToolchainVersion = (findProperty("pokoTests.jvmToolchainVersion") as? String)?.toInt()
