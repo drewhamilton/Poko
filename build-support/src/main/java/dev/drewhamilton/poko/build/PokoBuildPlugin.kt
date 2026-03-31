@@ -6,15 +6,11 @@ import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.AppliedPlugin
-import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.kotlin.dsl.buildConfigField
 import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension
-import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
@@ -103,13 +99,8 @@ class PokoBuildPlugin : Plugin<Project> {
             val kotlinPluginHandler = Action<AppliedPlugin> {
                 val kotlin = project.extensions.getByType<KotlinBaseExtension>()
                 kotlin.explicitApi()
-                val abiValidation = (kotlin as ExtensionAware).extensions.getByName("abiValidation")
-                // KT-84630 KGP: AbiValidationMultiplatformExtension does not extend AbiValidationExtension
-                if (abiValidation is AbiValidationMultiplatformExtension) {
-                    abiValidation.enabled.set(true)
-                } else {
-                    abiValidation as AbiValidationExtension
-                    abiValidation.enabled.set(true)
+                kotlin.abiValidation {
+                    enabled.set(true)
                 }
                 // KT-78525 KGP: abiValidation: check does not depend on checkLegacyAbi when enabled
                 project.tasks.named("check") {
@@ -143,19 +134,13 @@ class PokoBuildPlugin : Plugin<Project> {
 
         override fun enableBackwardsCompatibility(
             lowestSupportedKotlinVersion: KotlinVersion,
-            lowestSupportedKotlinJvmVersion: KotlinVersion,
         ) {
             project.tasks.withType(KotlinCompilationTask::class.java).configureEach {
                 compilerOptions {
-                    val actualKotlinVersion = if (this is KotlinJvmCompilerOptions) {
-                        lowestSupportedKotlinJvmVersion
-                    } else {
-                        lowestSupportedKotlinVersion
-                    }
-                    apiVersion.set(actualKotlinVersion)
-                    languageVersion.set(actualKotlinVersion)
+                    apiVersion.set(lowestSupportedKotlinVersion)
+                    languageVersion.set(lowestSupportedKotlinVersion)
 
-                    if (actualKotlinVersion != KotlinVersion.DEFAULT) {
+                    if (lowestSupportedKotlinVersion != KotlinVersion.DEFAULT) {
                         // This mode has no effect when targeting old api/language versions.
                         progressiveMode.set(false)
                     }
