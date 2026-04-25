@@ -99,9 +99,7 @@ class PokoBuildPlugin : Plugin<Project> {
             val kotlinPluginHandler = Action<AppliedPlugin> {
                 val kotlin = project.extensions.getByType<KotlinBaseExtension>()
                 kotlin.explicitApi()
-                kotlin.abiValidation {
-                    enabled.set(true)
-                }
+                kotlin.abiValidation()
                 // KT-78525 KGP: abiValidation: check does not depend on checkLegacyAbi when enabled
                 project.tasks.named("check") {
                     dependsOn(project.tasks.named("checkLegacyAbi"))
