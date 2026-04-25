@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.22.1
+_2026-04-24_
+
+Compile with Kotlin 2.3.21. Implement forward compatibility with Kotlin 2.4.0-Beta2.
+
 ## 0.22.0
 _2026-03-16_
 
