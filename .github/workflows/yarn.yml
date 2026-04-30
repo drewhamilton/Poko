@@ -2,7 +2,7 @@ name: Yarn
 
 on:
   push:
-    branches: [ main, kotlin-2.4.0-yarn ]
+    branches: [ main, drew/kotlin-2.4.0-yarn ]
 
 jobs:
   upgrade:
