@@ -22,6 +22,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
 
       - name: Build
         run: >-
@@ -72,6 +74,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
 
       - name: Test
         run: >-
@@ -117,6 +121,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
 
       - name: Upgrade yarn lock
         if: ${{ matrix.poko_sample_kotlin_version != null && !(startsWith(matrix.poko_sample_kotlin_version, '2.3') && startsWith(matrix.poko_sample_kotlin_language_version, '1')) }}
