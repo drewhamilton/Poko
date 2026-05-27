@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
 import org.jetbrains.kotlin.fir.declarations.processAllDeclaredCallables
+import org.jetbrains.kotlin.fir.declarations.utils.isExtension
 import org.jetbrains.kotlin.fir.declarations.utils.isFinal
 import org.jetbrains.kotlin.fir.declarations.utils.visibility
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
@@ -161,7 +162,7 @@ internal class PokoFirDeclarationGenerationExtension(
         val matchingFunctions = mutableListOf<FirNamedFunctionSymbol>()
         scope.processFunctionsByName(function.functionName) { functionSymbol ->
             if (
-                !functionSymbol.isExtensionCompat() &&
+                !functionSymbol.isExtension &&
                 functionSymbol.valueParameterSymbols
                     .map { it.resolvedReturnType } == function.valueParameterTypes()
             ) {
@@ -203,7 +204,7 @@ internal class PokoFirDeclarationGenerationExtension(
         processAllDeclaredCallables(session) { callableSymbol ->
             if (
                 callableSymbol is FirNamedFunctionSymbol &&
-                !callableSymbol.isExtensionCompat() &&
+                !callableSymbol.isExtension &&
                 callableSymbol.name == function.functionName &&
                 callableSymbol.valueParameterSymbols
                     .map { it.resolvedReturnType } == function.valueParameterTypes()

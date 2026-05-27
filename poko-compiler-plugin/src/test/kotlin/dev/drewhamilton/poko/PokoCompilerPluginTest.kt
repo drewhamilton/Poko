@@ -4,8 +4,6 @@ import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
-import com.google.testing.junit.testparameterinjector.TestParameter
-import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.tschuchort.compiletesting.JvmCompilationResult
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.PluginOption
@@ -16,17 +14,12 @@ import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.Assert.fail
-import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.junit.runner.RunWith
 
 @OptIn(ExperimentalCompilerApi::class)
-@RunWith(TestParameterInjector::class)
-class PokoCompilerPluginTest(
-    @param:TestParameter private val compilationMode: CompilationMode,
-) {
+class PokoCompilerPluginTest {
 
     @JvmField
     @Rule var temporaryFolder: TemporaryFolder = TemporaryFolder()
@@ -35,9 +28,7 @@ class PokoCompilerPluginTest(
         testCompilation("api/Primitives")
     }
 
-    // TODO: Add similar test to :poko-tests after FIR is the only compilation mode
     @Test fun `compilation with value interface succeeds`() {
-        assumeTrue(compilationMode == CompilationMode.K2)
         testCompilation("api/DataInterface")
     }
 
@@ -50,16 +41,8 @@ class PokoCompilerPluginTest(
             "illegal/Interface",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            val expectedLocation = if (compilationMode.k2) {
-                "Interface.kt:6:17"
-            } else {
-                "Interface.kt"
-            }
-            val expectedMessage = if (compilationMode.k2) {
-                "Poko can only be applied to a class"
-            } else {
-                "Poko class must have a primary constructor"
-            }
+            val expectedLocation = "Interface.kt:6:17"
+            val expectedMessage = "Poko can only be applied to a class"
             assertThat(result.messages).all {
                 contains(expectedLocation)
                 contains(expectedMessage)
@@ -72,11 +55,7 @@ class PokoCompilerPluginTest(
             "illegal/Data",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            val expectedLocation = if (compilationMode.k2) {
-                "Data.kt:6:7"
-            } else {
-                "Data.kt"
-            }
+            val expectedLocation = "Data.kt:6:7"
             assertThat(result.messages).all {
                 contains(expectedLocation)
                 contains("Poko cannot be applied to a data class")
@@ -89,11 +68,7 @@ class PokoCompilerPluginTest(
             "illegal/Value",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            val expectedLocation = if (compilationMode.k2) {
-                "Value.kt:6:18"
-            } else {
-                "Value.kt"
-            }
+            val expectedLocation = "Value.kt:6:18"
             assertThat(result.messages).all {
                 contains(expectedLocation)
                 contains("Poko cannot be applied to a value class")
@@ -106,11 +81,7 @@ class PokoCompilerPluginTest(
             "illegal/NoPrimaryConstructor",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            val expectedLocation = if (compilationMode.k2) {
-                "NoPrimaryConstructor.kt:6:13"
-            } else {
-                "NoPrimaryConstructor.kt"
-            }
+            val expectedLocation = "NoPrimaryConstructor.kt:6:13"
             assertThat(result.messages).all {
                 contains(expectedLocation)
                 contains("Poko class must have a primary constructor")
@@ -123,11 +94,7 @@ class PokoCompilerPluginTest(
             "illegal/NoConstructorProperties",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            val expectedLocation = if (compilationMode.k2) {
-                "NoConstructorProperties.kt:6:13"
-            } else {
-                "NoConstructorProperties.kt"
-            }
+            val expectedLocation = "NoConstructorProperties.kt:6:13"
             assertThat(result.messages).all {
                 contains(expectedLocation)
                 contains("Poko class primary constructor must have at least one not-skipped property")
@@ -140,11 +107,7 @@ class PokoCompilerPluginTest(
             "illegal/OuterClass",
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR
         ) { result ->
-            val expectedLocation = if (compilationMode.k2) {
-                "OuterClass.kt:8:11"
-            } else {
-                "OuterClass.kt"
-            }
+            val expectedLocation = "OuterClass.kt:8:11"
             assertThat(result.messages).all {
                 contains(expectedLocation)
                 contains("Poko cannot be applied to an inner class")
@@ -244,9 +207,7 @@ class PokoCompilerPluginTest(
         sources = sourceFiles.asList()
         verbose = false
         jvmTarget = JvmTarget.JVM_1_8.description
-        if (!compilationMode.k2) {
-            languageVersion = "1.9"
-        }
+        optIn = emptyList()
 
         val commandLineProcessor = PokoCommandLineProcessor()
         commandLineProcessors = listOf(commandLineProcessor)
@@ -268,12 +229,4 @@ class PokoCompilerPluginTest(
 
     @Suppress("DEPRECATION") // Safe as long as we don't write new files at runtime
     private fun SourceFile.Companion.fromPath(path: String): SourceFile = fromPath(File(path))
-
-    @Suppress("unused") // Test parameter values
-    enum class CompilationMode(
-        val k2: Boolean,
-    ) {
-        NotK2(k2 = false),
-        K2(k2 = true),
-    }
 }

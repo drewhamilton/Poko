@@ -51,15 +51,7 @@ plugins {
 rootProject.name = "PokoSample"
 
 include(":jvm")
-
-// Kotlin 2.3 does not support language target 1.9 for multiplatform:
-private val ciKotlinLanguageVersion = System.getenv()["ORG_GRADLE_PROJECT_pokoSample_kotlinLanguageVersion"]
-if (ciKotlinLanguageVersion?.startsWith("1") == true) {
-    logger.lifecycle("Language version $ciKotlinLanguageVersion; skipping :mpp module")
-} else {
-    include(":mpp")
-}
-
+include(":mpp")
 include(":compose")
 
 private val isCi = System.getenv()["CI"] == "true"
