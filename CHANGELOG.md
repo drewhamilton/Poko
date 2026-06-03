@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.23.0
+_2026-06-03_
+
+Increase deprecation level of `@SkipSupport` and `@ArrayContentSupport` annotations from `ERROR` to
+`HIDDEN`.
+
+Compile with Kotlin 2.4.0. Drop support for Kotlin 2.3 due to incompatibility. Drop support for
+non-K2 compilation, i.e. language level 1.9.
+
+Target Gradle 9.5.
+
 ## 0.22.1
 _2026-04-24_
 
