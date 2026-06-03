@@ -13,7 +13,7 @@ public annotation class IndependentFunctionsSupport
  */
 @Deprecated(
     message = "Skip support no longer requires opt-in",
-    level = DeprecationLevel.ERROR,
+    level = DeprecationLevel.HIDDEN,
 )
 @RequiresOptIn
 public annotation class SkipSupport
@@ -23,7 +23,7 @@ public annotation class SkipSupport
  */
 @Deprecated(
     message = "Array content support no longer requires opt-in",
-    level = DeprecationLevel.ERROR,
+    level = DeprecationLevel.HIDDEN,
 )
 @RequiresOptIn
 public annotation class ArrayContentSupport
