@@ -79,6 +79,22 @@ annotation will be excluded from all three generated functions. For example:
 Data("a") { println("a") } == Data("a") { println("not a") } // yields `true`
 ```
 
+### IDE compatibility
+
+Poko aims to be compatible with recent and new IntelliJ IDEs. If the
+`kotlin.k2.only.bundled.compiler.plugins.enabled` registry option is disabled, IntelliJ should
+display hints indicating which functions Poko is generating, and should display Poko-specific
+warnings and errors.
+
+If your IDE is incompatible with Poko for some reason, this integration can be partially or fully
+disabled with the `firIdeMode` configuration option.
+
+```kotlin
+poko {
+    firIdeMode.set(PokoFirIdeMode.CHECKERS_ONLY)
+}
+```
+
 ### Download
 
 [![Maven Central](https://img.shields.io/maven-metadata/v.svg?label=maven%20central&metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fdev%2Fdrewhamilton%2Fpoko%2Fpoko-compiler-plugin%2Fmaven-metadata.xml&color=blue)](https://central.sonatype.com/namespace/dev.drewhamilton.poko)
