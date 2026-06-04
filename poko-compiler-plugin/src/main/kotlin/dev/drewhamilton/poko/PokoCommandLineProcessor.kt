@@ -26,6 +26,12 @@ public class PokoCommandLineProcessor : CommandLineProcessor {
             description = "",
             required = false,
         ),
+        CliOption(
+            optionName = CompilerOptions.FIR_IDE_MODE.toString(),
+            valueDescription = "<ALL|CHECKERS_ONLY|NONE>",
+            description = "",
+            required = false,
+        ),
     )
 
     override fun processOption(
@@ -35,6 +41,8 @@ public class PokoCommandLineProcessor : CommandLineProcessor {
     ): Unit = when (option.optionName) {
         CompilerOptions.ENABLED.toString() ->
             configuration.put(CompilerOptions.ENABLED, value.toBoolean())
+        CompilerOptions.FIR_IDE_MODE.toString() ->
+            configuration.put(CompilerOptions.FIR_IDE_MODE, FirIdeMode.valueOf(value))
         CompilerOptions.POKO_ANNOTATION.toString() ->
             configuration.put(CompilerOptions.POKO_ANNOTATION, value)
         else ->

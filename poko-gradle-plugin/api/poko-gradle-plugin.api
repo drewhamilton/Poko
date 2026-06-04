@@ -1,3 +1,12 @@
+public final class dev/drewhamilton/poko/gradle/PokoFirIdeMode : java/lang/Enum {
+	public static final field ALL Ldev/drewhamilton/poko/gradle/PokoFirIdeMode;
+	public static final field CHECKERS_ONLY Ldev/drewhamilton/poko/gradle/PokoFirIdeMode;
+	public static final field NONE Ldev/drewhamilton/poko/gradle/PokoFirIdeMode;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ldev/drewhamilton/poko/gradle/PokoFirIdeMode;
+	public static fun values ()[Ldev/drewhamilton/poko/gradle/PokoFirIdeMode;
+}
+
 public final class dev/drewhamilton/poko/gradle/PokoGradlePlugin : org/jetbrains/kotlin/gradle/plugin/KotlinCompilerPluginSupportPlugin {
 	public fun <init> ()V
 	public synthetic fun apply (Ljava/lang/Object;)V
@@ -10,6 +19,7 @@ public final class dev/drewhamilton/poko/gradle/PokoGradlePlugin : org/jetbrains
 
 public abstract interface class dev/drewhamilton/poko/gradle/PokoPluginExtension {
 	public abstract fun getEnabled ()Lorg/gradle/api/provider/Property;
+	public abstract fun getFirIdeMode ()Lorg/gradle/api/provider/Property;
 	public abstract fun getPokoAnnotation ()Lorg/gradle/api/provider/Property;
 }
 

@@ -16,4 +16,26 @@ public interface PokoPluginExtension {
      * `@Poko.ReadArrayContent` and `@Poko.Skip`.
      */
     public val pokoAnnotation: Property<String>
+
+    /**
+     * Configures which Poko FIR extensions run in non-CLI sessions (i.e. IDE analysis).
+     *
+     * CLI compiler sessions always run the full FIR plugin regardless of this setting.
+     * The default is [PokoFirIdeMode.ALL], but if you have compatibility issues in
+     * the IDE you can lower this to [PokoFirIdeMode.CHECKERS_ONLY] or
+     * [PokoFirIdeMode.NONE] to completely disable Poko in the IDE.
+     */
+    public val firIdeMode: Property<PokoFirIdeMode>
+}
+
+/** Controls which Poko FIR extensions run in non-CLI sessions. */
+public enum class PokoFirIdeMode {
+    /** Run FIR declaration generation and checkers. */
+    ALL,
+
+    /** Run FIR checkers only, without declaration generation. Checkers are diagnostics like warnings and errors. */
+    CHECKERS_ONLY,
+
+    /** Do not run Poko FIR declaration generation or checkers. */
+    NONE,
 }

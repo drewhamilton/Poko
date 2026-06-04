@@ -1,5 +1,7 @@
 # Changelog
 
+- Add an `firIdeMode` option to allow partial or full disabling of FIR extensions in the IDE.
+
 ## 0.23.0
 _2026-06-03_
 
