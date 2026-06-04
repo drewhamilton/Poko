@@ -72,9 +72,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Note: periodically update dev version with latest from
-        # https://packages.jetbrains.team/maven/p/kt/bootstrap/org/jetbrains/kotlin/kotlin-gradle-plugin/
-        poko_sample_kotlin_version: [ ~ ]
+        # Note: periodically update dev versions with latest from
+        # https://packages.jetbrains.team/maven/p/kt/bootstrap/org/jetbrains/kotlin/kotlin-gradle-plugin/.
+        # Keep past dev versions too; try to target active versions of IntelliJ based on tags in
+        # https://github.com/JetBrains/kotlin. Can also use
+        # https://github.com/ZacSweers/metro/blob/main/docs/compatibility.md as a reference.
+        poko_sample_kotlin_version: [ 2.4.0-dev-2124, ~, 2.4.20-dev-4664 ]
     env:
       poko_sample_kotlin_version: ${{ matrix.poko_sample_kotlin_version }}
     steps:
@@ -98,7 +101,7 @@ jobs:
           cache-provider: basic
 
       - name: Upgrade yarn lock
-        if: ${{ matrix.poko_sample_kotlin_version != null }}
+        if: ${{ matrix.poko_sample_kotlin_version != null && !startsWith(matrix.poko_sample_kotlin_version, '2.4.0-dev') }}
         run: cd sample && ./gradlew kotlinUpgradeYarnLock
 
       - name: Build sample

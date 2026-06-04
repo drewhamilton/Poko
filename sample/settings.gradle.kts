@@ -50,9 +50,16 @@ plugins {
 
 rootProject.name = "PokoSample"
 
+// Compile sample project with different Kotlin version than Poko, if provided:
+private val localKotlinVersionOverride: String? = null
+private val kotlinVersionOverride = localKotlinVersionOverride
+    ?: System.getenv()["poko_sample_kotlin_version"]?.ifBlank { null }
+
 include(":jvm")
-include(":mpp")
 include(":compose")
+if (kotlinVersionOverride?.startsWith("2.4.0-dev") != true) {
+    include(":mpp")
+}
 
 private val isCi = System.getenv()["CI"] == "true"
 if (!isCi) {
@@ -79,12 +86,6 @@ dependencyResolutionManagement {
         create("libs") {
             from(files("../gradle/libs.versions.toml"))
 
-            fun String.nullIfBlank(): String? = if (isNullOrBlank()) null else this
-
-            // Compile sample project with different Kotlin version than Poko, if provided:
-            val localKotlinVersionOverride: String? = null
-            val kotlinVersionOverride = localKotlinVersionOverride
-                ?: System.getenv()["poko_sample_kotlin_version"]?.nullIfBlank()
             kotlinVersionOverride?.let { kotlinVersion ->
                 version("kotlin", kotlinVersion)
             }
