@@ -127,6 +127,9 @@ class PokoBuildPlugin : Plugin<Project> {
 
                 buildConfigField("POKO_ANNOTATION_OPTION_NAME", "pokoAnnotation")
                 buildConfigField("DEFAULT_POKO_ANNOTATION", "dev/drewhamilton/poko/Poko")
+
+                buildConfigField("POKO_FIR_IDE_MODE_OPTION_NAME", "firIdeMode")
+                buildConfigField("DEFAULT_POKO_FIR_IDE_MODE", "ALL")
             }
         }
 

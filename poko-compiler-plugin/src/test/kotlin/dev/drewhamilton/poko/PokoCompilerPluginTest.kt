@@ -11,6 +11,7 @@ import com.tschuchort.compiletesting.SourceFile
 import java.io.File
 import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
+import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JvmTarget
 import org.junit.Assert.fail
@@ -148,6 +149,21 @@ class PokoCompilerPluginTest {
             expectedExitCode = KotlinCompilation.ExitCode.COMPILATION_ERROR,
         ) {
             assertThat(it.messages).contains("e: Could not find class <nonexistent/ClassName>${System.lineSeparator()}")
+        }
+    }
+
+    @OptIn(CompilerConfiguration.Internals::class)
+    @Test fun `fir IDE mode option parses all values`() {
+        val commandLineProcessor = PokoCommandLineProcessor()
+        val option = commandLineProcessor.pluginOptions.single {
+            it.optionName == CompilerOptions.FIR_IDE_MODE.toString()
+        }
+
+        FirIdeMode.entries.forEach { firIdeMode ->
+            val configuration = CompilerConfiguration()
+            commandLineProcessor.processOption(option, firIdeMode.name, configuration)
+
+            assertThat(configuration.get(CompilerOptions.FIR_IDE_MODE)).isEqualTo(firIdeMode)
         }
     }
 

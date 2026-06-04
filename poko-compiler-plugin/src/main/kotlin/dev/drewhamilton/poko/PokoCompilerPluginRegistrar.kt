@@ -1,6 +1,7 @@
 package dev.drewhamilton.poko
 
 import com.google.auto.service.AutoService
+import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_FIR_IDE_MODE
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ANNOTATION
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ENABLED
 import dev.drewhamilton.poko.fir.PokoFirExtensionRegistrar
@@ -28,6 +29,10 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
 
         val pokoAnnotationString = configuration.get(CompilerOptions.POKO_ANNOTATION, DEFAULT_POKO_ANNOTATION)
         val pokoAnnotationClassId = ClassId.fromString(pokoAnnotationString)
+        val firIdeMode = configuration.get(
+            CompilerOptions.FIR_IDE_MODE,
+            FirIdeMode.valueOf(DEFAULT_POKO_FIR_IDE_MODE),
+        )
 
         val messageCollector = configuration.get(
             CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY,
@@ -44,6 +49,7 @@ public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
         FirExtensionRegistrarAdapter.registerExtension(
             PokoFirExtensionRegistrar(
                 pokoAnnotation = pokoAnnotationClassId,
+                firIdeMode = firIdeMode,
             )
         )
     }
