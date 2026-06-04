@@ -101,7 +101,7 @@ jobs:
           cache-provider: basic
 
       - name: Upgrade yarn lock
-        if: ${{ matrix.poko_sample_kotlin_version != null }}
+        if: ${{ matrix.poko_sample_kotlin_version != null && !startsWith(matrix.poko_sample_kotlin_version, '2.4.0-dev') }}
         run: cd sample && ./gradlew kotlinUpgradeYarnLock
 
       - name: Build sample
