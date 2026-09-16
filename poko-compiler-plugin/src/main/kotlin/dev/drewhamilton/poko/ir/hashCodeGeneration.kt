@@ -3,7 +3,6 @@ package dev.drewhamilton.poko.ir
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.builtins.StandardNames
-import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
@@ -54,7 +53,6 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
     context: IrPluginContext,
     functionDeclaration: IrFunction,
     classProperties: List<IrProperty>,
-    messageCollector: MessageCollector,
 ) {
     if (classProperties.isEmpty()) {
         +irReturn(irInt(0))
@@ -66,7 +64,6 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
                 context = context,
                 function = functionDeclaration,
                 property = classProperties[0],
-                messageCollector = messageCollector,
             ),
         )
         return
@@ -91,7 +88,6 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
             context = context,
             function = functionDeclaration,
             property = classProperties[0],
-            messageCollector = messageCollector,
         )
     }
     +irResultVar
@@ -112,7 +108,6 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
                 context = context,
                 function = functionDeclaration,
                 property = property,
-                messageCollector = messageCollector,
             ),
         )
         +irSet(irResultVar.symbol, rhs)
@@ -130,7 +125,6 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
     context: IrPluginContext,
     function: IrFunction,
     property: IrProperty,
-    messageCollector: MessageCollector,
 ): IrExpression {
     val field = property.backingField!!
     val irGetField = { irGetField(receiver(function), field) }
@@ -139,9 +133,9 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
             type = context.irBuiltIns.intType,
             subject = irGetField(),
             thenPart = irInt(0),
-            elsePart = getHashCodeOf(pokoAnnotation, context, property, irGetField(), messageCollector)
+            elsePart = getHashCodeOf(pokoAnnotation, context, property, irGetField())
         )
-        else -> getHashCodeOf(pokoAnnotation, context, property, irGetField(), messageCollector)
+        else -> getHashCodeOf(pokoAnnotation, context, property, irGetField())
     }
 }
 
@@ -155,7 +149,6 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
     context: IrPluginContext,
     property: IrProperty,
     value: IrExpression,
-    messageCollector: MessageCollector,
 ): IrExpression {
     // Fast path for integers which are already their own hashCode value.
     if (property.type.isInt()) {
@@ -179,7 +172,7 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
 
     // Non-null if content-based hashCode will be used, else null:
     val contentHashCodeFunctionSymbol = if (hasReadArrayContentAnnotation) {
-        maybeFindArrayContentHashCodeFunction(context, property, messageCollector)
+        maybeFindArrayContentHashCodeFunction(context, property)
     } else {
         null
     }
@@ -273,13 +266,12 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
 private fun maybeFindArrayContentHashCodeFunction(
     context: IrPluginContext,
     property: IrProperty,
-    messageCollector: MessageCollector,
 ): IrSimpleFunctionSymbol? {
     val propertyClassifier = property.type.classifierOrFail
 
     val isArray = propertyClassifier.isArrayOrPrimitiveArray(context.irBuiltIns)
     if (!isArray) {
-        messageCollector.reportErrorOnProperty(
+        context.diagnosticReporter.reportErrorOnProperty(
             property = property,
             message = "@ReadArrayContent is only supported on properties with array type or `Any` type",
         )

@@ -2,7 +2,6 @@ package dev.drewhamilton.poko.ir
 
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.builtins.PrimitiveType
-import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.irBranch
 import org.jetbrains.kotlin.ir.builders.irCall
@@ -48,7 +47,6 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
     irClass: IrClass,
     functionDeclaration: IrFunction,
     classProperties: List<IrProperty>,
-    messageCollector: MessageCollector,
 ) {
     val irConcat = irConcat()
     irConcat.addArgument(irString(irClass.name.asString() + "("))
@@ -74,7 +72,6 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
                 val toStringFunctionSymbol = maybeFindArrayDeepToStringFunction(
                     context = context,
                     property = property,
-                    messageCollector = messageCollector
                 ) ?: context.irBuiltIns.dataClassArrayMemberToStringSymbol
                 irCallToStringFunction(
                     toStringFunctionSymbol = toStringFunctionSymbol,
@@ -107,13 +104,12 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
 private fun maybeFindArrayDeepToStringFunction(
     context: IrPluginContext,
     property: IrProperty,
-    messageCollector: MessageCollector,
 ): IrSimpleFunctionSymbol? {
     val propertyClassifier = property.type.classifierOrFail
 
     val isArray = propertyClassifier.isArrayOrPrimitiveArray(context.irBuiltIns)
     if (!isArray) {
-        messageCollector.reportErrorOnProperty(
+        context.diagnosticReporter.reportErrorOnProperty(
             property = property,
             message = "@ReadArrayContent is only supported on properties with array type or `Any` type",
         )
