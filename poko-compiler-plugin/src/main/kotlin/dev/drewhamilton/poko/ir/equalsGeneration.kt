@@ -3,7 +3,6 @@ package dev.drewhamilton.poko.ir
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.irNot
 import org.jetbrains.kotlin.builtins.PrimitiveType
-import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irBranch
@@ -55,7 +54,6 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
     irClass: IrClass,
     functionDeclaration: IrFunction,
     classProperties: List<IrProperty>,
-    messageCollector: MessageCollector,
 ) {
     val irType = irClass.defaultType
     fun irOther(): IrExpression = IrGetValueImpl(
@@ -78,7 +76,6 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
                         receiver = arg1,
                         argument = arg2,
                         property = property,
-                        messageCollector = messageCollector,
                     ),
                 )
             }
@@ -102,7 +99,6 @@ private fun IrBuilderWithScope.irArrayContentDeepEquals(
     receiver: IrExpression,
     argument: IrExpression,
     property: IrProperty,
-    messageCollector: MessageCollector,
 ): IrExpression {
     val propertyType = property.type
     val propertyClassifier = propertyType.classifierOrFail
@@ -113,7 +109,7 @@ private fun IrBuilderWithScope.irArrayContentDeepEquals(
         return if (mayBeRuntimeArray) {
             irRuntimeArrayContentDeepEquals(context, receiver, argument)
         } else {
-            messageCollector.reportErrorOnProperty(
+            context.diagnosticReporter.reportErrorOnProperty(
                 property = property,
                 message = "@ReadArrayContent is only supported on properties with array type or `Any` type",
             )

@@ -5,7 +5,6 @@ import dev.drewhamilton.poko.fir.PokoKey
 import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
-import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.declarations.IrDeclaration
@@ -26,7 +25,6 @@ import org.jetbrains.kotlin.name.ClassId
 internal class PokoFunctionBodyFiller(
     private val pokoAnnotation: ClassId,
     private val context: IrPluginContext,
-    private val messageCollector: MessageCollector,
 ) : IrVisitorVoid() {
 
     override fun visitSimpleFunction(declaration: IrSimpleFunction) {
@@ -47,8 +45,7 @@ internal class PokoFunctionBodyFiller(
         val pokoClass = declaration.parentAsClass
         val pokoProperties = pokoClass.pokoProperties(pokoAnnotation).also {
             if (it.isEmpty()) {
-                messageCollector.log("No primary constructor properties")
-                messageCollector.reportErrorOnClass(
+                context.diagnosticReporter.reportErrorOnClass(
                     irClass = pokoClass,
                     message = "Poko class primary constructor must have at least one not-skipped property",
                 )
@@ -66,7 +63,6 @@ internal class PokoFunctionBodyFiller(
                     irClass = pokoClass,
                     functionDeclaration = declaration,
                     classProperties = pokoProperties,
-                    messageCollector = messageCollector,
                 )
 
                 PokoFunction.HashCode -> generateHashCodeMethodBody(
@@ -74,7 +70,6 @@ internal class PokoFunctionBodyFiller(
                     context = this@PokoFunctionBodyFiller.context,
                     functionDeclaration = declaration,
                     classProperties = pokoProperties,
-                    messageCollector = messageCollector,
                 )
 
                 PokoFunction.ToString -> generateToStringMethodBody(
@@ -83,7 +78,6 @@ internal class PokoFunctionBodyFiller(
                     irClass = pokoClass,
                     functionDeclaration = declaration,
                     classProperties = pokoProperties,
-                    messageCollector = messageCollector,
                 )
             }
         }
