@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.23.2
+_2026-09-17_
+
+Compile with Kotlin 2.4.20.
+
+Target Gradle 9.7.
+
 ## 0.23.1
 _2026-06-04_
 
