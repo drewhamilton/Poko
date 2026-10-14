@@ -37,6 +37,44 @@ class PokoCompilerPluginTest {
         testCompilation("api/MultipleInterface")
     }
 
+    @Test fun `redacted properties are masked in toString`() {
+        testCompilation("api/RedactedProperty") { result ->
+            val redactedClass = result.classLoader.loadClass("api.RedactedProperty")
+            val instance = redactedClass.constructors.single()
+                .newInstance("a", "secret-token", "123-45-6789", "c", "d")
+            assertThat(instance.toString()).isEqualTo(
+                "RedactedProperty(id=a, token=***, ssn=<redacted>, constMask=[hidden], concatMask=ab)",
+            )
+        }
+    }
+
+    @OptIn(RedactSupport::class)
+    @Test fun `plugin default mask matches Redact annotation default`() {
+        assertThat(Poko.Redact().mask).isEqualTo(PokoAnnotationDefaults.REDACT_MASK)
+    }
+
+    @Test fun `custom Redact without mask parameter uses default mask`() {
+        testCompilation(
+            "api/CustomRedactNoMask",
+            pokoAnnotationName = "api/NoMaskPoko",
+        ) { result ->
+            val redactedClass = result.classLoader.loadClass("api.CustomRedactNoMask")
+            val instance = redactedClass.constructors.single().newInstance("bob", "hunter2")
+            assertThat(instance.toString()).isEqualTo("CustomRedactNoMask(user=bob, password=***)")
+        }
+    }
+
+    @Test fun `custom Redact with non-String mask uses default mask`() {
+        testCompilation(
+            "api/CustomRedactNonStringMask",
+            pokoAnnotationName = "api/CustomPoko",
+        ) { result ->
+            val redactedClass = result.classLoader.loadClass("api.CustomRedactNonStringMask")
+            val instance = redactedClass.constructors.single().newInstance("secret")
+            assertThat(instance.toString()).isEqualTo("CustomRedactNonStringMask(secret=***)")
+        }
+    }
+
     @Test fun `compilation of interface fails`() {
         testCompilation(
             "illegal/Interface",

@@ -7,5 +7,7 @@ internal object PokoAnnotationNames {
     val ToString = Name.identifier("ToString")
 
     val ReadArrayContent = Name.identifier("ReadArrayContent")
+    val Redact = Name.identifier("Redact")
+    val RedactMask = Name.identifier("mask")
     val Skip = Name.identifier("Skip")
 }

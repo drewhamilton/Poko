@@ -25,6 +25,13 @@ open annotation class dev.drewhamilton.poko/Poko : kotlin/Annotation { // dev.dr
         constructor <init>() // dev.drewhamilton.poko/Poko.ReadArrayContent.<init>|<init>(){}[0]
     }
 
+    open annotation class Redact : kotlin/Annotation { // dev.drewhamilton.poko/Poko.Redact|null[0]
+        constructor <init>(kotlin/String = ...) // dev.drewhamilton.poko/Poko.Redact.<init>|<init>(kotlin.String){}[0]
+
+        final val mask // dev.drewhamilton.poko/Poko.Redact.mask|{}mask[0]
+            final fun <get-mask>(): kotlin/String // dev.drewhamilton.poko/Poko.Redact.mask.<get-mask>|<get-mask>(){}[0]
+    }
+
     open annotation class Skip : kotlin/Annotation { // dev.drewhamilton.poko/Poko.Skip|null[0]
         constructor <init>() // dev.drewhamilton.poko/Poko.Skip.<init>|<init>(){}[0]
     }
@@ -32,6 +39,10 @@ open annotation class dev.drewhamilton.poko/Poko : kotlin/Annotation { // dev.dr
     open annotation class ToString : kotlin/Annotation { // dev.drewhamilton.poko/Poko.ToString|null[0]
         constructor <init>() // dev.drewhamilton.poko/Poko.ToString.<init>|<init>(){}[0]
     }
+}
+
+open annotation class dev.drewhamilton.poko/RedactSupport : kotlin/Annotation { // dev.drewhamilton.poko/RedactSupport|null[0]
+    constructor <init>() // dev.drewhamilton.poko/RedactSupport.<init>|<init>(){}[0]
 }
 
 open annotation class dev.drewhamilton.poko/SkipSupport : kotlin/Annotation { // dev.drewhamilton.poko/SkipSupport|null[0]

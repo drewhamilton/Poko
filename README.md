@@ -79,6 +79,31 @@ annotation will be excluded from all three generated functions. For example:
 Data("a") { println("a") } == Data("a") { println("not a") } // yields `true`
 ```
 
+### Redacting properties
+
+Some properties, such as passwords, tokens, or personal data, should affect equality but never
+appear in logs. Mark them with the experimental `@Poko.Redact` annotation, which requires opting
+in with `@OptIn(RedactSupport::class)`. The generated `toString` prints a mask in place of the
+value, while `equals` and `hashCode` still use the real value:
+
+```kotlin
+@OptIn(RedactSupport::class)
+@Poko class User(
+    val name: String,
+    @Poko.Redact val token: String,
+    @Poko.Redact(mask = "<redacted>") val ssn: String?,
+)
+
+User("Bob", "abc123", null).toString() // yields `User(name=Bob, token=***, ssn=<redacted>)`
+```
+
+The default mask is `***`. Null values are masked too. If a property is also marked with
+`@Poko.Skip`, it is skipped.
+
+When using a custom Poko annotation, declare a nested `Redact` annotation on it. If that `Redact`
+has no `mask` parameter, its `mask` parameter is not a `String`, or the argument is left out, the
+mask is `***`. Poko ignores any default value declared on a custom `Redact`'s `mask` parameter.
+
 ### IDE compatibility
 
 Poko aims to be compatible with recent and new IntelliJ IDEs. If the

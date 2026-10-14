@@ -1,5 +1,6 @@
 package dev.drewhamilton.poko.ir
 
+import dev.drewhamilton.poko.PokoAnnotationDefaults
 import dev.drewhamilton.poko.PokoAnnotationNames
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
@@ -9,6 +10,7 @@ import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
+import org.jetbrains.kotlin.ir.expressions.IrConst
 import org.jetbrains.kotlin.ir.expressions.IrGetValue
 import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
@@ -20,9 +22,11 @@ import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.createType
 import org.jetbrains.kotlin.ir.types.impl.IrStarProjectionImpl
+import org.jetbrains.kotlin.ir.util.getAnnotation
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isAnnotationClass
 import org.jetbrains.kotlin.ir.util.isInterface
+import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.ir.util.superTypes
 import org.jetbrains.kotlin.name.ClassId
@@ -64,6 +68,25 @@ internal fun IrProperty.hasReadArrayContentAnnotation(
 ): Boolean = hasAnnotation(
     classId = pokoAnnotation.createNestedClassId(PokoAnnotationNames.ReadArrayContent),
 )
+
+/**
+ * Returns the `toString` mask if this property has the nested `Redact` annotation, else null.
+ * Falls back to [PokoAnnotationDefaults.REDACT_MASK] when no String `mask` argument is
+ * passed, including for custom `Redact` annotations with no `mask` parameter or a non-String one.
+ */
+@UnsafeDuringIrConstructionAPI
+internal fun IrProperty.redactMaskOrNull(
+    pokoAnnotation: ClassId,
+): String? {
+    val redactAnnotation = getAnnotation(
+        pokoAnnotation.createNestedClassId(PokoAnnotationNames.Redact).asSingleFqName(),
+    ) ?: return null
+    // Not argumentMapping (empty on Kotlin 2.4.0 through 2.4.1x) or symbol (deprecated in 2.4.20).
+    val maskParameter = redactAnnotation.type.classOrNull?.owner?.primaryConstructor?.parameters
+        ?.singleOrNull { it.name == PokoAnnotationNames.RedactMask }
+    val maskArgument = maskParameter?.let { redactAnnotation.arguments[it] }
+    return (maskArgument as? IrConst)?.value as? String ?: PokoAnnotationDefaults.REDACT_MASK
+}
 
 /**
  * Returns true if the classifier represents a type that may be an array at runtime (e.g. [Any] or

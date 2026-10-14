@@ -57,15 +57,16 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
 
         irConcat.addArgument(irString(property.name.asString() + "="))
 
-        val propertyValue = irGetField(receiver(functionDeclaration), property.backingField!!)
+        fun propertyValue() = irGetField(receiver(functionDeclaration), property.backingField!!)
 
+        val redactMask = property.redactMaskOrNull(pokoAnnotation)
         val classifier = property.type.classifierOrNull
         val hasReadArrayContentAnnotation = property.hasReadArrayContentAnnotation(pokoAnnotation)
         val propertyStringValue = when {
+            redactMask != null -> irString(redactMask)
+
             hasReadArrayContentAnnotation && classifier.mayBeRuntimeArray(context) -> {
-                val field = property.backingField!!
-                val instance = irGetField(receiver(functionDeclaration), field)
-                irRuntimeArrayContentDeepToString(context, instance)
+                irRuntimeArrayContentDeepToString(context, propertyValue())
             }
 
             hasReadArrayContentAnnotation -> {
@@ -75,18 +76,18 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
                 ) ?: context.irBuiltIns.dataClassArrayMemberToStringSymbol
                 irCallToStringFunction(
                     toStringFunctionSymbol = toStringFunctionSymbol,
-                    value = propertyValue,
+                    value = propertyValue(),
                 )
             }
 
             classifier.isArrayOrPrimitiveArray(context.irBuiltIns) -> {
                 irCallToStringFunction(
                     toStringFunctionSymbol = context.irBuiltIns.dataClassArrayMemberToStringSymbol,
-                    value = propertyValue,
+                    value = propertyValue(),
                 )
             }
 
-            else -> propertyValue
+            else -> propertyValue()
         }
 
         irConcat.addArgument(propertyStringValue)

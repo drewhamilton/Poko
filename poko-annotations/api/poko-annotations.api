@@ -13,10 +13,17 @@ public abstract interface annotation class dev/drewhamilton/poko/Poko$EqualsAndH
 public abstract interface annotation class dev/drewhamilton/poko/Poko$ReadArrayContent : java/lang/annotation/Annotation {
 }
 
+public abstract interface annotation class dev/drewhamilton/poko/Poko$Redact : java/lang/annotation/Annotation {
+	public abstract fun mask ()Ljava/lang/String;
+}
+
 public abstract interface annotation class dev/drewhamilton/poko/Poko$Skip : java/lang/annotation/Annotation {
 }
 
 public abstract interface annotation class dev/drewhamilton/poko/Poko$ToString : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class dev/drewhamilton/poko/RedactSupport : java/lang/annotation/Annotation {
 }
 
 public abstract interface annotation class dev/drewhamilton/poko/SkipSupport : java/lang/annotation/Annotation {

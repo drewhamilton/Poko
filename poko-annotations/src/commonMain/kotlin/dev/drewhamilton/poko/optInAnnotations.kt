@@ -8,6 +8,13 @@ package dev.drewhamilton.poko
 public annotation class IndependentFunctionsSupport
 
 /**
+ * Denotes an experimental API that enables masking a Poko class primary constructor property's
+ * value in the generated `toString` function.
+ */
+@RequiresOptIn
+public annotation class RedactSupport
+
+/**
  * Denotes an experimental API that enables the ability to skip a Poko class primary constructor
  * property when generating Poko functions.
  */
