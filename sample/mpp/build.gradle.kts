@@ -12,7 +12,10 @@ kotlin {
     linuxArm64()
     linuxX64()
     macosArm64()
-    macosX64()
+    if (!libs.versions.kotlin.get().startsWith("2.5")) {
+        @Suppress("DEPRECATION_ERROR")
+        macosX64()
+    }
     mingwX64()
 
     sourceSets {
