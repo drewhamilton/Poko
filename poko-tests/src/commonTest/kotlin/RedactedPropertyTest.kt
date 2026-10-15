@@ -5,6 +5,7 @@ import assertk.assertions.isNotEqualTo
 import kotlin.test.Test
 import poko.OnlyEqualsAndHashCodeRedacted
 import poko.OnlyToStringRedacted
+import poko.RedactedFirstProperty
 import poko.RedactedProperty
 import poko.SkippedRedactedProperty
 
@@ -18,6 +19,11 @@ class RedactedPropertyTest {
     @Test fun null_redacted_value_prints_mask() {
         assertThat(redacted(ssn = null).toString())
             .isEqualTo("RedactedProperty(id=a, token=***, ssn=<redacted>, bytes=***, note=)")
+    }
+
+    @Test fun redacted_first_property_is_followed_by_separator() {
+        assertThat(RedactedFirstProperty(secret = "s", id = "a").toString())
+            .isEqualTo("RedactedFirstProperty(secret=***, id=a)")
     }
 
     @Test fun redacted_properties_participate_in_equals() {

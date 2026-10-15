@@ -1,5 +1,7 @@
 package dev.drewhamilton.poko.ir
 
+import dev.drewhamilton.poko.PokoAnnotationDefaults
+import dev.drewhamilton.poko.PokoAnnotationNames
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
@@ -18,17 +20,21 @@ import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrParameterKind
 import org.jetbrains.kotlin.ir.declarations.IrProperty
 import org.jetbrains.kotlin.ir.expressions.IrBranch
+import org.jetbrains.kotlin.ir.expressions.IrConst
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.addArgument
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
+import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isNullableAny
+import org.jetbrains.kotlin.ir.util.getAnnotation
 import org.jetbrains.kotlin.ir.util.isArrayOrPrimitiveArray
 import org.jetbrains.kotlin.ir.util.isNullable
+import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
@@ -54,19 +60,25 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
     var first = true
     for (property in classProperties) {
         if (!first) irConcat.addArgument(irString(", "))
+        first = false
 
         irConcat.addArgument(irString(property.name.asString() + "="))
 
-        fun propertyValue() = irGetField(receiver(functionDeclaration), property.backingField!!)
-
         val redactMask = property.redactMaskOrNull(pokoAnnotation)
+        if (redactMask != null) {
+            irConcat.addArgument(irString(redactMask))
+            continue
+        }
+
+        val propertyValue = irGetField(receiver(functionDeclaration), property.backingField!!)
+
         val classifier = property.type.classifierOrNull
         val hasReadArrayContentAnnotation = property.hasReadArrayContentAnnotation(pokoAnnotation)
         val propertyStringValue = when {
-            redactMask != null -> irString(redactMask)
-
             hasReadArrayContentAnnotation && classifier.mayBeRuntimeArray(context) -> {
-                irRuntimeArrayContentDeepToString(context, propertyValue())
+                val field = property.backingField!!
+                val instance = irGetField(receiver(functionDeclaration), field)
+                irRuntimeArrayContentDeepToString(context, instance)
             }
 
             hasReadArrayContentAnnotation -> {
@@ -76,25 +88,43 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
                 ) ?: context.irBuiltIns.dataClassArrayMemberToStringSymbol
                 irCallToStringFunction(
                     toStringFunctionSymbol = toStringFunctionSymbol,
-                    value = propertyValue(),
+                    value = propertyValue,
                 )
             }
 
             classifier.isArrayOrPrimitiveArray(context.irBuiltIns) -> {
                 irCallToStringFunction(
                     toStringFunctionSymbol = context.irBuiltIns.dataClassArrayMemberToStringSymbol,
-                    value = propertyValue(),
+                    value = propertyValue,
                 )
             }
 
-            else -> propertyValue()
+            else -> propertyValue
         }
 
         irConcat.addArgument(propertyStringValue)
-        first = false
     }
     irConcat.addArgument(irString(")"))
     +irReturn(irConcat)
+}
+
+/**
+ * Returns the `toString` mask if this property has the nested `Redact` annotation, else null.
+ * Falls back to [PokoAnnotationDefaults.REDACT_MASK] when no String `mask` argument is
+ * passed, including for custom `Redact` annotations with no `mask` parameter or a non-String one.
+ */
+@UnsafeDuringIrConstructionAPI
+private fun IrProperty.redactMaskOrNull(
+    pokoAnnotation: ClassId,
+): String? {
+    val redactAnnotation = getAnnotation(
+        pokoAnnotation.createNestedClassId(PokoAnnotationNames.Redact).asSingleFqName(),
+    ) ?: return null
+    // Not argumentMapping (empty on Kotlin 2.4.0 through 2.4.1x) or symbol (deprecated in 2.4.20).
+    val maskParameter = redactAnnotation.type.classOrNull?.owner?.primaryConstructor?.parameters
+        ?.singleOrNull { it.name == PokoAnnotationNames.RedactMask }
+    val maskArgument = maskParameter?.let { redactAnnotation.arguments[it] }
+    return (maskArgument as? IrConst)?.value as? String ?: PokoAnnotationDefaults.REDACT_MASK
 }
 
 /**
