@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+Add experimental `@Poko.Redact` annotation to mask property values in generated `toString` (#729).
+
 ## 0.23.2
 _2026-09-17_
 
