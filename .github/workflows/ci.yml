@@ -18,7 +18,7 @@ jobs:
           distribution: zulu
           java-version: |
             24
-            26
+            27
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -54,7 +54,7 @@ jobs:
           distribution: zulu
           java-version: |
             ${{ matrix.poko_tests_jvm_toolchain_version }}
-            26
+            27
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6

@@ -19,7 +19,7 @@ jobs:
           distribution: zulu
           java-version: |
             24
-            26
+            27
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
