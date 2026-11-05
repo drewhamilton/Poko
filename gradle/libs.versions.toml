@@ -34,7 +34,7 @@ testParameterInjector = "com.google.testparameterinjector:test-parameter-injecto
 
 plugin-buildconfig = "com.github.gmazzo.buildconfig:plugin:6.1.2"
 plugin-mavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.37.0"
-plugin-dokka = "org.jetbrains.dokka:dokka-gradle-plugin:2.2.0"
+plugin-dokka = "org.jetbrains.dokka:dokka-gradle-plugin:2.3.0"
 
 android-gradleApi = { module = "com.android.tools.build:gradle-api", version.ref = "android" }
 
