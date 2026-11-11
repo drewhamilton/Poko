@@ -57,7 +57,7 @@ private val kotlinVersionOverride = localKotlinVersionOverride
 
 include(":jvm")
 include(":compose")
-if (kotlinVersionOverride?.startsWith("2.4.0-dev") != true) {
+if (kotlinVersionOverride?.startsWith("2.4") != true) {
     include(":mpp")
 }
 
