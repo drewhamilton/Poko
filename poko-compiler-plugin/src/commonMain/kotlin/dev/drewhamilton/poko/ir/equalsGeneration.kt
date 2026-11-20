@@ -32,7 +32,6 @@ import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
-import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.util.defaultType
@@ -47,7 +46,6 @@ import org.jetbrains.kotlin.name.Name
  * Generate the body of the equals method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateEqualsMethodBody].
  */
-@UnsafeDuringIrConstructionAPI
 internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -93,7 +91,6 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
  * Generates IR code that checks the equality of [receiver] and [argument] by content. If [property]
  * type is not an array type, but may be an array at runtime, generates a runtime type check.
  */
-@UnsafeDuringIrConstructionAPI
 private fun IrBuilderWithScope.irArrayContentDeepEquals(
     context: IrPluginContext,
     receiver: IrExpression,
@@ -129,7 +126,6 @@ private fun IrBuilderWithScope.irArrayContentDeepEquals(
  * Generates IR code that checks the type of [receiver] at runtime, and performs an array content
  * equality check against [argument] if the type is an array type.
  */
-@UnsafeDuringIrConstructionAPI
 private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
     context: IrPluginContext,
     receiver: IrExpression,
@@ -167,7 +163,6 @@ private fun IrBuilderWithScope.irRuntimeArrayContentDeepEquals(
  * Generates a runtime `when` branch checking for content deep equality of [receiver] and
  * [argument]. The branch is only executed if [receiver] is an instance of [classSymbol].
  */
-@UnsafeDuringIrConstructionAPI
 private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
     context: IrPluginContext,
     receiver: IrExpression,
@@ -191,7 +186,6 @@ private fun IrBuilderWithScope.irArrayTypeCheckAndContentDeepEqualsBranch(
     )
 }
 
-@UnsafeDuringIrConstructionAPI
 private fun IrBuilderWithScope.irCallContentDeepEquals(
     context: IrPluginContext,
     classifier: IrClassifierSymbol,
@@ -221,7 +215,6 @@ private fun IrBuilderWithScope.irCallContentDeepEquals(
  * Finds `contentDeepEquals` function if [classifier] represents a typed array, or `contentEquals`
  * function if it represents a primitive array.
  */
-@UnsafeDuringIrConstructionAPI
 private fun findContentDeepEqualsFunctionSymbol(
     context: IrPluginContext,
     classifier: IrClassifierSymbol,

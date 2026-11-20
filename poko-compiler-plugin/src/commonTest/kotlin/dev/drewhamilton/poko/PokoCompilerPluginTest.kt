@@ -9,21 +9,20 @@ import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.PluginOption
 import com.tschuchort.compiletesting.SourceFile
 import java.io.File
+import org.jetbrains.kotlin.compiler.plugin.AbstractCliOption
 import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
-import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
+import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JvmTarget
-import org.junit.Assert.fail
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.Assertions.fail
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 
-@OptIn(ExperimentalCompilerApi::class)
 class PokoCompilerPluginTest {
 
-    @JvmField
-    @Rule var temporaryFolder: TemporaryFolder = TemporaryFolder()
+    @TempDir
+    lateinit var temporaryFolder: File
 
     @Test fun `compilation of valid class succeeds`() {
         testCompilation("api/Primitives")
@@ -211,7 +210,7 @@ class PokoCompilerPluginTest {
         expectedExitCode: KotlinCompilation.ExitCode = KotlinCompilation.ExitCode.OK,
         additionalTesting: (JvmCompilationResult) -> Unit = {}
     ) = testCompilation(
-        *sourceFileNames.map { SourceFile.fromPath("src/test/resources/$it.kt") }.toTypedArray(),
+        *sourceFileNames.map { testResource(it) }.toTypedArray(),
         pokoAnnotationName = pokoAnnotationName,
         expectedExitCode = expectedExitCode,
         additionalTesting = additionalTesting
@@ -255,15 +254,15 @@ class PokoCompilerPluginTest {
         vararg sourceFiles: SourceFile,
         pokoAnnotationName: String,
     ) = KotlinCompilation().apply {
-        workingDir = temporaryFolder.root
-        compilerPluginRegistrars = listOf(PokoCompilerPluginRegistrar())
+        workingDir = temporaryFolder
+        compilerPluginRegistrars = listOf(PokoCompilerPluginRegistrarForTests())
         inheritClassPath = true
         sources = sourceFiles.asList()
         verbose = false
         jvmTarget = JvmTarget.JVM_1_8.description
         optIn = emptyList()
 
-        val commandLineProcessor = PokoCommandLineProcessor()
+        val commandLineProcessor = PokoCommandLineProcessorForTests()
         commandLineProcessors = listOf(commandLineProcessor)
 
         pluginOptions = listOfNotNull(
@@ -281,6 +280,29 @@ class PokoCompilerPluginTest {
         value.toString()
     )
 
-    @Suppress("DEPRECATION") // Safe as long as we don't write new files at runtime
-    private fun SourceFile.Companion.fromPath(path: String): SourceFile = fromPath(File(path))
+    private fun testResource(name: String): SourceFile {
+        val path = "$name.kt"
+        val contents = this::class.java.getResourceAsStream("/$path")?.readBytes()?.decodeToString()
+            ?: error("Test resource <$path> not found on the test classpath")
+        return SourceFile.new(path, contents)
+    }
+
+    private class PokoCompilerPluginRegistrarForTests : CompilerPluginRegistrar() {
+        val delegate = PokoCompilerPluginRegistrar()
+        override val pluginId = BuildConfig.COMPILER_PLUGIN_ID
+        override val supportsK2 = true
+
+        override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) =
+            with(delegate) { registerExtensions(configuration) }
+    }
+
+    private class PokoCommandLineProcessorForTests : CommandLineProcessor {
+        val delegate = PokoCommandLineProcessor()
+        override val pluginId = BuildConfig.COMPILER_PLUGIN_ID
+        override fun processOption(option: AbstractCliOption, value: String, configuration: CompilerConfiguration) =
+            delegate.processOption(option, value, configuration)
+
+        override val pluginOptions: Collection<AbstractCliOption>
+            get() = delegate.pluginOptions
+    }
 }

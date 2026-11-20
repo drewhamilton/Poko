@@ -29,7 +29,6 @@ import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
-import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.symbols.impl.IrVariableSymbolImpl
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
@@ -47,7 +46,6 @@ import org.jetbrains.kotlin.name.Name
  * Generate the body of the hashCode method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateHashCodeMethodBody].
  */
-@UnsafeDuringIrConstructionAPI
 internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -119,7 +117,6 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
 /**
  * Generates the hashcode-computing code for [property].
  */
-@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.getHashCodeOfProperty(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -143,7 +140,6 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
  * Symbol-retrieval adapted from
  * [org.jetbrains.kotlin.fir.backend.generators.DataClassMembersGenerator].
  */
-@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.getHashCodeOf(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -186,7 +182,6 @@ private fun IrBlockBodyBuilder.getHashCodeOf(
  * Generates a `when` branch that checks the runtime type of the [value] instance and invokes
  * `contentDeepHashCode` or `contentHashCode` for typed arrays and primitive arrays, respectively.
  */
-@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
     context: IrPluginContext,
     value: IrExpression,
@@ -231,7 +226,6 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepHashCode(
  * Generates a runtime `when` branch computing the content deep hashCode of [value]. The branch is
  * only executed if [value] is an instance of [classSymbol].
  */
-@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
     context: IrPluginContext,
     value: IrExpression,
@@ -262,7 +256,6 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
  * Returns contentDeepHashCode function symbol if it is an appropriate option for [property],
  * else returns null. [property] must have an array type.
  */
-@UnsafeDuringIrConstructionAPI
 private fun maybeFindArrayContentHashCodeFunction(
     context: IrPluginContext,
     property: IrProperty,
@@ -281,7 +274,6 @@ private fun maybeFindArrayContentHashCodeFunction(
     return findArrayContentDeepHashCodeFunction(context, propertyClassifier)
 }
 
-@UnsafeDuringIrConstructionAPI
 private fun findArrayContentDeepHashCodeFunction(
     context: IrPluginContext,
     propertyClassifier: IrClassifierSymbol,
@@ -306,7 +298,6 @@ private fun findArrayContentDeepHashCodeFunction(
     }
 }
 
-@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.getStandardHashCodeFunctionSymbol(
     classifier: IrClassifierSymbol?,
 ): IrSimpleFunctionSymbol = when {
@@ -320,7 +311,6 @@ private fun IrBlockBodyBuilder.getStandardHashCodeFunctionSymbol(
         error("Unknown classifier kind $classifier")
 }
 
-@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.getHashCodeFunctionForClass(
     irClass: IrClass
 ): IrSimpleFunctionSymbol {
@@ -334,7 +324,6 @@ private fun IrBlockBodyBuilder.getHashCodeFunctionForClass(
         ?: context.irBuiltIns.anyClass.functions.single { it.owner.name.asString() == "hashCode" }
 }
 
-@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irCallHashCodeFunction(
     hashCodeFunctionSymbol: IrSimpleFunctionSymbol,
     value: IrExpression,

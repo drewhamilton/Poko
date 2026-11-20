@@ -12,7 +12,6 @@ import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.GeneratedByPlugi
 import org.jetbrains.kotlin.ir.declarations.IrFile
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
-import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.util.isEquals
 import org.jetbrains.kotlin.ir.util.isHashCode
 import org.jetbrains.kotlin.ir.util.isToString
@@ -21,7 +20,6 @@ import org.jetbrains.kotlin.ir.visitors.IrVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.name.ClassId
 
-@OptIn(UnsafeDuringIrConstructionAPI::class)
 internal class PokoFunctionBodyFiller(
     private val pokoAnnotation: ClassId,
     private val context: IrPluginContext,

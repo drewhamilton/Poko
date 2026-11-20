@@ -1,6 +1,5 @@
 package dev.drewhamilton.poko
 
-import com.google.auto.service.AutoService
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ANNOTATION
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ENABLED
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_FIR_IDE_MODE
@@ -8,20 +7,13 @@ import dev.drewhamilton.poko.fir.PokoFirExtensionRegistrar
 import dev.drewhamilton.poko.ir.PokoIrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
-import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
+import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitComponentRegistrar
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
 import org.jetbrains.kotlin.name.ClassId
 
-@ExperimentalCompilerApi
-@AutoService(CompilerPluginRegistrar::class)
-public class PokoCompilerPluginRegistrar : CompilerPluginRegistrar() {
-
-    override val pluginId: String get() = BuildConfig.COMPILER_PLUGIN_ID
-
-    override val supportsK2: Boolean get() = true
-
-    override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
+public class PokoCompilerPluginRegistrar : DevKitComponentRegistrar {
+    override fun CompilerPluginRegistrar.ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
         if (!configuration.get(CompilerOptions.ENABLED, DEFAULT_POKO_ENABLED))
             return
 

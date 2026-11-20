@@ -26,7 +26,6 @@ import org.jetbrains.kotlin.ir.expressions.addArgument
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
-import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrFail
 import org.jetbrains.kotlin.ir.types.classifierOrNull
@@ -46,7 +45,6 @@ import org.jetbrains.kotlin.util.OperatorNameConventions
  * Generate the body of the toString method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateToStringMethodBody].
  */
-@UnsafeDuringIrConstructionAPI
 internal fun IrBlockBodyBuilder.generateToStringMethodBody(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -113,7 +111,6 @@ internal fun IrBlockBodyBuilder.generateToStringMethodBody(
  * Falls back to [PokoAnnotationDefaults.REDACT_MASK] when no String `mask` argument is
  * passed, including for custom `Redact` annotations with no `mask` parameter or a non-String one.
  */
-@UnsafeDuringIrConstructionAPI
 private fun IrProperty.redactMaskOrNull(
     pokoAnnotation: ClassId,
 ): String? {
@@ -131,7 +128,6 @@ private fun IrProperty.redactMaskOrNull(
  * Returns `contentDeepToString` function symbol if it is an appropriate option for [property],
  * else returns null.
  */
-@UnsafeDuringIrConstructionAPI
 private fun maybeFindArrayDeepToStringFunction(
     context: IrPluginContext,
     property: IrProperty,
@@ -154,7 +150,6 @@ private fun maybeFindArrayDeepToStringFunction(
  * Generates a `when` branch that checks the runtime type of the [value] instance and invokes
  * `contentDeepToString` or `contentToString` for typed arrays and primitive arrays, respectively.
  */
-@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
     context: IrPluginContext,
     value: IrExpression,
@@ -188,7 +183,6 @@ private fun IrBlockBodyBuilder.irRuntimeArrayContentDeepToString(
     )
 }
 
-@UnsafeDuringIrConstructionAPI
 private fun IrPluginContext.findExtensionToStringFunctionSymbol(): IrSimpleFunctionSymbol {
     val callableId = CallableId(
         callableName = OperatorNameConventions.TO_STRING,
@@ -206,7 +200,6 @@ private fun IrPluginContext.findExtensionToStringFunctionSymbol(): IrSimpleFunct
  * Generates a runtime `when` branch computing the content deep toString of [value]. The branch is
  * only executed if [value] is an instance of [classSymbol].
  */
-@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
     context: IrPluginContext,
     value: IrExpression,
@@ -226,7 +219,6 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepToStringBranch(
  * Finds `contentDeepToString` function if [propertyClassifier] is a typed array, or
  * `contentToString` function if it is a primitive array.
  */
-@UnsafeDuringIrConstructionAPI
 private fun findContentDeepToStringFunctionSymbol(
     context: IrPluginContext,
     propertyClassifier: IrClassifierSymbol,
@@ -252,7 +244,6 @@ private fun findContentDeepToStringFunctionSymbol(
     }
 }
 
-@UnsafeDuringIrConstructionAPI
 private fun IrBlockBodyBuilder.irCallToStringFunction(
     toStringFunctionSymbol: IrSimpleFunctionSymbol,
     value: IrExpression,

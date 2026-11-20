@@ -1,18 +1,11 @@
 package dev.drewhamilton.poko
 
-import com.google.auto.service.AutoService
 import org.jetbrains.kotlin.compiler.plugin.AbstractCliOption
 import org.jetbrains.kotlin.compiler.plugin.CliOption
-import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
-import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
+import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitCLP
 import org.jetbrains.kotlin.config.CompilerConfiguration
 
-@AutoService(CommandLineProcessor::class)
-@ExperimentalCompilerApi
-public class PokoCommandLineProcessor : CommandLineProcessor {
-
-    override val pluginId: String get() = BuildConfig.COMPILER_PLUGIN_ID
-
+public class PokoCommandLineProcessor : DevKitCLP {
     override val pluginOptions: Collection<AbstractCliOption> = listOf(
         CliOption(
             optionName = CompilerOptions.ENABLED.toString(),
