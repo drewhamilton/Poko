@@ -10,24 +10,6 @@ plugins {
 allprojects {
     setUpLocalSigning()
 
-    repositories {
-        mavenCentral()
-
-        // KSP:
-        google()
-
-        val snapshotsRepository = rootProject.findProperty("snapshots_repository")
-        if (snapshotsRepository != null) {
-            logger.lifecycle("Adding <$snapshotsRepository> repository for ${this@allprojects}")
-            maven { url = uri(snapshotsRepository) }
-        }
-        val kotlinDevRepository = rootProject.findProperty("kotlin_dev_repository")
-        if (kotlinDevRepository != null) {
-            logger.lifecycle("Adding <$kotlinDevRepository> repository for ${this@allprojects}")
-            maven { url = uri(kotlinDevRepository) }
-        }
-    }
-
     // The tests vary their own JVM targets among multiple targets. Do not overwrite them.
     if (path !in setOf(":poko-tests", ":poko-gradle-plugin")) {
         val kotlinPluginHandler: AppliedPlugin.() -> Unit = {

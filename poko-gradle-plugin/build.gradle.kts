@@ -4,8 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    `java-gradle-plugin`
-    id("org.jetbrains.kotlin.jvm")
+    pluginDevKit("gradle-plugin")
 }
 
 // Keep these in sync with each other. See https://docs.gradle.org/current/userguide/compatibility.html#kotlin.
@@ -80,6 +79,11 @@ dependencies {
     testImplementation(libs.assertk)
     testImplementation(libs.testParameterInjector)
     testImplementation(gradleTestKit())
+}
+
+pluginDevKit {
+    compilerPlugin(project(":poko-compiler-plugin"))
+    companionLibrary(project(":poko-annotations"))
 }
 
 tasks.test {

@@ -1,0 +1,42 @@
+package dev.drewhamilton.poko
+
+import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ANNOTATION
+import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ENABLED
+import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_FIR_IDE_MODE
+import dev.drewhamilton.poko.fir.PokoFirExtensionRegistrar
+import dev.drewhamilton.poko.ir.PokoIrGenerationExtension
+import dev.drewhamilton.poko.ir.Reporter
+import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
+import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
+import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitComponentRegistrar
+import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
+import org.jetbrains.kotlin.name.ClassId
+
+public class PokoCompilerPluginRegistrar : DevKitComponentRegistrar {
+    override fun CompilerPluginRegistrar.ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
+        if (!configuration.get(CompilerOptions.ENABLED, DEFAULT_POKO_ENABLED))
+            return
+
+        val pokoAnnotationString = configuration.get(CompilerOptions.POKO_ANNOTATION, DEFAULT_POKO_ANNOTATION)
+        val pokoAnnotationClassId = ClassId.fromString(pokoAnnotationString)
+        val firIdeMode = configuration.get(
+            CompilerOptions.FIR_IDE_MODE,
+            FirIdeMode.valueOf(DEFAULT_POKO_FIR_IDE_MODE),
+        )
+
+        IrGenerationExtension.registerExtension(
+            PokoIrGenerationExtension(
+                pokoAnnotationName = pokoAnnotationClassId,
+                reporter = { Reporter(configuration, it) }
+            )
+        )
+
+        FirExtensionRegistrarAdapter.registerExtension(
+            PokoFirExtensionRegistrar(
+                pokoAnnotation = pokoAnnotationClassId,
+                firIdeMode = firIdeMode,
+            )
+        )
+    }
+}

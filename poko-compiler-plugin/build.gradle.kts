@@ -1,8 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    id("org.jetbrains.kotlin.jvm")
-    alias(libs.plugins.ksp)
+    pluginDevKit("compiler-plugin")
 }
 
 pokoBuild {
@@ -10,23 +7,28 @@ pokoBuild {
     generateBuildConfig("dev.drewhamilton.poko")
 }
 
-dependencies {
-    // The stdlib and compiler APIs will be provided by the enclosing Kotlin compiler environment.
-    compileOnly(libs.kotlin.stdlib)
-    compileOnly(libs.kotlin.embeddableCompiler)
+pluginDevKit {
+    cliVersions("2.3.0")
+    ideaVersions("253")
 
-    compileOnly(libs.autoService.annotations)
-    ksp(libs.autoService.ksp)
+    componentRegistrar = "dev.drewhamilton.poko.PokoCompilerPluginRegistrar"
+    commandLineProcessor = "dev.drewhamilton.poko.PokoCommandLineProcessor"
+    companionLibrary(project(":poko-annotations"))
 
-    testImplementation(project(":poko-annotations"))
-    testImplementation(libs.kotlin.embeddableCompiler)
-    testImplementation(libs.junit)
-    testImplementation(libs.assertk)
-    testImplementation(libs.testParameterInjector)
-    testImplementation(libs.kotlinCompileTestingFork)
+    versionHierarchy {
+        splitDev(2, 4, 20, "IrValidationSeverity")
+        splitDev(2, 4, 0, "CompilerConfigurationCreate")
+    }
 }
 
-tasks.withType<KotlinCompile>().configureEach {
+kotlin {
+    sourceSets {
+        commonTest.dependencies {
+            implementation(project(":poko-annotations"))
+            implementation(libs.assertk)
+        }
+    }
+
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-parameters")
     }
