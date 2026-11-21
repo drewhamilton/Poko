@@ -8,7 +8,7 @@ pokoBuild {
 }
 
 pluginDevKit {
-    cliVersions("2.3.20")
+    cliVersions("2.3.0")
     ideaVersions("261")
 
     componentRegistrar = "dev.drewhamilton.poko.PokoCompilerPluginRegistrar"
