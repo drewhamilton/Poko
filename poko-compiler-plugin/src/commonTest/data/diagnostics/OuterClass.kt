@@ -5,7 +5,7 @@ import dev.drewhamilton.poko.Poko
 @Suppress("unused")
 class OuterClass {
 
-    @Poko inner class Inner(
+    @Poko <!PokoOnInnerClass!>inner<!> class Inner(
         val value: String
     )
 }

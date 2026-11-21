@@ -16,3 +16,5 @@ interface FunctionalInterface {
 }
 
 interface MarkerInterface
+
+fun box(): String { return "OK" }

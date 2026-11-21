@@ -16,3 +16,10 @@ private const val HIDDEN = "[hidden]"
 ) {
     @Poko.Redact val bodyProperty: String = "body"
 }
+
+fun box(): String {
+    val instance = RedactedProperty("a", "secret-token", "123-45-6789", "c", "d")
+    return if ("$instance" == "RedactedProperty(id=a, token=***, ssn=<redacted>, constMask=[hidden], concatMask=ab)")
+        "OK"
+    else "$instance"
+}

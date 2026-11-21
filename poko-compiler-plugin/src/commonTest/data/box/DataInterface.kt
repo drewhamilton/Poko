@@ -12,3 +12,5 @@ interface DataInterface {
 @Poko class MyData(
     override val id: String,
 ) : DataInterface
+
+fun box(): String { return "OK" }

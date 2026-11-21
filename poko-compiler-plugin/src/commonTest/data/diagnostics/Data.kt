@@ -3,7 +3,7 @@ package illegal
 import dev.drewhamilton.poko.Poko
 
 @Suppress("Unused")
-@Poko data class Data(
+@Poko <!PokoOnDataClass!>data<!> class Data(
     val string: String,
     val float: Float,
     val double: Double,

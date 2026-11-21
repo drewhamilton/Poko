@@ -1,3 +1,4 @@
+// POKO_ANNOTATION_NAME: nonexistent/ClassName
 package api
 
 import dev.drewhamilton.poko.Poko
@@ -13,3 +14,5 @@ import dev.drewhamilton.poko.Poko
     val byte: Byte,
     val boolean: Boolean
 )
+
+fun box(): String { return "OK" }
