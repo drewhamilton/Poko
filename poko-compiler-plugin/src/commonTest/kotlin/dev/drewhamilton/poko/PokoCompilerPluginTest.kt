@@ -191,7 +191,6 @@ class PokoCompilerPluginTest {
         }
     }
 
-    @OptIn(CompilerConfiguration.Internals::class)
     @Test fun `fir IDE mode option parses all values`() {
         val commandLineProcessor = PokoCommandLineProcessor()
         val option = commandLineProcessor.pluginOptions.single {
@@ -199,7 +198,7 @@ class PokoCompilerPluginTest {
         }
 
         FirIdeMode.entries.forEach { firIdeMode ->
-            val configuration = CompilerConfiguration()
+            val configuration = createCompilerConfiguration()
             commandLineProcessor.processOption(option, firIdeMode.name, configuration)
 
             assertThat(configuration.get(CompilerOptions.FIR_IDE_MODE)).isEqualTo(firIdeMode)

@@ -8,7 +8,7 @@ pokoBuild {
 }
 
 pluginDevKit {
-    cliVersions("2.4.0")
+    cliVersions("2.3.20")
     ideaVersions("261")
 
     componentRegistrar = "dev.drewhamilton.poko.PokoCompilerPluginRegistrar"
@@ -17,6 +17,7 @@ pluginDevKit {
     generateTestsEnabled = false
     versionHierarchy {
         splitDev(2, 4, 20, "IrValidationSeverity")
+        splitDev(2, 4, 0, "CompilerConfigurationCreate")
     }
 }
 
