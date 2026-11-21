@@ -46,6 +46,7 @@ import org.jetbrains.kotlin.name.Name
  * Generate the body of the hashCode method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateHashCodeMethodBody].
  */
+context(_: Reporter)
 internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -117,6 +118,7 @@ internal fun IrBlockBodyBuilder.generateHashCodeMethodBody(
 /**
  * Generates the hashcode-computing code for [property].
  */
+context(_: Reporter)
 private fun IrBlockBodyBuilder.getHashCodeOfProperty(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -140,6 +142,7 @@ private fun IrBlockBodyBuilder.getHashCodeOfProperty(
  * Symbol-retrieval adapted from
  * [org.jetbrains.kotlin.fir.backend.generators.DataClassMembersGenerator].
  */
+context(_: Reporter)
 private fun IrBlockBodyBuilder.getHashCodeOf(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -256,6 +259,7 @@ private fun IrBlockBodyBuilder.irArrayTypeCheckAndContentDeepHashCodeBranch(
  * Returns contentDeepHashCode function symbol if it is an appropriate option for [property],
  * else returns null. [property] must have an array type.
  */
+context(_: Reporter)
 private fun maybeFindArrayContentHashCodeFunction(
     context: IrPluginContext,
     property: IrProperty,
@@ -264,7 +268,7 @@ private fun maybeFindArrayContentHashCodeFunction(
 
     val isArray = propertyClassifier.isArrayOrPrimitiveArray(context.irBuiltIns)
     if (!isArray) {
-        context.diagnosticReporter.reportErrorOnProperty(
+        reportErrorOnProperty(
             property = property,
             message = "@ReadArrayContent is only supported on properties with array type or `Any` type",
         )

@@ -24,6 +24,7 @@ import org.jetbrains.kotlin.fir.declarations.processAllDeclarations
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.fir.declarations.utils.isInner
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
+import org.jetbrains.kotlin.fir.resolve.toTypeParameterSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.ConeTypeParameterType
@@ -144,7 +145,7 @@ internal class PokoFirCheckersExtension(
         context(context: CheckerContext)
         private fun ConeTypeParameterType.hasArrayOrPrimitiveArrayUpperBound(): Boolean {
             val builtinTypes = context.session.builtinTypes
-            lookupTag.typeParameterSymbol.resolvedBounds.forEach { resolvedBound ->
+            toTypeParameterSymbol()?.resolvedBounds?.forEach { resolvedBound ->
                 val resolvedBoundConeType = resolvedBound.coneType
                 // Note: A generic type cannot have an array as an upper bound, else that would also be
                 // checked here.

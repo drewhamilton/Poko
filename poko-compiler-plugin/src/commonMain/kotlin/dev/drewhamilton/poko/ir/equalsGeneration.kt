@@ -46,6 +46,7 @@ import org.jetbrains.kotlin.name.Name
  * Generate the body of the equals method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateEqualsMethodBody].
  */
+context(_: Reporter)
 internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -91,6 +92,7 @@ internal fun IrBlockBodyBuilder.generateEqualsMethodBody(
  * Generates IR code that checks the equality of [receiver] and [argument] by content. If [property]
  * type is not an array type, but may be an array at runtime, generates a runtime type check.
  */
+context(_: Reporter)
 private fun IrBuilderWithScope.irArrayContentDeepEquals(
     context: IrPluginContext,
     receiver: IrExpression,
@@ -106,7 +108,7 @@ private fun IrBuilderWithScope.irArrayContentDeepEquals(
         return if (mayBeRuntimeArray) {
             irRuntimeArrayContentDeepEquals(context, receiver, argument)
         } else {
-            context.diagnosticReporter.reportErrorOnProperty(
+            reportErrorOnProperty(
                 property = property,
                 message = "@ReadArrayContent is only supported on properties with array type or `Any` type",
             )

@@ -45,6 +45,7 @@ import org.jetbrains.kotlin.util.OperatorNameConventions
  * Generate the body of the toString method. Adapted from
  * [org.jetbrains.kotlin.ir.util.DataClassMembersGenerator.MemberFunctionBuilder.generateToStringMethodBody].
  */
+context(_: Reporter)
 internal fun IrBlockBodyBuilder.generateToStringMethodBody(
     pokoAnnotation: ClassId,
     context: IrPluginContext,
@@ -128,6 +129,7 @@ private fun IrProperty.redactMaskOrNull(
  * Returns `contentDeepToString` function symbol if it is an appropriate option for [property],
  * else returns null.
  */
+context(_: Reporter)
 private fun maybeFindArrayDeepToStringFunction(
     context: IrPluginContext,
     property: IrProperty,
@@ -136,7 +138,7 @@ private fun maybeFindArrayDeepToStringFunction(
 
     val isArray = propertyClassifier.isArrayOrPrimitiveArray(context.irBuiltIns)
     if (!isArray) {
-        context.diagnosticReporter.reportErrorOnProperty(
+        reportErrorOnProperty(
             property = property,
             message = "@ReadArrayContent is only supported on properties with array type or `Any` type",
         )

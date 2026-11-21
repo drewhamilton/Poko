@@ -23,7 +23,8 @@ import org.jetbrains.kotlin.name.ClassId
 internal class PokoFunctionBodyFiller(
     private val pokoAnnotation: ClassId,
     private val context: IrPluginContext,
-) : IrVisitorVoid() {
+    reporter: Reporter,
+) : IrVisitorVoid(), Reporter by reporter {
 
     override fun visitSimpleFunction(declaration: IrSimpleFunction) {
         val origin = declaration.origin
@@ -43,7 +44,7 @@ internal class PokoFunctionBodyFiller(
         val pokoClass = declaration.parentAsClass
         val pokoProperties = pokoClass.pokoProperties(pokoAnnotation).also {
             if (it.isEmpty()) {
-                context.diagnosticReporter.reportErrorOnClass(
+                reportErrorOnClass(
                     irClass = pokoClass,
                     message = "Poko class primary constructor must have at least one not-skipped property",
                 )

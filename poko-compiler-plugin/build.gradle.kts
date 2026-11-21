@@ -8,9 +8,16 @@ pokoBuild {
 }
 
 pluginDevKit {
+    cliVersions("2.4.0")
+    ideaVersions("261")
+
     componentRegistrar = "dev.drewhamilton.poko.PokoCompilerPluginRegistrar"
     commandLineProcessor = "dev.drewhamilton.poko.PokoCommandLineProcessor"
+
     generateTestsEnabled = false
+    versionHierarchy {
+        splitDev(2, 4, 20, "IrValidationSeverity")
+    }
 }
 
 kotlin {

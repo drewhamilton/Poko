@@ -35,6 +35,34 @@ plugins {
     kotlin("compiler.plugin.devkit") version "0.1.0"
 }
 
+dependencyResolutionManagement {
+    //region TODO: Move this to build-support
+    val file: File = file("gradle.properties")
+    val properties = java.util.Properties()
+    file.inputStream().use {
+        properties.load(it)
+    }
+    properties.forEach { (key, value) ->
+        extra[key.toString()] = value
+    }
+    //endregion
+    repositories {
+        mavenCentral()
+
+        // KSP:
+        google()
+
+        extra.properties["snapshots_repository"]?.let {
+            logger.lifecycle("Adding <$it> repository for projects")
+            maven(it)
+        }
+        extra.properties["kotlin_dev_repository"]?.let {
+            logger.lifecycle("Adding <$it> repository for projects")
+            maven(it)
+        }
+    }
+}
+
 rootProject.name = "Poko"
 
 include(

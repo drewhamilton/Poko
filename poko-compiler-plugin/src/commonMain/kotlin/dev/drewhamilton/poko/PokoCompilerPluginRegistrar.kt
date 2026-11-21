@@ -5,6 +5,7 @@ import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_ENABLED
 import dev.drewhamilton.poko.BuildConfig.DEFAULT_POKO_FIR_IDE_MODE
 import dev.drewhamilton.poko.fir.PokoFirExtensionRegistrar
 import dev.drewhamilton.poko.ir.PokoIrGenerationExtension
+import dev.drewhamilton.poko.ir.Reporter
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.devkit.DevKitComponentRegistrar
@@ -27,6 +28,7 @@ public class PokoCompilerPluginRegistrar : DevKitComponentRegistrar {
         IrGenerationExtension.registerExtension(
             PokoIrGenerationExtension(
                 pokoAnnotationName = pokoAnnotationClassId,
+                reporter = { Reporter(configuration, it) }
             )
         )
 

@@ -12,9 +12,11 @@ import java.io.File
 import org.jetbrains.kotlin.compiler.plugin.AbstractCliOption
 import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
+import org.jetbrains.kotlin.compiler.plugin.devkit.services.TEST_COMPILER_VERSION
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.CompilerConfigurationKey
 import org.jetbrains.kotlin.config.JvmTarget
+import org.jetbrains.kotlin.tooling.core.KotlinToolingVersion
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -261,6 +263,8 @@ class PokoCompilerPluginTest {
         verbose = false
         jvmTarget = JvmTarget.JVM_1_8.description
         optIn = emptyList()
+        if (TEST_COMPILER_VERSION < KotlinToolingVersion("2.4.0-Beta1"))
+            kotlincArguments += "-Xannotation-default-target=param-property"
 
         val commandLineProcessor = PokoCommandLineProcessorForTests()
         commandLineProcessors = listOf(commandLineProcessor)
